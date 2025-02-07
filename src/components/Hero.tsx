@@ -12,17 +12,17 @@ export const Hero = () => {
           className="mx-auto max-w-2xl text-center"
         >
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            Criminal Justice Education Platform
+            Law Enforcement Report System
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-300">
-            Your comprehensive resource for criminal justice education, designed for police academies and high schools.
+            Standardized digital report writing system for law enforcement training and education
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <a
               href="#categories"
               className="rounded-md bg-accent px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent/90 transition-colors duration-300"
             >
-              Explore Categories
+              Start New Report
             </a>
           </div>
         </motion.div>

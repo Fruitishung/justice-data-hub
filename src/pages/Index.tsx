@@ -1,29 +1,46 @@
 
 import { motion } from "framer-motion";
-import { BookOpen, Scale, Shield, Users } from "lucide-react";
+import { 
+  Clipboard, 
+  Car, 
+  User, 
+  MapPin, 
+  AlertCircle,
+  FileText
+} from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { CategoryCard } from "@/components/CategoryCard";
 
-const categories = [
+const reportFields = [
   {
-    title: "Criminal Law Fundamentals",
-    description: "Essential principles and concepts of criminal law and justice system.",
-    icon: <Scale className="w-6 h-6" />,
+    title: "Incident Details",
+    description: "Date, time, location, and nature of incident reporting.",
+    icon: <Clipboard className="w-6 h-6" />,
   },
   {
-    title: "Law Enforcement",
-    description: "Modern policing methods, procedures, and best practices.",
-    icon: <Shield className="w-6 h-6" />,
+    title: "Vehicle Information",
+    description: "Vehicle details, registration, and traffic-related data.",
+    icon: <Car className="w-6 h-6" />,
   },
   {
-    title: "Criminal Procedure",
-    description: "Step-by-step guides to criminal justice procedures and protocols.",
-    icon: <BookOpen className="w-6 h-6" />,
+    title: "Person Details",
+    description: "Subject, victim, and witness information collection.",
+    icon: <User className="w-6 h-6" />,
   },
   {
-    title: "Community Policing",
-    description: "Building strong relationships between law enforcement and communities.",
-    icon: <Users className="w-6 h-6" />,
+    title: "Location Data",
+    description: "Precise location details and jurisdiction information.",
+    icon: <MapPin className="w-6 h-6" />,
+  },
+  {
+    title: "Evidence Log",
+    description: "Documentation of collected evidence and property.",
+    icon: <FileText className="w-6 h-6" />,
+  },
+  {
+    title: "Emergency Response",
+    description: "Response details and additional unit involvement.",
+    icon: <AlertCircle className="w-6 h-6" />,
   },
 ];
 
@@ -42,22 +59,22 @@ const Index = () => {
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              Featured Categories
+              Report Entry Fields
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Explore our comprehensive collection of criminal justice resources
+              Standard law enforcement report documentation sections
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {categories.map((category, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+            {reportFields.map((field, index) => (
               <motion.div
-                key={category.title}
+                key={field.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
               >
-                <CategoryCard {...category} />
+                <CategoryCard {...field} />
               </motion.div>
             ))}
           </div>
