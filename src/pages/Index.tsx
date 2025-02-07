@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ReportFormData {
   incidentDate: string;
@@ -51,56 +52,67 @@ const Index = () => {
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              Report Entry Fields
+              Police Report Categories
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Standard law enforcement report documentation sections
+              Select a category to enter report details
             </p>
           </div>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                {/* Incident Details Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clipboard className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Incident Details</h3>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <Input
-                        type="datetime-local"
-                        placeholder="Incident Date & Time"
-                        {...form.register("incidentDate")}
-                      />
-                    </div>
-                    <div>
-                      <Textarea
-                        placeholder="Incident Description"
-                        {...form.register("incidentDescription")}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
+              <Tabs defaultValue="incident" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+                  <TabsTrigger value="incident" className="flex items-center gap-2">
+                    <Clipboard className="w-4 h-4" />
+                    <span className="hidden sm:inline">Incident</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="vehicle" className="flex items-center gap-2">
+                    <Car className="w-4 h-4" />
+                    <span className="hidden sm:inline">Vehicle</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="person" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span className="hidden sm:inline">Person</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="location" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span className="hidden sm:inline">Location</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="evidence" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">Evidence</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="emergency" className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span className="hidden sm:inline">Emergency</span>
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Vehicle Information Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Car className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Vehicle Information</h3>
+                <TabsContent value="incident" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Clipboard className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Incident Details</h3>
+                    </div>
+                    <Input
+                      type="datetime-local"
+                      placeholder="Incident Date & Time"
+                      {...form.register("incidentDate")}
+                    />
+                    <Textarea
+                      placeholder="Incident Description"
+                      {...form.register("incidentDescription")}
+                    />
                   </div>
-                  <div className="space-y-4">
+                </TabsContent>
+
+                <TabsContent value="vehicle" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Car className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Vehicle Information</h3>
+                    </div>
                     <Input
                       placeholder="Vehicle Make"
                       {...form.register("vehicleMake")}
@@ -110,20 +122,14 @@ const Index = () => {
                       {...form.register("vehicleModel")}
                     />
                   </div>
-                </motion.div>
+                </TabsContent>
 
-                {/* Person Details Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <User className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Person Details</h3>
-                  </div>
-                  <div className="space-y-4">
+                <TabsContent value="person" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <User className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Person Details</h3>
+                    </div>
                     <Input
                       placeholder="Person Name"
                       {...form.register("personName")}
@@ -133,20 +139,14 @@ const Index = () => {
                       {...form.register("personDescription")}
                     />
                   </div>
-                </motion.div>
+                </TabsContent>
 
-                {/* Location Data Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Location Data</h3>
-                  </div>
-                  <div className="space-y-4">
+                <TabsContent value="location" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Location Data</h3>
+                    </div>
                     <Input
                       placeholder="Address"
                       {...form.register("locationAddress")}
@@ -156,20 +156,14 @@ const Index = () => {
                       {...form.register("locationDetails")}
                     />
                   </div>
-                </motion.div>
+                </TabsContent>
 
-                {/* Evidence Log Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Evidence Log</h3>
-                  </div>
-                  <div className="space-y-4">
+                <TabsContent value="evidence" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Evidence Log</h3>
+                    </div>
                     <Textarea
                       placeholder="Evidence Description"
                       {...form.register("evidenceDescription")}
@@ -179,20 +173,14 @@ const Index = () => {
                       {...form.register("evidenceLocation")}
                     />
                   </div>
-                </motion.div>
+                </TabsContent>
 
-                {/* Emergency Response Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                  className="p-6 bg-white rounded-xl shadow-sm"
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <AlertCircle className="w-6 h-6 text-accent" />
-                    <h3 className="text-xl font-semibold">Emergency Response</h3>
-                  </div>
-                  <div className="space-y-4">
+                <TabsContent value="emergency" className="mt-6">
+                  <div className="p-6 bg-white rounded-xl shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <AlertCircle className="w-6 h-6 text-accent" />
+                      <h3 className="text-xl font-semibold">Emergency Response</h3>
+                    </div>
                     <Textarea
                       placeholder="Response Details"
                       {...form.register("emergencyResponse")}
@@ -202,8 +190,8 @@ const Index = () => {
                       {...form.register("emergencyUnits")}
                     />
                   </div>
-                </motion.div>
-              </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="flex justify-center mt-8">
                 <Button 
