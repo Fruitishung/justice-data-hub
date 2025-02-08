@@ -23,6 +23,12 @@ export type Database = {
           location_details: string | null
           person_description: string | null
           person_name: string | null
+          report_category: string | null
+          report_priority: string | null
+          report_resolution: string | null
+          report_status: string | null
+          report_type: string | null
+          resolution_date: string | null
           suspect_details: Json | null
           vehicle_color: string | null
           vehicle_crime_involvement: Json | null
@@ -47,6 +53,12 @@ export type Database = {
           location_details?: string | null
           person_description?: string | null
           person_name?: string | null
+          report_category?: string | null
+          report_priority?: string | null
+          report_resolution?: string | null
+          report_status?: string | null
+          report_type?: string | null
+          resolution_date?: string | null
           suspect_details?: Json | null
           vehicle_color?: string | null
           vehicle_crime_involvement?: Json | null
@@ -71,6 +83,12 @@ export type Database = {
           location_details?: string | null
           person_description?: string | null
           person_name?: string | null
+          report_category?: string | null
+          report_priority?: string | null
+          report_resolution?: string | null
+          report_status?: string | null
+          report_type?: string | null
+          resolution_date?: string | null
           suspect_details?: Json | null
           vehicle_color?: string | null
           vehicle_crime_involvement?: Json | null
@@ -118,10 +136,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      report_analytics: {
+        Row: {
+          month: number | null
+          report_category: string | null
+          report_count: number | null
+          report_priority: string | null
+          report_status: string | null
+          report_type: string | null
+          year: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_report_counts: {
+        Args: {
+          start_date?: string
+          end_date?: string
+        }
+        Returns: {
+          report_type: string
+          total_count: number
+          open_count: number
+          closed_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
