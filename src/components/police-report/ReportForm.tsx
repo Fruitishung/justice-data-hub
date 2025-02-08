@@ -11,7 +11,6 @@ import { ReportFormData } from "./types";
 
 import IncidentSection from "./form-sections/IncidentSection";
 import VehicleSection from "./form-sections/VehicleSection";
-import PersonSection from "./form-sections/PersonSection";
 import LocationSection from "./form-sections/LocationSection";
 import EvidenceSection from "./form-sections/EvidenceSection";
 import EmergencySection from "./form-sections/EmergencySection";
@@ -49,8 +48,6 @@ const ReportForm = () => {
             incident_description: data.incidentDescription,
             vehicle_make: data.vehicleMake,
             vehicle_model: data.vehicleModel,
-            person_name: data.personName,
-            person_description: data.personDescription,
             location_address: data.locationAddress,
             location_details: data.locationDetails,
             evidence_description: data.evidenceDescription,
@@ -154,10 +151,6 @@ const ReportForm = () => {
 
           <TabsContent value="vehicle" className="mt-6">
             <VehicleSection form={form} />
-          </TabsContent>
-
-          <TabsContent value="person" className="mt-6">
-            <PersonSection form={form} />
           </TabsContent>
 
           <TabsContent value="location" className="mt-6">

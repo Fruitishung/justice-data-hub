@@ -1,3 +1,4 @@
+
 export interface ReportFormData {
   incidentDate: string;
   incidentDescription: string;
@@ -14,8 +15,6 @@ export interface ReportFormData {
   vehicleCrimeInvolved: boolean;
   vehicleCrimeType: string;
   vehicleCrimeDetails: string;
-  personName: string;
-  personDescription: string;
   locationAddress: string;
   locationDetails: string;
   evidenceDescription: string;
