@@ -8,6 +8,13 @@ export interface ReportFormData {
   vehicleColor: string;
   vehicleVin: string;
   vehiclePlate: string;
+  vehicleTowingCompany: string;
+  vehicleTowingOperator: string;
+  vehicleTowingDate: string;
+  vehicleTowingLocation: string;
+  vehicleCrimeInvolved: boolean;
+  vehicleCrimeType: string;
+  vehicleCrimeDetails: string;
   personName: string;
   personDescription: string;
   locationAddress: string;

@@ -25,9 +25,11 @@ export type Database = {
           person_name: string | null
           suspect_details: Json | null
           vehicle_color: string | null
+          vehicle_crime_involvement: Json | null
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_plate: string | null
+          vehicle_towing_authority: Json | null
           vehicle_vin: string | null
           vehicle_year: string | null
           victim_details: Json | null
@@ -47,9 +49,11 @@ export type Database = {
           person_name?: string | null
           suspect_details?: Json | null
           vehicle_color?: string | null
+          vehicle_crime_involvement?: Json | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
+          vehicle_towing_authority?: Json | null
           vehicle_vin?: string | null
           vehicle_year?: string | null
           victim_details?: Json | null
@@ -69,9 +73,11 @@ export type Database = {
           person_name?: string | null
           suspect_details?: Json | null
           vehicle_color?: string | null
+          vehicle_crime_involvement?: Json | null
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
+          vehicle_towing_authority?: Json | null
           vehicle_vin?: string | null
           vehicle_year?: string | null
           victim_details?: Json | null
