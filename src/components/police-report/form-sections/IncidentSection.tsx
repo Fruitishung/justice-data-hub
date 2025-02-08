@@ -56,8 +56,9 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
         recognitionInstance.lang = 'en-US';
-        // Reduced the rate of recognition updates
-        recognitionInstance.interimResults = false;
+        
+        // Increased frequency of recognition updates
+        recognitionInstance.interimResults = true;
         
         recognitionInstance.onresult = async (event: any) => {
           const transcript = Array.from(event.results)
@@ -72,7 +73,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
             clearTimeout(processingTimeoutRef.current);
           }
 
-          // Set a new timeout to process the buffered text
+          // Reduced timeout to 500ms for faster processing
           processingTimeoutRef.current = setTimeout(async () => {
             if (transcriptBufferRef.current) {
               const correctedText = await correctText(transcriptBufferRef.current);
@@ -81,7 +82,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
               );
               transcriptBufferRef.current = ''; // Clear the buffer after processing
             }
-          }, 2000); // Wait 2 seconds before processing
+          }, 500); // Reduced from 2000ms to 500ms
         };
 
         recognitionInstance.onerror = (event: any) => {
