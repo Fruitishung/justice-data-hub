@@ -9,7 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      incident_reports: {
+        Row: {
+          created_at: string | null
+          emergency_response: string | null
+          emergency_units: string | null
+          evidence_description: string | null
+          evidence_location: string | null
+          id: string
+          incident_date: string | null
+          incident_description: string | null
+          location_address: string | null
+          location_details: string | null
+          person_description: string | null
+          person_name: string | null
+          suspect_details: Json | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          victim_details: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          emergency_response?: string | null
+          emergency_units?: string | null
+          evidence_description?: string | null
+          evidence_location?: string | null
+          id?: string
+          incident_date?: string | null
+          incident_description?: string | null
+          location_address?: string | null
+          location_details?: string | null
+          person_description?: string | null
+          person_name?: string | null
+          suspect_details?: Json | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          victim_details?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          emergency_response?: string | null
+          emergency_units?: string | null
+          evidence_description?: string | null
+          evidence_location?: string | null
+          id?: string
+          incident_date?: string | null
+          incident_description?: string | null
+          location_address?: string | null
+          location_details?: string | null
+          person_description?: string | null
+          person_name?: string | null
+          suspect_details?: Json | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          victim_details?: Json | null
+        }
+        Relationships: []
+      }
+      narrative_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          incident_report_id: string | null
+          narrative_text: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          narrative_text?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          narrative_text?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "narrative_reports_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
