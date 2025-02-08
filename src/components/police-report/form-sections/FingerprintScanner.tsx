@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Fingerprint, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>;
@@ -14,6 +16,9 @@ interface FingerprintScannerProps {
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [scanning, setScanning] = useState(false);
   const [currentFinger, setCurrentFinger] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const { toast } = useToast();
+  
   const fingerPositions = [
     'Right Thumb',
     'Right Index',
@@ -27,6 +32,43 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     'Left Little'
   ];
 
+  const analyzeFingerprint = async (scanData: {
+    position: string;
+    scanData: string;
+    quality: number;
+    timestamp: string;
+  }) => {
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-fingerprints', {
+        body: { fingerprint: scanData }
+      });
+
+      if (error) throw error;
+
+      if (data.matches.length > 0) {
+        toast({
+          title: "Fingerprint Analysis Complete",
+          description: `Found ${data.matches.length} potential matches. Top match similarity: ${(data.matches[0].similarity_score * 100).toFixed(1)}%`,
+        });
+      } else {
+        toast({
+          title: "Analysis Complete",
+          description: "No significant matches found in database.",
+        });
+      }
+    } catch (error) {
+      console.error('Fingerprint analysis error:', error);
+      toast({
+        title: "Analysis Error",
+        description: "Failed to analyze fingerprint scan.",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const simulateScan = async (position: string) => {
     setCurrentFinger(position);
     setScanning(true);
@@ -34,7 +76,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     // Simulate scanning process
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Generate mock scan data (in a real implementation, this would come from a hardware device)
+    // Generate mock scan data
     const mockScanData = {
       position,
       scanData: `mock_scan_${Date.now()}`,
@@ -45,6 +87,9 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     // Update form data
     const currentFingerprints = form.getValues('suspectFingerprints') || [];
     form.setValue('suspectFingerprints', [...currentFingerprints, mockScanData]);
+    
+    // Analyze the new scan
+    await analyzeFingerprint(mockScanData);
     
     setScanning(false);
     setCurrentFinger(null);
@@ -95,12 +140,14 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
               ) : (
                 <Button
                   variant="outline"
-                  disabled={scanning}
+                  disabled={scanning || analyzing}
                   onClick={() => simulateScan(position)}
                   className="w-full"
                 >
                   {scanning && currentFinger === position ? (
                     <span>Scanning...</span>
+                  ) : analyzing ? (
+                    <span>Analyzing...</span>
                   ) : (
                     <span>Scan</span>
                   )}
