@@ -44,7 +44,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
   const connectScanner = async () => {
     try {
-      const connected = await scannerUtils.requestDevice();
+      const connected = await scannerUtils.connect();
       setIsConnected(connected);
       
       if (connected) {
