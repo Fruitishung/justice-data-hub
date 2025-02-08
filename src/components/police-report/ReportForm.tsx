@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +12,9 @@ import {
   User, 
   MapPin, 
   AlertCircle,
-  FileText
+  FileText,
+  Users,
+  UserX
 } from "lucide-react";
 
 interface ReportFormData {
@@ -29,6 +30,24 @@ interface ReportFormData {
   evidenceLocation: string;
   emergencyResponse: string;
   emergencyUnits: string;
+
+  victimName: string;
+  victimAge: string;
+  victimGender: string;
+  victimAddress: string;
+  victimPhone: string;
+  victimInjuries: string;
+
+  suspectName: string;
+  suspectAge: string;
+  suspectGender: string;
+  suspectHeight: string;
+  suspectWeight: string;
+  suspectHair: string;
+  suspectEyes: string;
+  suspectClothing: string;
+  suspectIdentifyingMarks: string;
+  suspectDirection: string;
 }
 
 const ReportForm = () => {
@@ -117,6 +136,86 @@ const ReportForm = () => {
               <Input
                 placeholder="Units Involved"
                 {...form.register("emergencyUnits")}
+              />
+            </ReportSection>
+          </TabsContent>
+
+          <TabsContent value="victim" className="mt-6">
+            <ReportSection icon={Users} title="Victim Information">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Full Name"
+                  {...form.register("victimName")}
+                />
+                <Input
+                  placeholder="Age"
+                  type="number"
+                  {...form.register("victimAge")}
+                />
+                <Input
+                  placeholder="Gender"
+                  {...form.register("victimGender")}
+                />
+                <Input
+                  placeholder="Phone Number"
+                  type="tel"
+                  {...form.register("victimPhone")}
+                />
+              </div>
+              <Input
+                placeholder="Address"
+                {...form.register("victimAddress")}
+              />
+              <Textarea
+                placeholder="Injuries/Condition"
+                {...form.register("victimInjuries")}
+              />
+            </ReportSection>
+          </TabsContent>
+
+          <TabsContent value="suspect" className="mt-6">
+            <ReportSection icon={UserX} title="Suspect Information">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Full Name (if known)"
+                  {...form.register("suspectName")}
+                />
+                <Input
+                  placeholder="Approximate Age"
+                  {...form.register("suspectAge")}
+                />
+                <Input
+                  placeholder="Gender"
+                  {...form.register("suspectGender")}
+                />
+                <Input
+                  placeholder="Height"
+                  {...form.register("suspectHeight")}
+                />
+                <Input
+                  placeholder="Weight"
+                  {...form.register("suspectWeight")}
+                />
+                <Input
+                  placeholder="Hair Color"
+                  {...form.register("suspectHair")}
+                />
+                <Input
+                  placeholder="Eye Color"
+                  {...form.register("suspectEyes")}
+                />
+              </div>
+              <Textarea
+                placeholder="Clothing Description"
+                {...form.register("suspectClothing")}
+              />
+              <Textarea
+                placeholder="Identifying Marks (tattoos, scars, etc.)"
+                {...form.register("suspectIdentifyingMarks")}
+              />
+              <Input
+                placeholder="Direction of Travel/Last Seen"
+                {...form.register("suspectDirection")}
               />
             </ReportSection>
           </TabsContent>
