@@ -8,6 +8,9 @@ import CategoryTabs from "./CategoryTabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ReportFormData } from "./types";
+import { createIncidentReport, createNarrativeReport } from "@/services/incidentReport";
+import { createArrestTag } from "@/services/arrestTag";
+import { createAnalysisEntry } from "@/services/dataAnalysis";
 
 import IncidentSection from "./form-sections/IncidentSection";
 import VehicleSection from "./form-sections/VehicleSection";
@@ -40,115 +43,20 @@ const ReportForm = () => {
         throw new Error('Failed to connect to database');
       }
 
-      // Proceed with inserting the report
-      const { data: report, error: reportError } = await supabase
-        .from('incident_reports')
-        .insert([
-          {
-            incident_date: data.incidentDate,
-            incident_description: data.incidentDescription,
-            vehicle_make: data.vehicleMake,
-            vehicle_model: data.vehicleModel,
-            location_address: data.locationAddress,
-            location_details: data.locationDetails,
-            evidence_description: data.evidenceDescription,
-            evidence_location: data.evidenceLocation,
-            evidence_photos: data.evidencePhotos,
-            emergency_response: data.emergencyResponse,
-            emergency_units: data.emergencyUnits,
-            victim_details: {
-              first_name: data.victimFirstName,
-              last_name: data.victimLastName,
-              dob: data.victimDOB,
-              address: data.victimAddress,
-              gender: data.victimGender,
-              height: data.victimHeight,
-              weight: data.victimWeight,
-              hair: data.victimHair,
-              eyes: data.victimEyes,
-              clothing: data.victimClothing,
-              identifying_marks: data.victimIdentifyingMarks,
-              injuries: data.victimInjuries,
-              cell_phone: data.victimCellPhone,
-              home_phone: data.victimHomePhone,
-              work_phone: data.victimWorkPhone
-            },
-            suspect_details: {
-              first_name: data.suspectFirstName,
-              last_name: data.suspectLastName,
-              dob: data.suspectDOB,
-              address: data.suspectAddress,
-              age: data.suspectAge,
-              gender: data.suspectGender,
-              height: data.suspectHeight,
-              weight: data.suspectWeight,
-              hair: data.suspectHair,
-              eyes: data.suspectEyes,
-              clothing: data.suspectClothing,
-              identifying_marks: data.suspectIdentifyingMarks,
-              direction: data.suspectDirection,
-              arrest_history: data.suspectArrestHistory,
-              charges: data.suspectCharges,
-              in_custody: data.suspectInCustody,
-              cell_phone: data.suspectCellPhone,
-              home_phone: data.suspectHomePhone,
-              work_phone: data.suspectWorkPhone,
-              weapon: data.suspectWeapon,
-              strong_hand: data.suspectStrongHand,
-              parole_officer: data.suspectParoleOfficer
-            }
-          }
-        ])
-        .select()
-        .single();
-
-      console.log('Report insertion result:', { report, reportError });
-
-      if (reportError) {
-        console.error('Report insertion error:', reportError);
-        throw reportError;
-      }
+      // Create incident report
+      const report = await createIncidentReport(data);
 
       // Create arrest tag if suspect is in custody
       if (data.suspectInCustody) {
-        const { data: arrestTag, error: arrestTagError } = await supabase
-          .from('arrest_tags')
-          .insert([
-            {
-              incident_report_id: report.id,
-              suspect_name: `${data.suspectFirstName} ${data.suspectLastName}`.trim(),
-              charges: data.suspectCharges,
-              arresting_officer: report.officer_name,
-            }
-          ])
-          .select()
-          .single();
-
-        if (arrestTagError) {
-          console.error('Arrest tag creation error:', arrestTagError);
-          throw arrestTagError;
-        }
-
+        const arrestTag = await createArrestTag(report.id, data, report.officer_name);
+        
         // Create data analysis entry for the arrest
-        const { error: analysisError } = await supabase
-          .from('data_analysis_training')
-          .insert([
-            {
-              incident_report_id: report.id,
-              analysis_type: 'arrest_analysis',
-              training_module: 'suspect_processing',
-              analysis_metrics: {
-                suspect_details: report.suspect_details,
-                arrest_tag: arrestTag,
-                incident_type: report.incident_description
-              }
-            }
-          ]);
-
-        if (analysisError) {
-          console.error('Analysis entry creation error:', analysisError);
-          // Don't throw here as it's not critical to the main flow
-        }
+        await createAnalysisEntry(
+          report.id, 
+          report.suspect_details, 
+          arrestTag, 
+          report.incident_description
+        );
 
         toast({
           title: "Report Submitted",
@@ -159,23 +67,8 @@ const ReportForm = () => {
         return;
       }
 
-      // Create narrative report
-      const { error: narrativeError } = await supabase
-        .from('narrative_reports')
-        .insert([
-          {
-            incident_report_id: report.id,
-            narrative_text: '',
-            status: 'pending'
-          }
-        ]);
-
-      console.log('Narrative creation result:', { narrativeError });
-
-      if (narrativeError) {
-        console.error('Narrative creation error:', narrativeError);
-        throw narrativeError;
-      }
+      // Create narrative report if no arrest
+      await createNarrativeReport(report.id);
 
       toast({
         title: "Report Submitted",
