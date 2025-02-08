@@ -88,6 +88,38 @@ export type Database = {
           },
         ]
       }
+      evidence_photos: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_path: string
+          id: string
+          incident_report_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          incident_report_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          incident_report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_photos_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_reports: {
         Row: {
           case_number: string | null

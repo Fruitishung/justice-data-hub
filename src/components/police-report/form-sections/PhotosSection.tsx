@@ -13,7 +13,7 @@ interface PhotosSectionProps {
 }
 
 const PhotosSection = ({ form }: PhotosSectionProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,7 +22,7 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
     try {
       // Create a preview URL
       const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      setPreviewUrls(prev => [...prev, objectUrl]);
 
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
@@ -60,15 +60,19 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
           className="cursor-pointer"
         />
         
-        {previewUrl && (
+        {previewUrls.length > 0 && (
           <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2">Preview</h4>
-            <div className="w-48 h-48 border rounded-lg overflow-hidden">
-              <img 
-                src={previewUrl} 
-                alt="Evidence preview" 
-                className="w-full h-full object-cover"
-              />
+            <h4 className="text-sm font-medium mb-2">Photo Preview</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {previewUrls.map((url, index) => (
+                <div key={url} className={`w-full aspect-square border rounded-lg overflow-hidden ${index === 0 ? 'col-span-full sm:col-span-1' : ''}`}>
+                  <img 
+                    src={url} 
+                    alt={`Evidence photo ${index + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}
