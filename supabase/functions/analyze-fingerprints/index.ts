@@ -14,8 +14,14 @@ interface FingerprintData {
   timestamp: string;
 }
 
+interface StudentMatch {
+  id: string;
+  name: string;
+  similarity: number;
+  matchedFingerPosition: string;
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -35,16 +41,14 @@ serve(async (req) => {
     const { data: existingScans, error: fetchError } = await supabaseClient
       .from('fingerprint_scans')
       .select('*')
-      .neq('finger_position', position) // Don't compare with same finger position
+      .neq('finger_position', position)
     
     if (fetchError) {
       throw new Error(`Error fetching fingerprints: ${fetchError.message}`)
     }
 
     // Simple minutiae analysis simulation
-    // In a real implementation, this would use proper fingerprint matching algorithms
     const matches = existingScans.map(scan => {
-      // Convert scan data to feature points (simplified simulation)
       const similarity = compareFingerprints(scanData, scan.scan_data)
       return {
         scan_id: scan.id,
@@ -55,14 +59,34 @@ serve(async (req) => {
     })
 
     // Filter for high confidence matches
-    const significantMatches = matches.filter(m => m.similarity_score > 0.7)
-    
-    // Sort by similarity score
-    significantMatches.sort((a, b) => b.similarity_score - a.similarity_score)
+    const significantMatches = matches
+      .filter(m => m.similarity_score > 0.7)
+      .sort((a, b) => b.similarity_score - a.similarity_score)
+      .slice(0, 5) // Get top 5 matches
+
+    // Get student information for matches
+    const matchDetails = await Promise.all(
+      significantMatches.map(async (match) => {
+        const { data: report } = await supabaseClient
+          .from('incident_reports')
+          .select('suspect_details')
+          .eq('id', match.incident_report_id)
+          .single()
+
+        return {
+          id: match.incident_report_id,
+          name: report?.suspect_details?.first_name 
+            ? `${report.suspect_details.first_name} ${report.suspect_details.last_name}`
+            : 'Unknown',
+          similarity: match.similarity_score,
+          matchedFingerPosition: match.matched_position
+        }
+      })
+    )
 
     return new Response(
       JSON.stringify({
-        matches: significantMatches.slice(0, 5), // Return top 5 matches
+        matches: matchDetails,
         analyzed_at: new Date().toISOString(),
         total_comparisons: matches.length
       }),
@@ -89,20 +113,14 @@ serve(async (req) => {
 })
 
 // Simulated fingerprint comparison function
-// In a real implementation, this would use proper biometric algorithms
 function compareFingerprints(scan1: string, scan2: string): number {
-  // This is a simplified simulation of fingerprint comparison
-  // Real implementation would use minutiae matching algorithms
   const features1 = extractFeatures(scan1)
   const features2 = extractFeatures(scan2)
   
-  // Compare feature sets and calculate similarity score
   const commonFeatures = features1.filter(f => features2.includes(f))
   return commonFeatures.length / Math.max(features1.length, features2.length)
 }
 
 function extractFeatures(scanData: string): string[] {
-  // Simulate feature extraction from scan data
-  // Real implementation would extract actual minutiae points
   return scanData.split('').filter((_, i) => i % 3 === 0)
 }

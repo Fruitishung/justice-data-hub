@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Fingerprint, X } from "lucide-react";
+import { Fingerprint, X, UserCheck } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,10 +13,18 @@ interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>;
 }
 
+interface MatchResult {
+  id: string;
+  name: string;
+  similarity: number;
+  matchedFingerPosition: string;
+}
+
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [scanning, setScanning] = useState(false);
   const [currentFinger, setCurrentFinger] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [matches, setMatches] = useState<MatchResult[]>([]);
   const { toast } = useToast();
   
   const fingerPositions = [
@@ -46,10 +54,12 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
       if (error) throw error;
 
+      setMatches(data.matches);
+
       if (data.matches.length > 0) {
         toast({
-          title: "Fingerprint Analysis Complete",
-          description: `Found ${data.matches.length} potential matches. Top match similarity: ${(data.matches[0].similarity_score * 100).toFixed(1)}%`,
+          title: "Match Found!",
+          description: `Found ${data.matches.length} potential matches with other records.`,
         });
       } else {
         toast({
@@ -101,6 +111,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
       'suspectFingerprints',
       currentFingerprints.filter(scan => scan.position !== position)
     );
+    setMatches([]);
   };
 
   const getScannedData = (position: string) => {
@@ -111,6 +122,28 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   return (
     <div className="space-y-4">
       <Label>Fingerprint Scans</Label>
+      
+      {matches.length > 0 && (
+        <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            <UserCheck className="text-yellow-600" />
+            Potential Matches Found
+          </h3>
+          <div className="space-y-2">
+            {matches.map((match, index) => (
+              <div key={match.id} className="flex items-center justify-between bg-white p-2 rounded">
+                <div>
+                  <span className="font-medium">{match.name}</span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    ({(match.similarity * 100).toFixed(1)}% match on {match.matchedFingerPosition})
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {fingerPositions.map((position) => {
           const scanData = getScannedData(position);
