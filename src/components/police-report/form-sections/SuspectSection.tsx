@@ -68,6 +68,14 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
           placeholder="Eye Color"
           {...form.register("suspectEyes")}
         />
+        <Input
+          placeholder="Weapon Used/Type"
+          {...form.register("suspectWeapon")}
+        />
+        <Input
+          placeholder="Strong/Dominant Hand"
+          {...form.register("suspectStrongHand")}
+        />
       </div>
       
       <div className="space-y-4 mt-4">
@@ -90,6 +98,10 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
         <Input
           placeholder="Direction of Travel/Last Seen"
           {...form.register("suspectDirection")}
+        />
+        <Input
+          placeholder="Parole/Probation Officer"
+          {...form.register("suspectParoleOfficer")}
         />
         
         <div className="flex items-center space-x-2">

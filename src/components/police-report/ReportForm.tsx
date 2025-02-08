@@ -93,7 +93,10 @@ const ReportForm = () => {
               in_custody: data.suspectInCustody,
               cell_phone: data.suspectCellPhone,
               home_phone: data.suspectHomePhone,
-              work_phone: data.suspectWorkPhone
+              work_phone: data.suspectWorkPhone,
+              weapon: data.suspectWeapon,
+              strong_hand: data.suspectStrongHand,
+              parole_officer: data.suspectParoleOfficer
             }
           }
         ])

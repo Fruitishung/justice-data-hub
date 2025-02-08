@@ -1,4 +1,3 @@
-
 export interface ReportFormData {
   incidentDate: string;
   incidentDescription: string;
@@ -57,4 +56,7 @@ export interface ReportFormData {
   suspectCellPhone: string;
   suspectHomePhone: string;
   suspectWorkPhone: string;
+  suspectWeapon: string;
+  suspectStrongHand: string;
+  suspectParoleOfficer: string;
 }
