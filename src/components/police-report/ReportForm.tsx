@@ -17,6 +17,7 @@ import EmergencySection from "./form-sections/EmergencySection";
 import VictimSection from "./form-sections/VictimSection";
 import SuspectSection from "./form-sections/SuspectSection";
 import PhotosSection from "./form-sections/PhotosSection";
+import DictationSection from "./form-sections/DictationSection";
 
 const ReportForm = () => {
   const form = useForm<ReportFormData>();
@@ -177,6 +178,10 @@ const ReportForm = () => {
 
           <TabsContent value="photos" className="mt-6">
             <PhotosSection form={form} />
+          </TabsContent>
+
+          <TabsContent value="dictation" className="mt-6">
+            <DictationSection form={form} />
           </TabsContent>
         </CategoryTabs>
 
