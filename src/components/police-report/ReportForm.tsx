@@ -4,8 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { TabsContent } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import CategoryTabs from "./CategoryTabs";
 import ReportSection from "./ReportSection";
+import { supabase } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 import { 
   Clipboard, 
   Car, 
@@ -14,7 +17,8 @@ import {
   AlertCircle,
   FileText,
   Users,
-  UserX
+  UserX,
+  Link
 } from "lucide-react";
 
 interface ReportFormData {
@@ -52,9 +56,51 @@ interface ReportFormData {
 
 const ReportForm = () => {
   const form = useForm<ReportFormData>();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const onSubmit = (data: ReportFormData) => {
-    console.log('Form submitted:', data);
+  const onSubmit = async (data: ReportFormData) => {
+    try {
+      const { data: report, error: reportError } = await supabase
+        .from('incident_reports')
+        .insert([
+          {
+            incident_date: data.incidentDate,
+            incident_description: data.incidentDescription,
+            // ... other fields from form data
+          }
+        ])
+        .select()
+        .single();
+
+      if (reportError) throw reportError;
+
+      const { error: narrativeError } = await supabase
+        .from('narrative_reports')
+        .insert([
+          {
+            incident_report_id: report.id,
+            narrative_text: '',
+            status: 'pending'
+          }
+        ]);
+
+      if (narrativeError) throw narrativeError;
+
+      toast({
+        title: "Report Submitted",
+        description: "A new narrative report has been created and linked to this incident.",
+      });
+
+      navigate(`/narrative/${report.id}`);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -68,10 +114,16 @@ const ReportForm = () => {
                 placeholder="Incident Date & Time"
                 {...form.register("incidentDate")}
               />
-              <Textarea
-                placeholder="Incident Description"
-                {...form.register("incidentDescription")}
-              />
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Incident Description"
+                  {...form.register("incidentDescription")}
+                />
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Link className="h-4 w-4" />
+                  A detailed narrative report will be linked after submission
+                </p>
+              </div>
             </ReportSection>
           </TabsContent>
 
