@@ -10,6 +10,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -21,6 +22,8 @@ serve(async (req) => {
       throw new Error('No text provided');
     }
 
+    console.log('Sending request to OpenAI with text:', text);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,7 +31,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo', // Changed to a valid model
         messages: [
           {
             role: 'system',
@@ -39,23 +42,47 @@ serve(async (req) => {
       }),
     });
 
+    const responseData = await response.json();
+    
+    // Log the OpenAI response for debugging
+    console.log('OpenAI API response:', JSON.stringify(responseData));
+
     if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to correct text');
+      console.error('OpenAI API error:', responseData);
+      throw new Error(responseData.error?.message || 'Failed to correct text');
     }
 
-    const data = await response.json();
-    const correctedText = data.choices[0].message.content;
+    if (!responseData.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from OpenAI');
+    }
 
-    return new Response(JSON.stringify({ correctedText }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    const correctedText = responseData.choices[0].message.content;
+
+    return new Response(
+      JSON.stringify({ correctedText }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
+
   } catch (error) {
     console.error('Error in correct-text function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'Failed to correct text',
+        details: error.toString()
+      }),
+      { 
+        status: 500,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }
+      }
+    );
   }
 });
