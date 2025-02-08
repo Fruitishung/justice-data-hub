@@ -57,13 +57,22 @@ const ReportForm = () => {
             evidence_location: data.evidenceLocation,
             emergency_response: data.emergencyResponse,
             emergency_units: data.emergencyUnits,
-            victim_name: data.victimName,
             victim_details: {
-              age: data.victimAge,
-              gender: data.victimGender,
+              first_name: data.victimFirstName,
+              last_name: data.victimLastName,
+              dob: data.victimDOB,
               address: data.victimAddress,
-              phone: data.victimPhone,
-              injuries: data.victimInjuries
+              gender: data.victimGender,
+              height: data.victimHeight,
+              weight: data.victimWeight,
+              hair: data.victimHair,
+              eyes: data.victimEyes,
+              clothing: data.victimClothing,
+              identifying_marks: data.victimIdentifyingMarks,
+              injuries: data.victimInjuries,
+              cell_phone: data.victimCellPhone,
+              home_phone: data.victimHomePhone,
+              work_phone: data.victimWorkPhone
             },
             suspect_details: {
               first_name: data.suspectFirstName,

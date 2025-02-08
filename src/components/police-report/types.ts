@@ -18,6 +18,18 @@ export interface ReportFormData {
   victimAddress: string;
   victimPhone: string;
   victimInjuries: string;
+  victimFirstName: string;
+  victimLastName: string;
+  victimDOB: string;
+  victimHeight: string;
+  victimWeight: string;
+  victimHair: string;
+  victimEyes: string;
+  victimClothing: string;
+  victimIdentifyingMarks: string;
+  victimCellPhone: string;
+  victimHomePhone: string;
+  victimWorkPhone: string;
   suspectFirstName: string;
   suspectLastName: string;
   suspectDOB: string;
