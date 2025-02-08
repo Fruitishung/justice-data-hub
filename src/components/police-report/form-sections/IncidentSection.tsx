@@ -1,163 +1,24 @@
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Link, Mic, MicOff } from "lucide-react"
+import { Link } from "lucide-react"
 import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { supabase } from "@/lib/supabase"
+import { useSpeechRecognition } from "./dictation/useSpeechRecognition"
+import { useAudioVisualization } from "./dictation/useAudioVisualization"
+import { RecordButton } from "./dictation/RecordButton"
+import { AudioVisualizer } from "./dictation/AudioVisualizer"
 
 interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
 }
 
 const IncidentSection = ({ form }: IncidentSectionProps) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognition, setRecognition] = useState<any>(null);
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const animationFrameRef = useRef<number>();
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const transcriptBufferRef = useRef<string>('');
-  const processingTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
-
-  const correctText = async (text: string) => {
-    try {
-      setIsProcessing(true);
-      const { data, error } = await supabase.functions.invoke('correct-text', {
-        body: { text },
-      });
-
-      if (error) throw error;
-      return data.correctedText;
-    } catch (error) {
-      console.error('Error correcting text:', error);
-      toast({
-        title: "Error",
-        description: "Failed to correct text. Using original transcription.",
-        variant: "destructive",
-      });
-      return text;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
-      if (SpeechRecognition) {
-        const recognitionInstance = new SpeechRecognition();
-        recognitionInstance.continuous = true;
-        recognitionInstance.interimResults = true;
-        recognitionInstance.lang = 'en-US';
-        
-        // Increased frequency of recognition updates
-        recognitionInstance.interimResults = true;
-        
-        recognitionInstance.onresult = async (event: any) => {
-          const transcript = Array.from(event.results)
-            .map((result: any) => result[0].transcript)
-            .join(' ');
-          
-          const currentDescription = form.getValues('incidentDescription') || '';
-          transcriptBufferRef.current += ' ' + transcript;
-
-          // Clear any existing timeout
-          if (processingTimeoutRef.current) {
-            clearTimeout(processingTimeoutRef.current);
-          }
-
-          // Reduced timeout to 500ms for faster processing
-          processingTimeoutRef.current = setTimeout(async () => {
-            if (transcriptBufferRef.current) {
-              const correctedText = await correctText(transcriptBufferRef.current);
-              form.setValue('incidentDescription', 
-                ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
-              );
-              transcriptBufferRef.current = ''; // Clear the buffer after processing
-            }
-          }, 500); // Reduced from 2000ms to 500ms
-        };
-
-        recognitionInstance.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
-          toast({
-            title: "Error",
-            description: "There was an error with the speech recognition. Please try again.",
-            variant: "destructive",
-          });
-          setIsRecording(false);
-          stopVisualization();
-        };
-
-        recognitionInstance.onend = () => {
-          if (isRecording) {
-            recognitionInstance.start(); // Restart if still recording
-          }
-        };
-
-        setRecognition(recognitionInstance);
-      } else {
-        toast({
-          title: "Not Supported",
-          description: "Speech recognition is not supported in your browser.",
-          variant: "destructive",
-        });
-      }
-    }
-
-    return () => {
-      if (recognition) {
-        recognition.stop();
-      }
-      if (processingTimeoutRef.current) {
-        clearTimeout(processingTimeoutRef.current);
-      }
-      stopVisualization();
-    };
-  }, [form, toast, isRecording]);
-
-  const startVisualization = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      source.connect(analyser);
-      analyserRef.current = analyser;
-
-      const updateVisualization = () => {
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(dataArray);
-        
-        const average = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-        setAudioLevel(Math.min(average / 128, 1));
-        
-        animationFrameRef.current = requestAnimationFrame(updateVisualization);
-      };
-
-      updateVisualization();
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-    }
-  };
-
-  const stopVisualization = () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    if (analyserRef.current) {
-      analyserRef.current.disconnect();
-    }
-    setAudioLevel(0);
-  };
+  const { recognition, isRecording, setIsRecording, isProcessing } = useSpeechRecognition(form);
+  const { audioLevel, startVisualization, stopVisualization } = useAudioVisualization();
 
   const toggleRecording = async () => {
     if (!recognition) {
@@ -172,21 +33,11 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     if (isRecording) {
       recognition.stop();
       stopVisualization();
-      // Process any remaining buffered text
-      if (transcriptBufferRef.current) {
-        const correctedText = await correctText(transcriptBufferRef.current);
-        const currentDescription = form.getValues('incidentDescription') || '';
-        form.setValue('incidentDescription', 
-          ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
-        );
-        transcriptBufferRef.current = '';
-      }
       toast({
         title: "Recording Stopped",
         description: "Voice dictation has been stopped.",
       });
     } else {
-      transcriptBufferRef.current = ''; // Clear buffer when starting new recording
       await startVisualization();
       recognition.start();
       toast({
@@ -220,30 +71,8 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
             )}
           </div>
           <div className="flex flex-col items-center gap-2">
-            <Button
-              type="button"
-              variant={isRecording ? "destructive" : "secondary"}
-              size="icon"
-              className="mt-1"
-              onClick={toggleRecording}
-            >
-              {isRecording ? (
-                <MicOff className="h-4 w-4" />
-              ) : (
-                <Mic className="h-4 w-4" />
-              )}
-            </Button>
-            {isRecording && (
-              <div className="w-1 h-20 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="w-full bg-[#0EA5E9] transition-all duration-100 rounded-full"
-                  style={{
-                    height: `${audioLevel * 100}%`,
-                    opacity: 0.8 + (audioLevel * 0.2),
-                  }}
-                />
-              </div>
-            )}
+            <RecordButton isRecording={isRecording} onClick={toggleRecording} />
+            {isRecording && <AudioVisualizer audioLevel={audioLevel} />}
           </div>
         </div>
         <p className="text-sm text-muted-foreground flex items-center gap-2">
