@@ -7,6 +7,7 @@ import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
 import { Label } from "@/components/ui/label"
+import FingerprintScanner from "./FingerprintScanner"
 
 interface SuspectSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -110,6 +111,10 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
             {...form.register("suspectInCustody")}
           />
           <Label htmlFor="inCustody">Currently In Custody</Label>
+        </div>
+
+        <div className="mt-6">
+          <FingerprintScanner form={form} />
         </div>
       </div>
     </ReportSection>

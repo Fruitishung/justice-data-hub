@@ -59,4 +59,10 @@ export interface ReportFormData {
   suspectWeapon: string;
   suspectStrongHand: string;
   suspectParoleOfficer: string;
+  suspectFingerprints?: {
+    position: string;
+    scanData: string;
+    quality: number;
+    timestamp: string;
+  }[];
 }

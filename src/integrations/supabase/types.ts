@@ -167,6 +167,44 @@ export type Database = {
           },
         ]
       }
+      fingerprint_scans: {
+        Row: {
+          created_at: string | null
+          finger_position: string
+          id: string
+          incident_report_id: string | null
+          scan_data: string
+          scan_date: string | null
+          scan_quality: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          finger_position: string
+          id?: string
+          incident_report_id?: string | null
+          scan_data: string
+          scan_date?: string | null
+          scan_quality?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          finger_position?: string
+          id?: string
+          incident_report_id?: string | null
+          scan_data?: string
+          scan_date?: string | null
+          scan_quality?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fingerprint_scans_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_reports: {
         Row: {
           case_number: string | null

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReportFormData } from "@/components/police-report/types";
 
 export const createIncidentReport = async (data: ReportFormData) => {
+  // Create the incident report
   const { data: report, error: reportError } = await supabase
     .from('incident_reports')
     .insert([
@@ -57,7 +58,8 @@ export const createIncidentReport = async (data: ReportFormData) => {
           work_phone: data.suspectWorkPhone,
           weapon: data.suspectWeapon,
           strong_hand: data.suspectStrongHand,
-          parole_officer: data.suspectParoleOfficer
+          parole_officer: data.suspectParoleOfficer,
+          fingerprints: data.suspectFingerprints || []
         }
       }
     ])
@@ -67,6 +69,26 @@ export const createIncidentReport = async (data: ReportFormData) => {
   if (reportError) {
     console.error('Report insertion error:', reportError);
     throw reportError;
+  }
+
+  // Insert fingerprint scans if they exist
+  if (data.suspectFingerprints?.length) {
+    const { error: fingerprintError } = await supabase
+      .from('fingerprint_scans')
+      .insert(
+        data.suspectFingerprints.map(scan => ({
+          incident_report_id: report.id,
+          scan_data: scan.scanData,
+          finger_position: scan.position,
+          scan_quality: scan.quality,
+          scan_date: scan.timestamp
+        }))
+      );
+
+    if (fingerprintError) {
+      console.error('Fingerprint scan insertion error:', fingerprintError);
+      throw fingerprintError;
+    }
   }
 
   return report;
