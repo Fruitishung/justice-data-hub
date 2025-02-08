@@ -19,6 +19,7 @@ export interface ReportFormData {
   locationDetails: string;
   evidenceDescription: string;
   evidenceLocation: string;
+  evidencePhotos: { path: string; uploaded_at: string; }[];
   emergencyResponse: string;
   emergencyUnits: string;
   victimFirstName: string;

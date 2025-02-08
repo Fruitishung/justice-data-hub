@@ -16,6 +16,7 @@ import EvidenceSection from "./form-sections/EvidenceSection";
 import EmergencySection from "./form-sections/EmergencySection";
 import VictimSection from "./form-sections/VictimSection";
 import SuspectSection from "./form-sections/SuspectSection";
+import PhotosSection from "./form-sections/PhotosSection";
 
 const ReportForm = () => {
   const form = useForm<ReportFormData>();
@@ -52,6 +53,7 @@ const ReportForm = () => {
             location_details: data.locationDetails,
             evidence_description: data.evidenceDescription,
             evidence_location: data.evidenceLocation,
+            evidence_photos: data.evidencePhotos,
             emergency_response: data.emergencyResponse,
             emergency_units: data.emergencyUnits,
             victim_details: {
@@ -171,6 +173,10 @@ const ReportForm = () => {
 
           <TabsContent value="suspect" className="mt-6">
             <SuspectSection form={form} />
+          </TabsContent>
+
+          <TabsContent value="photos" className="mt-6">
+            <PhotosSection form={form} />
           </TabsContent>
         </CategoryTabs>
 

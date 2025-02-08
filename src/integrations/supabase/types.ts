@@ -96,6 +96,7 @@ export type Database = {
           emergency_units: string | null
           evidence_description: string | null
           evidence_location: string | null
+          evidence_photos: Json | null
           id: string
           incident_date: string | null
           incident_description: string | null
@@ -130,6 +131,7 @@ export type Database = {
           emergency_units?: string | null
           evidence_description?: string | null
           evidence_location?: string | null
+          evidence_photos?: Json | null
           id?: string
           incident_date?: string | null
           incident_description?: string | null
@@ -164,6 +166,7 @@ export type Database = {
           emergency_units?: string | null
           evidence_description?: string | null
           evidence_location?: string | null
+          evidence_photos?: Json | null
           id?: string
           incident_date?: string | null
           incident_description?: string | null
