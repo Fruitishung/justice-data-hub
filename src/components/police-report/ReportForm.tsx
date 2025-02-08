@@ -66,7 +66,10 @@ const ReportForm = () => {
               injuries: data.victimInjuries
             },
             suspect_details: {
-              name: data.suspectName,
+              first_name: data.suspectFirstName,
+              last_name: data.suspectLastName,
+              dob: data.suspectDOB,
+              address: data.suspectAddress,
               age: data.suspectAge,
               gender: data.suspectGender,
               height: data.suspectHeight,
@@ -75,7 +78,10 @@ const ReportForm = () => {
               eyes: data.suspectEyes,
               clothing: data.suspectClothing,
               identifying_marks: data.suspectIdentifyingMarks,
-              direction: data.suspectDirection
+              direction: data.suspectDirection,
+              arrest_history: data.suspectArrestHistory,
+              charges: data.suspectCharges,
+              in_custody: data.suspectInCustody
             }
           }
         ])
@@ -174,3 +180,4 @@ const ReportForm = () => {
 };
 
 export default ReportForm;
+

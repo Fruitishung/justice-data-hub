@@ -1,10 +1,12 @@
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { UserX } from "lucide-react"
 import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
+import { Label } from "@/components/ui/label"
 
 interface SuspectSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -15,12 +17,21 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
     <ReportSection icon={UserX} title="Suspect Information">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          placeholder="Full Name (if known)"
-          {...form.register("suspectName")}
+          placeholder="First Name"
+          {...form.register("suspectFirstName")}
         />
         <Input
-          placeholder="Approximate Age"
-          {...form.register("suspectAge")}
+          placeholder="Last Name"
+          {...form.register("suspectLastName")}
+        />
+        <Input
+          type="date"
+          placeholder="Date of Birth"
+          {...form.register("suspectDOB")}
+        />
+        <Input
+          placeholder="Address"
+          {...form.register("suspectAddress")}
         />
         <Input
           placeholder="Gender"
@@ -43,20 +54,40 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
           {...form.register("suspectEyes")}
         />
       </div>
-      <Textarea
-        placeholder="Clothing Description"
-        {...form.register("suspectClothing")}
-      />
-      <Textarea
-        placeholder="Identifying Marks (tattoos, scars, etc.)"
-        {...form.register("suspectIdentifyingMarks")}
-      />
-      <Input
-        placeholder="Direction of Travel/Last Seen"
-        {...form.register("suspectDirection")}
-      />
+      
+      <div className="space-y-4 mt-4">
+        <Textarea
+          placeholder="Clothing Description"
+          {...form.register("suspectClothing")}
+        />
+        <Textarea
+          placeholder="Identifying Marks (tattoos, scars, etc.)"
+          {...form.register("suspectIdentifyingMarks")}
+        />
+        <Textarea
+          placeholder="Previous Arrest History"
+          {...form.register("suspectArrestHistory")}
+        />
+        <Textarea
+          placeholder="Current Charges"
+          {...form.register("suspectCharges")}
+        />
+        <Input
+          placeholder="Direction of Travel/Last Seen"
+          {...form.register("suspectDirection")}
+        />
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="inCustody"
+            {...form.register("suspectInCustody")}
+          />
+          <Label htmlFor="inCustody">Currently In Custody</Label>
+        </div>
+      </div>
     </ReportSection>
   )
 }
 
 export default SuspectSection
+
