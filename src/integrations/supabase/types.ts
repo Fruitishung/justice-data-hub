@@ -441,6 +441,102 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_records: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          insurance_status: string | null
+          last_updated: string | null
+          make: string | null
+          model: string | null
+          owner_address: string | null
+          owner_name: string | null
+          plate_number: string | null
+          registration_status: string | null
+          state: string | null
+          stolen_status: boolean | null
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_status?: string | null
+          last_updated?: string | null
+          make?: string | null
+          model?: string | null
+          owner_address?: string | null
+          owner_name?: string | null
+          plate_number?: string | null
+          registration_status?: string | null
+          state?: string | null
+          stolen_status?: boolean | null
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_status?: string | null
+          last_updated?: string | null
+          make?: string | null
+          model?: string | null
+          owner_address?: string | null
+          owner_name?: string | null
+          plate_number?: string | null
+          registration_status?: string | null
+          state?: string | null
+          stolen_status?: boolean | null
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      warrants: {
+        Row: {
+          created_at: string | null
+          date_issued: string | null
+          details: Json | null
+          expiration_date: string | null
+          id: string
+          issuing_agency: string
+          status: Database["public"]["Enums"]["warrant_status"] | null
+          subject_name: string
+          updated_at: string | null
+          warrant_number: string
+          warrant_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_issued?: string | null
+          details?: Json | null
+          expiration_date?: string | null
+          id?: string
+          issuing_agency: string
+          status?: Database["public"]["Enums"]["warrant_status"] | null
+          subject_name: string
+          updated_at?: string | null
+          warrant_number: string
+          warrant_type: string
+        }
+        Update: {
+          created_at?: string | null
+          date_issued?: string | null
+          details?: Json | null
+          expiration_date?: string | null
+          id?: string
+          issuing_agency?: string
+          status?: Database["public"]["Enums"]["warrant_status"] | null
+          subject_name?: string
+          updated_at?: string | null
+          warrant_number?: string
+          warrant_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       report_analytics: {
@@ -517,9 +613,52 @@ export type Database = {
           avg_completion_time_hours: number
         }[]
       }
+      search_vehicles: {
+        Args: {
+          search_term: string
+          include_stolen_only?: boolean
+        }
+        Returns: {
+          color: string | null
+          created_at: string | null
+          id: string
+          insurance_status: string | null
+          last_updated: string | null
+          make: string | null
+          model: string | null
+          owner_address: string | null
+          owner_name: string | null
+          plate_number: string | null
+          registration_status: string | null
+          state: string | null
+          stolen_status: boolean | null
+          vin: string | null
+          year: number | null
+        }[]
+      }
+      search_warrants: {
+        Args: {
+          search_term: string
+          warrant_status?: Database["public"]["Enums"]["warrant_status"]
+        }
+        Returns: {
+          created_at: string | null
+          date_issued: string | null
+          details: Json | null
+          expiration_date: string | null
+          id: string
+          issuing_agency: string
+          status: Database["public"]["Enums"]["warrant_status"] | null
+          subject_name: string
+          updated_at: string | null
+          warrant_number: string
+          warrant_type: string
+        }[]
+      }
     }
     Enums: {
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
+      warrant_status: "active" | "cleared" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
