@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       incident_reports: {
         Row: {
+          case_number: string | null
           created_at: string | null
           emergency_response: string | null
           emergency_units: string | null
@@ -21,6 +22,9 @@ export type Database = {
           incident_description: string | null
           location_address: string | null
           location_details: string | null
+          officer_badge_number: string | null
+          officer_name: string | null
+          officer_rank: string | null
           person_description: string | null
           person_name: string | null
           report_category: string | null
@@ -41,6 +45,7 @@ export type Database = {
           victim_details: Json | null
         }
         Insert: {
+          case_number?: string | null
           created_at?: string | null
           emergency_response?: string | null
           emergency_units?: string | null
@@ -51,6 +56,9 @@ export type Database = {
           incident_description?: string | null
           location_address?: string | null
           location_details?: string | null
+          officer_badge_number?: string | null
+          officer_name?: string | null
+          officer_rank?: string | null
           person_description?: string | null
           person_name?: string | null
           report_category?: string | null
@@ -71,6 +79,7 @@ export type Database = {
           victim_details?: Json | null
         }
         Update: {
+          case_number?: string | null
           created_at?: string | null
           emergency_response?: string | null
           emergency_units?: string | null
@@ -81,6 +90,9 @@ export type Database = {
           incident_description?: string | null
           location_address?: string | null
           location_details?: string | null
+          officer_badge_number?: string | null
+          officer_name?: string | null
+          officer_rank?: string | null
           person_description?: string | null
           person_name?: string | null
           report_category?: string | null
