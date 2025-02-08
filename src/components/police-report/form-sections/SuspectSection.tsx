@@ -34,6 +34,21 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
           {...form.register("suspectAddress")}
         />
         <Input
+          placeholder="Cell Phone"
+          type="tel"
+          {...form.register("suspectCellPhone")}
+        />
+        <Input
+          placeholder="Home Phone"
+          type="tel"
+          {...form.register("suspectHomePhone")}
+        />
+        <Input
+          placeholder="Work Phone"
+          type="tel"
+          {...form.register("suspectWorkPhone")}
+        />
+        <Input
           placeholder="Gender"
           {...form.register("suspectGender")}
         />
@@ -90,4 +105,3 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
 }
 
 export default SuspectSection
-

@@ -81,7 +81,10 @@ const ReportForm = () => {
               direction: data.suspectDirection,
               arrest_history: data.suspectArrestHistory,
               charges: data.suspectCharges,
-              in_custody: data.suspectInCustody
+              in_custody: data.suspectInCustody,
+              cell_phone: data.suspectCellPhone,
+              home_phone: data.suspectHomePhone,
+              work_phone: data.suspectWorkPhone
             }
           }
         ])
@@ -180,4 +183,3 @@ const ReportForm = () => {
 };
 
 export default ReportForm;
-
