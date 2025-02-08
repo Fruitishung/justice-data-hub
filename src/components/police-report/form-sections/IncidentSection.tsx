@@ -21,6 +21,8 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const animationFrameRef = useRef<number>();
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const transcriptBufferRef = useRef<string>('');
+  const processingTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
 
   const correctText = async (text: string) => {
@@ -53,6 +55,9 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
         const recognitionInstance = new SpeechRecognition();
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
+        recognitionInstance.lang = 'en-US';
+        // Reduced the rate of recognition updates
+        recognitionInstance.interimResults = false;
         
         recognitionInstance.onresult = async (event: any) => {
           const transcript = Array.from(event.results)
@@ -60,15 +65,23 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
             .join(' ');
           
           const currentDescription = form.getValues('incidentDescription') || '';
-          
-          // Only send for correction if it's a final result
-          if (event.results[event.results.length - 1].isFinal) {
-            const correctedText = await correctText(transcript);
-            form.setValue('incidentDescription', (currentDescription + ' ' + correctedText).trim());
-          } else {
-            // Show interim results immediately
-            form.setValue('incidentDescription', (currentDescription + ' ' + transcript).trim());
+          transcriptBufferRef.current += ' ' + transcript;
+
+          // Clear any existing timeout
+          if (processingTimeoutRef.current) {
+            clearTimeout(processingTimeoutRef.current);
           }
+
+          // Set a new timeout to process the buffered text
+          processingTimeoutRef.current = setTimeout(async () => {
+            if (transcriptBufferRef.current) {
+              const correctedText = await correctText(transcriptBufferRef.current);
+              form.setValue('incidentDescription', 
+                ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
+              );
+              transcriptBufferRef.current = ''; // Clear the buffer after processing
+            }
+          }, 2000); // Wait 2 seconds before processing
         };
 
         recognitionInstance.onerror = (event: any) => {
@@ -80,6 +93,12 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
           });
           setIsRecording(false);
           stopVisualization();
+        };
+
+        recognitionInstance.onend = () => {
+          if (isRecording) {
+            recognitionInstance.start(); // Restart if still recording
+          }
         };
 
         setRecognition(recognitionInstance);
@@ -96,9 +115,12 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
       if (recognition) {
         recognition.stop();
       }
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+      }
       stopVisualization();
     };
-  }, [form, toast]);
+  }, [form, toast, isRecording]);
 
   const startVisualization = async () => {
     try {
@@ -149,11 +171,21 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     if (isRecording) {
       recognition.stop();
       stopVisualization();
+      // Process any remaining buffered text
+      if (transcriptBufferRef.current) {
+        const correctedText = await correctText(transcriptBufferRef.current);
+        const currentDescription = form.getValues('incidentDescription') || '';
+        form.setValue('incidentDescription', 
+          ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
+        );
+        transcriptBufferRef.current = '';
+      }
       toast({
         title: "Recording Stopped",
         description: "Voice dictation has been stopped.",
       });
     } else {
+      transcriptBufferRef.current = ''; // Clear buffer when starting new recording
       await startVisualization();
       recognition.start();
       toast({
