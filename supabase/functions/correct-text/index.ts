@@ -17,6 +17,10 @@ serve(async (req) => {
   try {
     const { text } = await req.json();
 
+    if (!text) {
+      throw new Error('No text provided');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -34,6 +38,12 @@ serve(async (req) => {
         ],
       }),
     });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to correct text');
+    }
 
     const data = await response.json();
     const correctedText = data.choices[0].message.content;
