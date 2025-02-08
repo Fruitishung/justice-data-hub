@@ -5,7 +5,7 @@ import { Link, Mic, MicOff } from "lucide-react"
 import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -16,6 +16,9 @@ interface IncidentSectionProps {
 const IncidentSection = ({ form }: IncidentSectionProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const animationFrameRef = useRef<number>();
+  const analyserRef = useRef<AnalyserNode | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,6 +48,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
             variant: "destructive",
           });
           setIsRecording(false);
+          stopVisualization();
         };
 
         setRecognition(recognitionInstance);
@@ -61,10 +65,48 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
       if (recognition) {
         recognition.stop();
       }
+      stopVisualization();
     };
   }, [form, toast]);
 
-  const toggleRecording = () => {
+  const startVisualization = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
+      const updateVisualization = () => {
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average frequency
+        const average = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
+        setAudioLevel(Math.min(average / 128, 1)); // Normalize to 0-1
+        
+        animationFrameRef.current = requestAnimationFrame(updateVisualization);
+      };
+
+      updateVisualization();
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  };
+
+  const stopVisualization = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    if (analyserRef.current) {
+      analyserRef.current.disconnect();
+    }
+    setAudioLevel(0);
+  };
+
+  const toggleRecording = async () => {
     if (!recognition) {
       toast({
         title: "Not Available",
@@ -76,11 +118,13 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
 
     if (isRecording) {
       recognition.stop();
+      stopVisualization();
       toast({
         title: "Recording Stopped",
         description: "Voice dictation has been stopped.",
       });
     } else {
+      await startVisualization();
       recognition.start();
       toast({
         title: "Recording Started",
@@ -105,19 +149,32 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
             className="flex-1"
             {...form.register("incidentDescription")}
           />
-          <Button
-            type="button"
-            variant={isRecording ? "destructive" : "secondary"}
-            size="icon"
-            className="mt-1"
-            onClick={toggleRecording}
-          >
-            {isRecording ? (
-              <MicOff className="h-4 w-4" />
-            ) : (
-              <Mic className="h-4 w-4" />
+          <div className="flex flex-col items-center gap-2">
+            <Button
+              type="button"
+              variant={isRecording ? "destructive" : "secondary"}
+              size="icon"
+              className="mt-1"
+              onClick={toggleRecording}
+            >
+              {isRecording ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+            {isRecording && (
+              <div className="w-1 h-20 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="w-full bg-[#0EA5E9] transition-all duration-100 rounded-full"
+                  style={{
+                    height: `${audioLevel * 100}%`,
+                    opacity: 0.8 + (audioLevel * 0.2),
+                  }}
+                />
+              </div>
             )}
-          </Button>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground flex items-center gap-2">
           <Link className="h-4 w-4" />
