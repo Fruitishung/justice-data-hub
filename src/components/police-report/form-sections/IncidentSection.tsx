@@ -13,12 +13,6 @@ interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
 }
 
-// Define the SpeechRecognition interface
-interface IWindow extends Window {
-  webkitSpeechRecognition: any;
-  SpeechRecognition: any;
-}
-
 const IncidentSection = ({ form }: IncidentSectionProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
@@ -26,8 +20,8 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const windowWithSpeech = window as IWindow;
-      const SpeechRecognition = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+      // Check if SpeechRecognition is available
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (SpeechRecognition) {
         const recognitionInstance = new SpeechRecognition();
