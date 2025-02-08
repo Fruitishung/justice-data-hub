@@ -13,52 +13,54 @@ interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
+// Define the SpeechRecognition interface
+interface IWindow extends Window {
+  webkitSpeechRecognition: any;
+  SpeechRecognition: any;
 }
 
 const IncidentSection = ({ form }: IncidentSectionProps) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
+    if (typeof window !== 'undefined') {
+      const windowWithSpeech = window as IWindow;
+      const SpeechRecognition = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
       
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      
-      recognitionInstance.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join(' ');
+      if (SpeechRecognition) {
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
         
-        const currentDescription = form.getValues('incidentDescription') || '';
-        form.setValue('incidentDescription', currentDescription + ' ' + transcript);
-      };
+        recognitionInstance.onresult = (event: any) => {
+          const transcript = Array.from(event.results)
+            .map((result: any) => result[0].transcript)
+            .join(' ');
+          
+          const currentDescription = form.getValues('incidentDescription') || '';
+          form.setValue('incidentDescription', currentDescription + ' ' + transcript);
+        };
 
-      recognitionInstance.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
+        recognitionInstance.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          toast({
+            title: "Error",
+            description: "There was an error with the speech recognition. Please try again.",
+            variant: "destructive",
+          });
+          setIsRecording(false);
+        };
+
+        setRecognition(recognitionInstance);
+      } else {
         toast({
-          title: "Error",
-          description: "There was an error with the speech recognition. Please try again.",
+          title: "Not Supported",
+          description: "Speech recognition is not supported in your browser.",
           variant: "destructive",
         });
-        setIsRecording(false);
-      };
-
-      setRecognition(recognitionInstance);
-    } else {
-      toast({
-        title: "Not Supported",
-        description: "Speech recognition is not supported in your browser.",
-        variant: "destructive",
-      });
+      }
     }
 
     return () => {
