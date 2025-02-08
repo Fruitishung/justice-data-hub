@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      arrest_tags: {
+        Row: {
+          arresting_officer: string | null
+          booking_date: string | null
+          charges: string | null
+          created_at: string | null
+          id: string
+          incident_report_id: string | null
+          processing_status: string | null
+          suspect_name: string | null
+          tag_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          arresting_officer?: string | null
+          booking_date?: string | null
+          charges?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          processing_status?: string | null
+          suspect_name?: string | null
+          tag_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          arresting_officer?: string | null
+          booking_date?: string | null
+          charges?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          processing_status?: string | null
+          suspect_name?: string | null
+          tag_number?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arrest_tags_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crime_scene_photos: {
         Row: {
           created_at: string | null

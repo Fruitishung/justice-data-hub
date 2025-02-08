@@ -1,10 +1,11 @@
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import CategoryTabs from "./CategoryTabs";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ReportFormData } from "./types";
 
@@ -106,6 +107,33 @@ const ReportForm = () => {
       if (reportError) {
         console.error('Report insertion error:', reportError);
         throw reportError;
+      }
+
+      // Create arrest tag if suspect is in custody
+      if (data.suspectInCustody) {
+        const { error: arrestTagError } = await supabase
+          .from('arrest_tags')
+          .insert([
+            {
+              incident_report_id: report.id,
+              suspect_name: `${data.suspectFirstName} ${data.suspectLastName}`.trim(),
+              charges: data.suspectCharges,
+              arresting_officer: report.officer_name,
+            }
+          ]);
+
+        if (arrestTagError) {
+          console.error('Arrest tag creation error:', arrestTagError);
+          throw arrestTagError;
+        }
+
+        toast({
+          title: "Report Submitted",
+          description: "An arrest tag has been generated.",
+        });
+
+        navigate(`/arrest-tag/${report.id}`);
+        return;
       }
 
       // Create narrative report
