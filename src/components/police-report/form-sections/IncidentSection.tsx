@@ -8,6 +8,7 @@ import { ReportFormData } from "../types"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { supabase } from "@/lib/supabase"
 
 interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -17,13 +18,35 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
   const animationFrameRef = useRef<number>();
   const analyserRef = useRef<AnalyserNode | null>(null);
   const { toast } = useToast();
 
+  const correctText = async (text: string) => {
+    try {
+      setIsProcessing(true);
+      const { data, error } = await supabase.functions.invoke('correct-text', {
+        body: { text },
+      });
+
+      if (error) throw error;
+      return data.correctedText;
+    } catch (error) {
+      console.error('Error correcting text:', error);
+      toast({
+        title: "Error",
+        description: "Failed to correct text. Using original transcription.",
+        variant: "destructive",
+      });
+      return text;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Check if SpeechRecognition is available
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (SpeechRecognition) {
@@ -31,13 +54,21 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
         
-        recognitionInstance.onresult = (event: any) => {
+        recognitionInstance.onresult = async (event: any) => {
           const transcript = Array.from(event.results)
             .map((result: any) => result[0].transcript)
             .join(' ');
           
           const currentDescription = form.getValues('incidentDescription') || '';
-          form.setValue('incidentDescription', currentDescription + ' ' + transcript);
+          
+          // Only send for correction if it's a final result
+          if (event.results[event.results.length - 1].isFinal) {
+            const correctedText = await correctText(transcript);
+            form.setValue('incidentDescription', (currentDescription + ' ' + correctedText).trim());
+          } else {
+            // Show interim results immediately
+            form.setValue('incidentDescription', (currentDescription + ' ' + transcript).trim());
+          }
         };
 
         recognitionInstance.onerror = (event: any) => {
@@ -83,9 +114,8 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(dataArray);
         
-        // Calculate average frequency
         const average = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-        setAudioLevel(Math.min(average / 128, 1)); // Normalize to 0-1
+        setAudioLevel(Math.min(average / 128, 1));
         
         animationFrameRef.current = requestAnimationFrame(updateVisualization);
       };
@@ -144,11 +174,18 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
       />
       <div className="space-y-2">
         <div className="flex items-start gap-4">
-          <Textarea
-            placeholder="Incident Description"
-            className="flex-1"
-            {...form.register("incidentDescription")}
-          />
+          <div className="relative flex-1">
+            <Textarea
+              placeholder="Incident Description"
+              className="flex-1"
+              {...form.register("incidentDescription")}
+            />
+            {isProcessing && (
+              <div className="absolute inset-0 bg-black/5 flex items-center justify-center rounded-md">
+                <div className="text-sm text-muted-foreground">Processing...</div>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col items-center gap-2">
             <Button
               type="button"
@@ -182,7 +219,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
         </p>
       </div>
     </ReportSection>
-  )
-}
+  );
+};
 
-export default IncidentSection
+export default IncidentSection;
