@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      data_analysis_training: {
+        Row: {
+          analysis_metrics: Json | null
+          analysis_type: string
+          completed_at: string | null
+          completion_status: string | null
+          created_at: string | null
+          id: string
+          incident_report_id: string | null
+          training_module: string
+          training_notes: string | null
+        }
+        Insert: {
+          analysis_metrics?: Json | null
+          analysis_type: string
+          completed_at?: string | null
+          completion_status?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          training_module: string
+          training_notes?: string | null
+        }
+        Update: {
+          analysis_metrics?: Json | null
+          analysis_type?: string
+          completed_at?: string | null
+          completion_status?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          training_module?: string
+          training_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_analysis_training_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_reports: {
         Row: {
           case_number: string | null
@@ -160,6 +204,18 @@ export type Database = {
         }
         Relationships: []
       }
+      training_analytics: {
+        Row: {
+          analysis_type: string | null
+          avg_completion_time_seconds: number | null
+          completed_cases: number | null
+          completion_status: string | null
+          total_cases: number | null
+          training_module: string | null
+          unique_cases: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_report_counts: {
@@ -172,6 +228,19 @@ export type Database = {
           total_count: number
           open_count: number
           closed_count: number
+        }[]
+      }
+      get_training_metrics: {
+        Args: {
+          start_date?: string
+          end_date?: string
+        }
+        Returns: {
+          training_module: string
+          total_entries: number
+          completed_entries: number
+          completion_rate: number
+          avg_completion_time_hours: number
         }[]
       }
     }
