@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -23,21 +24,72 @@ const ReportForm = () => {
   const navigate = useNavigate();
 
   const onSubmit = async (data: ReportFormData) => {
+    console.log('Form data being submitted:', data);
+    
     try {
+      // First, test the Supabase connection
+      const { data: testData, error: testError } = await supabase
+        .from('incident_reports')
+        .select('*')
+        .limit(1);
+      
+      console.log('Supabase connection test:', { testData, testError });
+
+      if (testError) {
+        console.error('Supabase connection test error:', testError);
+        throw new Error('Failed to connect to database');
+      }
+
+      // Proceed with inserting the report
       const { data: report, error: reportError } = await supabase
         .from('incident_reports')
         .insert([
           {
             incident_date: data.incidentDate,
             incident_description: data.incidentDescription,
-            // ... other fields from form data
+            vehicle_make: data.vehicleMake,
+            vehicle_model: data.vehicleModel,
+            person_name: data.personName,
+            person_description: data.personDescription,
+            location_address: data.locationAddress,
+            location_details: data.locationDetails,
+            evidence_description: data.evidenceDescription,
+            evidence_location: data.evidenceLocation,
+            emergency_response: data.emergencyResponse,
+            emergency_units: data.emergencyUnits,
+            victim_name: data.victimName,
+            victim_details: {
+              age: data.victimAge,
+              gender: data.victimGender,
+              address: data.victimAddress,
+              phone: data.victimPhone,
+              injuries: data.victimInjuries
+            },
+            suspect_details: {
+              name: data.suspectName,
+              age: data.suspectAge,
+              gender: data.suspectGender,
+              height: data.suspectHeight,
+              weight: data.suspectWeight,
+              hair: data.suspectHair,
+              eyes: data.suspectEyes,
+              clothing: data.suspectClothing,
+              identifying_marks: data.suspectIdentifyingMarks,
+              direction: data.suspectDirection
+            }
           }
         ])
         .select()
         .single();
 
-      if (reportError) throw reportError;
+      console.log('Report insertion result:', { report, reportError });
 
+      if (reportError) {
+        console.error('Report insertion error:', reportError);
+        throw reportError;
+      }
+
+      // Create narrative report
       const { error: narrativeError } = await supabase
         .from('narrative_reports')
         .insert([
@@ -48,7 +100,12 @@ const ReportForm = () => {
           }
         ]);
 
-      if (narrativeError) throw narrativeError;
+      console.log('Narrative creation result:', { narrativeError });
+
+      if (narrativeError) {
+        console.error('Narrative creation error:', narrativeError);
+        throw narrativeError;
+      }
 
       toast({
         title: "Report Submitted",
@@ -57,10 +114,10 @@ const ReportForm = () => {
 
       navigate(`/narrative/${report.id}`);
     } catch (error) {
-      console.error('Error submitting report:', error);
+      console.error('Error in form submission:', error);
       toast({
         title: "Error",
-        description: "Failed to submit report. Please try again.",
+        description: error.message || "Failed to submit report. Please try again.",
         variant: "destructive",
       });
     }
