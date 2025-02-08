@@ -111,7 +111,7 @@ const ReportForm = () => {
 
       // Create arrest tag if suspect is in custody
       if (data.suspectInCustody) {
-        const { error: arrestTagError } = await supabase
+        const { data: arrestTag, error: arrestTagError } = await supabase
           .from('arrest_tags')
           .insert([
             {
@@ -120,16 +120,39 @@ const ReportForm = () => {
               charges: data.suspectCharges,
               arresting_officer: report.officer_name,
             }
-          ]);
+          ])
+          .select()
+          .single();
 
         if (arrestTagError) {
           console.error('Arrest tag creation error:', arrestTagError);
           throw arrestTagError;
         }
 
+        // Create data analysis entry for the arrest
+        const { error: analysisError } = await supabase
+          .from('data_analysis_training')
+          .insert([
+            {
+              incident_report_id: report.id,
+              analysis_type: 'arrest_analysis',
+              training_module: 'suspect_processing',
+              analysis_metrics: {
+                suspect_details: report.suspect_details,
+                arrest_tag: arrestTag,
+                incident_type: report.incident_description
+              }
+            }
+          ]);
+
+        if (analysisError) {
+          console.error('Analysis entry creation error:', analysisError);
+          // Don't throw here as it's not critical to the main flow
+        }
+
         toast({
           title: "Report Submitted",
-          description: "An arrest tag has been generated.",
+          description: "An arrest tag has been generated and queued for analysis.",
         });
 
         navigate(`/arrest-tag/${report.id}`);
