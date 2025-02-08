@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Fingerprint, X, UserCheck } from "lucide-react";
+import { Fingerprint, X, UserCheck, Usb } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { scannerUtils } from "@/utils/fingerprintScanner";
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>;
@@ -25,6 +26,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [currentFinger, setCurrentFinger] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
   
   const fingerPositions = [
@@ -39,6 +41,33 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     'Left Ring',
     'Left Little'
   ];
+
+  const connectScanner = async () => {
+    try {
+      const connected = await scannerUtils.requestDevice();
+      setIsConnected(connected);
+      
+      if (connected) {
+        toast({
+          title: "Scanner Connected",
+          description: "Fingerprint scanner is ready to use.",
+        });
+      } else {
+        toast({
+          title: "Connection Failed",
+          description: "Could not connect to fingerprint scanner.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Scanner connection error:', error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to scanner. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const analyzeFingerprint = async (scanData: {
     position: string;
@@ -79,30 +108,53 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     }
   };
 
-  const simulateScan = async (position: string) => {
+  const scanFinger = async (position: string) => {
+    if (!isConnected) {
+      toast({
+        title: "Scanner Not Connected",
+        description: "Please connect a fingerprint scanner first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCurrentFinger(position);
     setScanning(true);
     
-    // Simulate scanning process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Generate mock scan data
-    const mockScanData = {
-      position,
-      scanData: `mock_scan_${Date.now()}`,
-      quality: Math.random() * 100,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Update form data
-    const currentFingerprints = form.getValues('suspectFingerprints') || [];
-    form.setValue('suspectFingerprints', [...currentFingerprints, mockScanData]);
-    
-    // Analyze the new scan
-    await analyzeFingerprint(mockScanData);
-    
-    setScanning(false);
-    setCurrentFinger(null);
+    try {
+      const result = await scannerUtils.captureFingerprint();
+      
+      if (result) {
+        // Convert ArrayBuffer to base64 string for storage
+        const base64String = btoa(
+          String.fromCharCode(...new Uint8Array(result.data))
+        );
+
+        const scanData = {
+          position,
+          scanData: base64String,
+          quality: result.quality,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Update form data
+        const currentFingerprints = form.getValues('suspectFingerprints') || [];
+        form.setValue('suspectFingerprints', [...currentFingerprints, scanData]);
+        
+        // Analyze the new scan
+        await analyzeFingerprint(scanData);
+      }
+    } catch (error) {
+      console.error('Scanning error:', error);
+      toast({
+        title: "Scanning Error",
+        description: "Failed to capture fingerprint. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setScanning(false);
+      setCurrentFinger(null);
+    }
   };
 
   const removeScan = (position: string) => {
@@ -119,9 +171,26 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     return fingerprints.find(scan => scan.position === position);
   };
 
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      scannerUtils.disconnect();
+    };
+  }, []);
+
   return (
     <div className="space-y-4">
-      <Label>Fingerprint Scans</Label>
+      <div className="flex items-center justify-between mb-4">
+        <Label>Fingerprint Scans</Label>
+        <Button
+          variant={isConnected ? "secondary" : "default"}
+          onClick={connectScanner}
+          className="flex items-center gap-2"
+        >
+          <Usb className="w-4 h-4" />
+          {isConnected ? "Scanner Connected" : "Connect Scanner"}
+        </Button>
+      </div>
       
       {matches.length > 0 && (
         <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
@@ -173,8 +242,8 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
               ) : (
                 <Button
                   variant="outline"
-                  disabled={scanning || analyzing}
-                  onClick={() => simulateScan(position)}
+                  disabled={scanning || analyzing || !isConnected}
+                  onClick={() => scanFinger(position)}
                   className="w-full"
                 >
                   {scanning && currentFinger === position ? (
