@@ -12,14 +12,32 @@ interface VehicleSectionProps {
 const VehicleSection = ({ form }: VehicleSectionProps) => {
   return (
     <ReportSection icon={Car} title="Vehicle Information">
-      <Input
-        placeholder="Vehicle Make"
-        {...form.register("vehicleMake")}
-      />
-      <Input
-        placeholder="Vehicle Model"
-        {...form.register("vehicleModel")}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          placeholder="Vehicle Make"
+          {...form.register("vehicleMake")}
+        />
+        <Input
+          placeholder="Vehicle Model"
+          {...form.register("vehicleModel")}
+        />
+        <Input
+          placeholder="Vehicle Year"
+          {...form.register("vehicleYear")}
+        />
+        <Input
+          placeholder="Vehicle Color"
+          {...form.register("vehicleColor")}
+        />
+        <Input
+          placeholder="VIN Number"
+          {...form.register("vehicleVin")}
+        />
+        <Input
+          placeholder="License Plate"
+          {...form.register("vehiclePlate")}
+        />
+      </div>
     </ReportSection>
   )
 }

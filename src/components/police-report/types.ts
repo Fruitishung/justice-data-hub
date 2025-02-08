@@ -4,6 +4,10 @@ export interface ReportFormData {
   incidentDescription: string;
   vehicleMake: string;
   vehicleModel: string;
+  vehicleYear: string;
+  vehicleColor: string;
+  vehicleVin: string;
+  vehiclePlate: string;
   personName: string;
   personDescription: string;
   locationAddress: string;

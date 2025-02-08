@@ -24,8 +24,12 @@ export type Database = {
           person_description: string | null
           person_name: string | null
           suspect_details: Json | null
+          vehicle_color: string | null
           vehicle_make: string | null
           vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_vin: string | null
+          vehicle_year: string | null
           victim_details: Json | null
         }
         Insert: {
@@ -42,8 +46,12 @@ export type Database = {
           person_description?: string | null
           person_name?: string | null
           suspect_details?: Json | null
+          vehicle_color?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_vin?: string | null
+          vehicle_year?: string | null
           victim_details?: Json | null
         }
         Update: {
@@ -60,8 +68,12 @@ export type Database = {
           person_description?: string | null
           person_name?: string | null
           suspect_details?: Json | null
+          vehicle_color?: string | null
           vehicle_make?: string | null
           vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_vin?: string | null
+          vehicle_year?: string | null
           victim_details?: Json | null
         }
         Relationships: []
