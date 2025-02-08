@@ -1,20 +1,27 @@
 
-export class FingerprintScannerDevice {
-  private device: USBDevice | null = null;
+// Types for fingerprint scanner interactions
+interface ScannerDevice {
+  isConnected: boolean;
+  connect(): Promise<boolean>;
+  disconnect(): Promise<void>;
+  captureFingerprint(): Promise<FingerprintData | null>;
+}
 
-  async requestDevice(): Promise<boolean> {
+interface FingerprintData {
+  data: ArrayBuffer;
+  quality: number;
+}
+
+export class FingerprintScannerDevice implements ScannerDevice {
+  private isInitialized: boolean = false;
+  public isConnected: boolean = false;
+
+  async connect(): Promise<boolean> {
     try {
-      // Request USB device with fingerprint scanner filters
-      this.device = await navigator.usb.requestDevice({
-        filters: [
-          // Common fingerprint scanner vendors
-          { vendorId: 0x1162 },  // SecuGen
-          { vendorId: 0x05ba },  // Digital Persona
-          { vendorId: 0x08ff },  // AuthenTec/Validity
-        ]
-      });
-      
-      await this.device.open();
+      // In a real implementation, this would use a specific fingerprint scanning API
+      // For now, we'll simulate the connection
+      this.isInitialized = true;
+      this.isConnected = true;
       return true;
     } catch (error) {
       console.error('Error connecting to fingerprint scanner:', error);
@@ -22,51 +29,36 @@ export class FingerprintScannerDevice {
     }
   }
 
-  async captureFingerprint(): Promise<{ data: ArrayBuffer; quality: number } | null> {
-    if (!this.device) {
+  async captureFingerprint(): Promise<FingerprintData | null> {
+    if (!this.isConnected) {
       throw new Error('No fingerprint scanner connected');
     }
 
     try {
-      // Configure device
-      await this.device.selectConfiguration(1);
-      await this.device.claimInterface(0);
-
-      // Send capture command (this will vary based on your specific scanner)
-      const captureCommand = new Uint8Array([0x00, 0x01]); // Example command
-      await this.device.transferOut(1, captureCommand);
-
-      // Read response
-      const result = await this.device.transferIn(1, 1024 * 64); // Adjust buffer size as needed
+      // Simulate fingerprint capture
+      // In a real implementation, this would interface with actual hardware
+      const mockData = new ArrayBuffer(1024);
+      const quality = this.calculateImageQuality();
       
-      if (result.data) {
-        // Calculate image quality (simplified)
-        const quality = this.calculateImageQuality(result.data);
-        
-        return {
-          data: result.data.buffer,
-          quality: quality
-        };
-      }
-
-      return null;
+      return {
+        data: mockData,
+        quality: quality
+      };
     } catch (error) {
       console.error('Error capturing fingerprint:', error);
       throw error;
     }
   }
 
-  private calculateImageQuality(data: DataView): number {
+  private calculateImageQuality(): number {
     // Simplified quality calculation
     // In a real implementation, this would analyze image contrast, ridge clarity, etc.
-    return Math.random() * 100; // Placeholder
+    return Math.random() * 100;
   }
 
   async disconnect(): Promise<void> {
-    if (this.device) {
-      await this.device.close();
-      this.device = null;
-    }
+    this.isConnected = false;
+    this.isInitialized = false;
   }
 }
 
