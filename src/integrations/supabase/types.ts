@@ -455,6 +455,17 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_tiers: {
+        Row: {
+          ai_features: boolean | null
+          description: string | null
+          monthly_price: number | null
+          photo_upload: boolean | null
+          reports_per_month: number | null
+          tier: Database["public"]["Enums"]["subscription_tier"] | null
+        }
+        Relationships: []
+      }
       training_analytics: {
         Row: {
           analysis_type: string | null
@@ -469,6 +480,18 @@ export type Database = {
       }
     }
     Functions: {
+      check_user_tier_permissions: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          can_create_reports: boolean
+          max_reports_per_month: number
+          can_upload_photos: boolean
+          can_use_ai_features: boolean
+          remaining_credits: number
+        }[]
+      }
       get_report_counts: {
         Args: {
           start_date?: string
