@@ -27,8 +27,18 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
             {...form.register("vehicleModel")}
           />
           <Input
+            type="number"
+            min={1900}
+            max={new Date().getFullYear() + 1}
             placeholder="Vehicle Year"
-            {...form.register("vehicleYear")}
+            {...form.register("vehicleYear", {
+              valueAsNumber: true,
+              validate: (value) => {
+                if (!value) return true;
+                return (value >= 1900 && value <= new Date().getFullYear() + 1) || 
+                       "Year must be between 1900 and next year";
+              }
+            })}
           />
           <Input
             placeholder="Vehicle Color"
