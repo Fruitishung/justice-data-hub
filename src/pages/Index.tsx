@@ -2,6 +2,8 @@
 import { motion } from "framer-motion";
 import { Hero } from "@/components/Hero";
 import ReportForm from "@/components/police-report/ReportForm";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -23,6 +25,11 @@ const Index = () => {
             <p className="mt-4 text-lg text-muted-foreground">
               Select a category to enter report details
             </p>
+            <div className="mt-6">
+              <Button asChild variant="outline">
+                <Link to="/mctetts">Access MCTETTS System</Link>
+              </Button>
+            </div>
           </div>
           
           <ReportForm />
