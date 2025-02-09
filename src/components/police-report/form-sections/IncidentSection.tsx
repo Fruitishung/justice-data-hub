@@ -10,7 +10,7 @@ import { useSpeechRecognition } from "./dictation/useSpeechRecognition"
 import { useAudioVisualization } from "./dictation/useAudioVisualization"
 import { RecordButton } from "./dictation/RecordButton"
 import { AudioVisualizer } from "./dictation/AudioVisualizer"
-import { Badge } from "@/components/ui/badge"
+import CaseNumberDisplay from "./CaseNumberDisplay"
 
 interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -54,17 +54,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
 
   return (
     <ReportSection icon={Link} title="Incident Details">
-      <div className="mb-4">
-        {caseNumber ? (
-          <Badge variant="outline" className="text-lg p-2">
-            Case #: {caseNumber}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-lg p-2 text-muted-foreground">
-            Case # will be assigned upon submission
-          </Badge>
-        )}
-      </div>
+      <CaseNumberDisplay caseNumber={caseNumber} />
       <Input
         type="datetime-local"
         placeholder="Incident Date & Time"
