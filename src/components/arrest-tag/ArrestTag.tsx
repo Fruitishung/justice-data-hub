@@ -31,6 +31,15 @@ const ArrestTag = () => {
     window.print();
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-secondary p-8">
       <Card className="max-w-3xl mx-auto p-8 bg-white print:shadow-none">
@@ -61,7 +70,7 @@ const ArrestTag = () => {
             <div>
               <h3 className="font-semibold text-gray-600">Booking Date</h3>
               <p className="text-xl">
-                {new Date(arrestTag?.booking_date).toLocaleDateString()}
+                {formatDate(arrestTag?.booking_date)}
               </p>
             </div>
           </div>
@@ -93,3 +102,4 @@ const ArrestTag = () => {
 };
 
 export default ArrestTag;
+
