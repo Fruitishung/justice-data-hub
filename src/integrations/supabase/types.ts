@@ -214,6 +214,7 @@ export type Database = {
           evidence_description: string | null
           evidence_location: string | null
           evidence_photos: Json | null
+          evidence_property: Json | null
           id: string
           incident_date: string | null
           incident_description: string | null
@@ -249,6 +250,7 @@ export type Database = {
           evidence_description?: string | null
           evidence_location?: string | null
           evidence_photos?: Json | null
+          evidence_property?: Json | null
           id?: string
           incident_date?: string | null
           incident_description?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           evidence_description?: string | null
           evidence_location?: string | null
           evidence_photos?: Json | null
+          evidence_property?: Json | null
           id?: string
           incident_date?: string | null
           incident_description?: string | null

@@ -20,6 +20,12 @@ export interface ReportFormData {
   evidenceDescription: string;
   evidenceLocation: string;
   evidencePhotos: { path: string; uploaded_at: string; }[];
+  evidenceSerialNumber: string;
+  evidenceModel: string;
+  evidenceMake: string;
+  evidenceColor: string;
+  evidencePropertyType: string;
+  evidenceAdditionalDetails: string;
   emergencyResponse: string;
   emergencyUnits: string;
   victimFirstName: string;

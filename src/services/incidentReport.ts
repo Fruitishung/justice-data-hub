@@ -17,6 +17,14 @@ export const createIncidentReport = async (data: ReportFormData) => {
         evidence_description: data.evidenceDescription,
         evidence_location: data.evidenceLocation,
         evidence_photos: data.evidencePhotos,
+        evidence_property: {
+          serial_number: data.evidenceSerialNumber,
+          model: data.evidenceModel,
+          make: data.evidenceMake,
+          color: data.evidenceColor,
+          property_type: data.evidencePropertyType,
+          additional_details: data.evidenceAdditionalDetails
+        },
         emergency_response: data.emergencyResponse,
         emergency_units: data.emergencyUnits,
         victim_details: {
