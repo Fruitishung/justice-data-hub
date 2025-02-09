@@ -7,7 +7,7 @@ interface Vehicle {
   vin: string;
   make: string;
   model: string;
-  year: number;  // Changed from string to number
+  year: number;
   color: string;
   owner_name: string;
   stolen_status: boolean;
@@ -54,4 +54,3 @@ export const VehicleResults = ({ vehicles, isLoading, searchTerm }: VehicleResul
     </Card>
   );
 };
-
