@@ -49,6 +49,18 @@ const MCTETTSPage = () => {
     enabled: activeTab === "vehicles" && searchTerm.length > 0,
   });
 
+  const { data: property, isLoading: propertyLoading } = useQuery({
+    queryKey: ["property", searchTerm],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("search_property", {
+        search_term: searchTerm,
+      });
+      if (error) throw error;
+      return data;
+    },
+    enabled: activeTab === "property" && searchTerm.length > 0,
+  });
+
   return (
     <div className="container mx-auto py-8 relative">
       <div className="absolute top-0 right-0">
@@ -91,9 +103,10 @@ const MCTETTSPage = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="warrants">Warrants</TabsTrigger>
             <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+            <TabsTrigger value="property">Property</TabsTrigger>
           </TabsList>
 
           <TabsContent value="warrants">
@@ -157,6 +170,45 @@ const MCTETTSPage = () => {
                   <p>No vehicles found</p>
                 ) : (
                   <p>Enter a search term to find vehicles</p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="property">
+            <Card>
+              <CardHeader>
+                <CardTitle>Property Search Results</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {propertyLoading ? (
+                  <p>Loading...</p>
+                ) : property?.length ? (
+                  <div className="space-y-4">
+                    {property.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-4 border rounded-lg shadow-sm"
+                      >
+                        <p><strong>Serial Number:</strong> {item.serial_number}</p>
+                        <p><strong>Type:</strong> {item.property_type}</p>
+                        <p><strong>Make/Model:</strong> {item.make} {item.model}</p>
+                        <p><strong>Description:</strong> {item.description}</p>
+                        <p><strong>Owner:</strong> {item.owner_name}</p>
+                        <p><strong>Status:</strong> {item.stolen_status ? "⚠️ STOLEN" : "Clear"}</p>
+                        {item.recovered_date && (
+                          <>
+                            <p><strong>Recovered:</strong> {new Date(item.recovered_date).toLocaleDateString()}</p>
+                            <p><strong>Recovery Location:</strong> {item.recovery_location}</p>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : searchTerm ? (
+                  <p>No property records found</p>
+                ) : (
+                  <p>Enter a search term to find property records</p>
                 )}
               </CardContent>
             </Card>

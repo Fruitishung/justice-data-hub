@@ -378,6 +378,57 @@ export type Database = {
         }
         Relationships: []
       }
+      property_records: {
+        Row: {
+          created_at: string | null
+          date_reported: string | null
+          description: string | null
+          id: string
+          last_updated: string | null
+          make: string | null
+          model: string | null
+          owner_address: string | null
+          owner_name: string | null
+          property_type: string
+          recovered_date: string | null
+          recovery_location: string | null
+          serial_number: string | null
+          stolen_status: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_reported?: string | null
+          description?: string | null
+          id?: string
+          last_updated?: string | null
+          make?: string | null
+          model?: string | null
+          owner_address?: string | null
+          owner_name?: string | null
+          property_type: string
+          recovered_date?: string | null
+          recovery_location?: string | null
+          serial_number?: string | null
+          stolen_status?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          date_reported?: string | null
+          description?: string | null
+          id?: string
+          last_updated?: string | null
+          make?: string | null
+          model?: string | null
+          owner_address?: string | null
+          owner_name?: string | null
+          property_type?: string
+          recovered_date?: string | null
+          recovery_location?: string | null
+          serial_number?: string | null
+          stolen_status?: boolean | null
+        }
+        Relationships: []
+      }
       report_credits: {
         Row: {
           created_at: string | null
@@ -611,6 +662,28 @@ export type Database = {
           completed_entries: number
           completion_rate: number
           avg_completion_time_hours: number
+        }[]
+      }
+      search_property: {
+        Args: {
+          search_term: string
+          include_stolen_only?: boolean
+        }
+        Returns: {
+          created_at: string | null
+          date_reported: string | null
+          description: string | null
+          id: string
+          last_updated: string | null
+          make: string | null
+          model: string | null
+          owner_address: string | null
+          owner_name: string | null
+          property_type: string
+          recovered_date: string | null
+          recovery_location: string | null
+          serial_number: string | null
+          stolen_status: boolean | null
         }[]
       }
       search_vehicles: {
