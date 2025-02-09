@@ -32,11 +32,14 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
             max={new Date().getFullYear() + 1}
             placeholder="Vehicle Year"
             {...form.register("vehicleYear", {
-              valueAsNumber: true,
-              validate: (value: number | undefined) => {
-                if (!value) return true;
-                return (value >= 1900 && value <= new Date().getFullYear() + 1) || 
-                       "Year must be between 1900 and next year";
+              setValueAs: (value: string) => value === "" ? undefined : parseInt(value, 10),
+              validate: {
+                yearRange: (value: string | undefined) => {
+                  if (!value) return true;
+                  const year = parseInt(value, 10);
+                  return (year >= 1900 && year <= new Date().getFullYear() + 1) || 
+                         "Year must be between 1900 and next year";
+                }
               }
             })}
           />
