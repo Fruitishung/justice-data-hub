@@ -11,7 +11,7 @@ export interface ReportFormData {
   vehiclePlate: string;
   vehicleTowingCompany: string;
   vehicleTowingOperator: string;
-  vehicleTowingDate: string;
+  vehicleTowingDate: string | null; // Changed to allow null
   vehicleTowingLocation: string;
   vehicleCrimeInvolved: boolean;
   vehicleCrimeType: string;

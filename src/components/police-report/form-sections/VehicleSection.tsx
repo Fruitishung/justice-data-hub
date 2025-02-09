@@ -34,10 +34,9 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
             {...form.register("vehicleYear", {
               setValueAs: (value: string) => value === "" ? undefined : parseInt(value, 10),
               validate: {
-                yearRange: (value: string | undefined) => {
+                yearRange: (value: number | undefined) => {
                   if (!value) return true;
-                  const year = parseInt(value, 10);
-                  return (year >= 1900 && year <= new Date().getFullYear() + 1) || 
+                  return (value >= 1900 && value <= new Date().getFullYear() + 1) || 
                          "Year must be between 1900 and next year";
                 }
               }
@@ -75,7 +74,9 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
             <Input
               type="datetime-local"
               placeholder="Towing Date/Time"
-              {...form.register("vehicleTowingDate")}
+              {...form.register("vehicleTowingDate", {
+                setValueAs: (value: string) => value || null // Convert empty string to null
+              })}
             />
             <Input
               placeholder="Towing Location"
