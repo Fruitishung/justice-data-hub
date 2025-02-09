@@ -33,7 +33,7 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
             placeholder="Vehicle Year"
             {...form.register("vehicleYear", {
               valueAsNumber: true,
-              validate: (value) => {
+              validate: (value: number | undefined) => {
                 if (!value) return true;
                 return (value >= 1900 && value <= new Date().getFullYear() + 1) || 
                        "Year must be between 1900 and next year";
