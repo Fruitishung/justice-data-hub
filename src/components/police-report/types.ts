@@ -1,7 +1,7 @@
 
 export interface ReportFormData {
   caseNumber?: string;
-  incidentDate: string;
+  incidentDate: string | null;
   incidentDescription: string;
   vehicleMake: string;
   vehicleModel: string;
@@ -11,7 +11,7 @@ export interface ReportFormData {
   vehiclePlate: string;
   vehicleTowingCompany: string;
   vehicleTowingOperator: string;
-  vehicleTowingDate: string | null; // Changed to allow null
+  vehicleTowingDate: string | null;
   vehicleTowingLocation: string;
   vehicleCrimeInvolved: boolean;
   vehicleCrimeType: string;
@@ -73,3 +73,4 @@ export interface ReportFormData {
     timestamp: string;
   }[];
 }
+

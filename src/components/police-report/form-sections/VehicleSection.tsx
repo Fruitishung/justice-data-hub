@@ -116,3 +116,4 @@ const VehicleSection = ({ form }: VehicleSectionProps) => {
 }
 
 export default VehicleSection
+
