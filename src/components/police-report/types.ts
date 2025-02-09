@@ -1,5 +1,6 @@
 
 export interface ReportFormData {
+  caseNumber?: string;
   incidentDate: string;
   incidentDescription: string;
   vehicleMake: string;
