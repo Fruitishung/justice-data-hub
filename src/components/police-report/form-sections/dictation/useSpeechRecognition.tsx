@@ -69,18 +69,27 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         };
 
         recognitionInstance.onerror = (event: any) => {
-          console.error('Speech recognition error:', event.error);
-          toast({
-            title: "Error",
-            description: "There was an error with the speech recognition. Please try again.",
-            variant: "destructive",
-          });
+          // Don't show error for aborted recognition since it's a normal part of stopping
+          if (event.error !== 'aborted') {
+            console.error('Speech recognition error:', event.error);
+            toast({
+              title: "Error",
+              description: "There was an error with the speech recognition. Please try again.",
+              variant: "destructive",
+            });
+          }
           setIsRecording(false);
         };
 
         recognitionInstance.onend = () => {
+          // Only try to restart if we're still meant to be recording
           if (isRecording) {
-            recognitionInstance.start();
+            try {
+              recognitionInstance.start();
+            } catch (error) {
+              console.error('Error restarting recognition:', error);
+              setIsRecording(false);
+            }
           }
         };
 
@@ -96,13 +105,19 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
     return () => {
       if (recognition) {
-        recognition.stop();
+        // Properly cleanup recognition
+        try {
+          recognition.abort();
+          recognition.stop();
+        } catch (error) {
+          console.error('Error cleaning up recognition:', error);
+        }
       }
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);
       }
     };
-  }, [form, toast, isRecording, recognition]);
+  }, [form, toast, isRecording]);
 
   return { recognition, isRecording, setIsRecording, isProcessing };
 };
