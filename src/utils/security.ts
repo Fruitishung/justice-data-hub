@@ -22,12 +22,12 @@ export const checkFeatureAccess = async (featureName: string): Promise<boolean> 
       .returns<UserPermissions>()
       .single();
 
-    if (error) {
+    if (error || !permissions) {
       console.error('Permission check failed:', error);
       return false;
     }
 
-    return permissions?.allowed_features?.includes(featureName) || false;
+    return permissions.allowed_features?.includes(featureName) ?? false;
   } catch (error) {
     console.error('Access check failed:', error);
     return false;
