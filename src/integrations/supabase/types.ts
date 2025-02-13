@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          allowed: boolean
+          feature: string
+          id: string
+          ip_address: string | null
+          timestamp: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          allowed: boolean
+          feature: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          allowed?: boolean
+          feature?: string
+          id?: string
+          ip_address?: string | null
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       arrest_tags: {
         Row: {
           arresting_officer: string | null
@@ -495,6 +525,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          allowed_features: string[] | null
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          allowed_features?: string[] | null
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          allowed_features?: string[] | null
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       vehicle_records: {
         Row: {
           color: string | null
@@ -734,6 +791,7 @@ export type Database = {
     }
     Enums: {
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
+      user_role: "viewer" | "user" | "admin"
       warrant_status: "active" | "cleared" | "expired"
     }
     CompositeTypes: {
