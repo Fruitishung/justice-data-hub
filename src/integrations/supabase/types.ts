@@ -39,6 +39,41 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_crime_scene_photos: {
+        Row: {
+          created_at: string
+          id: string
+          image_path: string
+          incident_report_id: string | null
+          penal_code: Database["public"]["Enums"]["penal_code_type"]
+          prompt_used: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_path: string
+          incident_report_id?: string | null
+          penal_code: Database["public"]["Enums"]["penal_code_type"]
+          prompt_used: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_path?: string
+          incident_report_id?: string | null
+          penal_code?: Database["public"]["Enums"]["penal_code_type"]
+          prompt_used?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_crime_scene_photos_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       arrest_tags: {
         Row: {
           arresting_officer: string | null
@@ -253,6 +288,7 @@ export type Database = {
           officer_badge_number: string | null
           officer_name: string | null
           officer_rank: string | null
+          penal_code: Database["public"]["Enums"]["penal_code_type"] | null
           person_description: string | null
           person_name: string | null
           report_category: string | null
@@ -289,6 +325,7 @@ export type Database = {
           officer_badge_number?: string | null
           officer_name?: string | null
           officer_rank?: string | null
+          penal_code?: Database["public"]["Enums"]["penal_code_type"] | null
           person_description?: string | null
           person_name?: string | null
           report_category?: string | null
@@ -325,6 +362,7 @@ export type Database = {
           officer_badge_number?: string | null
           officer_name?: string | null
           officer_rank?: string | null
+          penal_code?: Database["public"]["Enums"]["penal_code_type"] | null
           person_description?: string | null
           person_name?: string | null
           report_category?: string | null
@@ -408,6 +446,27 @@ export type Database = {
           status?: string
           stripe_payment_id?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      penal_codes: {
+        Row: {
+          code: Database["public"]["Enums"]["penal_code_type"]
+          created_at: string
+          description: string
+          id: string
+        }
+        Insert: {
+          code: Database["public"]["Enums"]["penal_code_type"]
+          created_at?: string
+          description: string
+          id?: string
+        }
+        Update: {
+          code?: Database["public"]["Enums"]["penal_code_type"]
+          created_at?: string
+          description?: string
+          id?: string
         }
         Relationships: []
       }
@@ -790,6 +849,7 @@ export type Database = {
       }
     }
     Enums: {
+      penal_code_type: "211" | "187"
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
       user_role: "viewer" | "user" | "admin"
       warrant_status: "active" | "cleared" | "expired"

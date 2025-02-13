@@ -94,6 +94,12 @@ serve(async (req) => {
     const suspect = generatePerson('suspect')
     const vehicle = generateVehicle()
     const incidentDate = new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000)
+    
+    // Randomly choose between robbery and homicide
+    const penalCode = Math.random() > 0.5 ? '211' : '187';
+    const crimeDescription = penalCode === '187' 
+      ? `Homicide incident involving victim ${victim.firstName} ${victim.lastName}`
+      : `Armed robbery incident involving ${victim.firstName} ${victim.lastName}`;
 
     // Create incident report
     const { data: report, error: reportError } = await supabase
@@ -101,7 +107,8 @@ serve(async (req) => {
       .insert([
         {
           incident_date: incidentDate.toISOString(),
-          incident_description: `${suspect.charges.description} incident involving ${victim.firstName} ${victim.lastName}`,
+          incident_description: crimeDescription,
+          penal_code: penalCode,
           vehicle_make: vehicle.make,
           vehicle_model: vehicle.model,
           vehicle_year: vehicle.year,
@@ -141,6 +148,32 @@ serve(async (req) => {
 
     if (reportError) {
       throw reportError
+    }
+
+    // If it's a homicide case, generate an AI crime scene photo
+    if (penalCode === '187') {
+      try {
+        const response = await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-crime-scene`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              penal_code: penalCode,
+              incident_report_id: report.id
+            })
+          }
+        );
+
+        if (!response.ok) {
+          console.error('Failed to generate crime scene photo:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error generating crime scene photo:', error);
+      }
     }
 
     // If suspect is in custody, create arrest tag
