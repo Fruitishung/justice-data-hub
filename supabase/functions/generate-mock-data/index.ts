@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 
@@ -11,7 +10,7 @@ const corsHeaders = {
 const generateHeight = () => {
   const feet = Math.floor(Math.random() * (7 - 4) + 4)
   const inches = Math.floor(Math.random() * 12)
-  return `${feet}'${inches}"`
+  return `${feet}'${inches}`
 }
 
 const generateWeight = () => Math.floor(Math.random() * (300 - 100) + 100)
@@ -78,6 +77,14 @@ const generatePerson = (type: 'victim' | 'suspect') => {
     })
   }
 }
+
+const generateFingerprint = () => {
+  const array = new Uint8Array(1024);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode.apply(null, [...array]));
+}
+
+const generateFingerprintQuality = () => Math.floor(Math.random() * 30) + 70; // 70-100 quality score
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -148,6 +155,31 @@ serve(async (req) => {
 
     if (reportError) {
       throw reportError
+    }
+
+    // Generate fingerprint scans for the suspect (if in custody)
+    if (suspect.inCustody) {
+      const fingerPositions = [
+        'right_thumb', 'right_index', 'right_middle', 'right_ring', 'right_little',
+        'left_thumb', 'left_index', 'left_middle', 'left_ring', 'left_little'
+      ];
+
+      // Generate fingerprint scans for each finger
+      const fingerprintScans = fingerPositions.map(position => ({
+        incident_report_id: report.id,
+        scan_data: generateFingerprint(),
+        finger_position: position,
+        scan_quality: generateFingerprintQuality(),
+        scan_date: new Date().toISOString()
+      }));
+
+      const { error: fingerprintError } = await supabase
+        .from('fingerprint_scans')
+        .insert(fingerprintScans);
+
+      if (fingerprintError) {
+        console.error('Error creating fingerprint scans:', fingerprintError);
+      }
     }
 
     // If it's a homicide case, generate an AI crime scene photo

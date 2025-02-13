@@ -232,6 +232,45 @@ export type Database = {
           },
         ]
       }
+      fingerprint_matches: {
+        Row: {
+          id: string
+          matched_at: string | null
+          matched_scan_id: string | null
+          scan_id: string | null
+          similarity_score: number
+        }
+        Insert: {
+          id?: string
+          matched_at?: string | null
+          matched_scan_id?: string | null
+          scan_id?: string | null
+          similarity_score: number
+        }
+        Update: {
+          id?: string
+          matched_at?: string | null
+          matched_scan_id?: string | null
+          scan_id?: string | null
+          similarity_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fingerprint_matches_matched_scan_id_fkey"
+            columns: ["matched_scan_id"]
+            isOneToOne: false
+            referencedRelation: "fingerprint_scans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fingerprint_matches_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "fingerprint_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fingerprint_scans: {
         Row: {
           created_at: string | null
@@ -849,6 +888,17 @@ export type Database = {
       }
     }
     Enums: {
+      finger_position:
+        | "right_thumb"
+        | "right_index"
+        | "right_middle"
+        | "right_ring"
+        | "right_little"
+        | "left_thumb"
+        | "left_index"
+        | "left_middle"
+        | "left_ring"
+        | "left_little"
       penal_code_type: "211" | "187"
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
       user_role: "viewer" | "user" | "admin"
