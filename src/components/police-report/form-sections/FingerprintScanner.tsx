@@ -1,26 +1,23 @@
+
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Fingerprint, X, UserCheck, Usb } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { scannerUtils } from "@/utils/fingerprintScanner";
+import ScannerConnect from "./fingerprint/ScannerConnect";
+import MatchResults from "./fingerprint/MatchResults";
+import FingerCard from "./fingerprint/FingerCard";
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>;
 }
 
-interface MatchResult {
+interface BiometricMatch {
   id: string;
   name: string;
   similarity: number;
   matchedFingerPosition: string;
-}
-
-interface BiometricMatch extends MatchResult {
   patternType?: string;
   ridgeCount?: number;
   whorlPattern?: string;
@@ -90,7 +87,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
       if (error) throw error;
 
       const biometricMatches = await Promise.all(
-        data.matches.map(async (match: MatchResult) => {
+        data.matches.map(async (match: BiometricMatch) => {
           const { data: biometricData } = await supabase
             .from('suspect_biometrics')
             .select('*')
@@ -157,7 +154,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
             body: {
               fingerprintData: base64String,
               position,
-              incidentReportId: form.getValues('id')
+              caseNumber: form.getValues('caseNumber')
             }
           }
         );
@@ -174,10 +171,8 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
           image_path: uploadResponse.publicUrl
         };
         
-        form.setValue('suspectFingerprints', [
-          ...form.getValues('suspectFingerprints') || [],
-          scanData
-        ]);
+        const currentFingerprints = form.getValues('suspectFingerprints') || [];
+        form.setValue('suspectFingerprints', [...currentFingerprints, scanData]);
         
         await analyzeFingerprint(scanData);
       }
@@ -216,94 +211,27 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <Label>Fingerprint Scans</Label>
-        <Button
-          variant={isConnected ? "secondary" : "default"}
-          onClick={connectScanner}
-          className="flex items-center gap-2"
-        >
-          <Usb className="w-4 h-4" />
-          {isConnected ? "Scanner Connected" : "Connect Scanner"}
-        </Button>
-      </div>
+      <ScannerConnect 
+        isConnected={isConnected}
+        onConnect={connectScanner}
+      />
       
-      {matches.length > 0 && (
-        <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <UserCheck className="text-yellow-600" />
-            Potential Matches Found
-          </h3>
-          <div className="space-y-2">
-            {matches.map((match, index) => (
-              <div key={match.id} className="flex flex-col bg-white p-3 rounded">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{match.name}</span>
-                  <span className="text-sm text-muted-foreground">
-                    ({(match.similarity * 100).toFixed(1)}% match on {match.matchedFingerPosition})
-                  </span>
-                </div>
-                {(match.patternType || match.handDominance) && (
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {match.patternType && (
-                      <span className="mr-3">Pattern: {match.patternType}</span>
-                    )}
-                    {match.handDominance && (
-                      <span>Dominant Hand: {match.handDominance}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <MatchResults matches={matches} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {fingerPositions.map((position) => {
-          const scanData = getScannedData(position);
-          
-          return (
-            <Card 
-              key={position}
-              className="p-4 relative flex flex-col items-center justify-center gap-2"
-            >
-              <p className="text-sm font-medium text-center">{position}</p>
-              
-              {scanData ? (
-                <>
-                  <Fingerprint className="w-8 h-8 text-green-500" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1 right-1"
-                    onClick={() => removeScan(position)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <span className="text-xs text-muted-foreground">
-                    Quality: {scanData.quality.toFixed(1)}%
-                  </span>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  disabled={scanning || analyzing || !isConnected}
-                  onClick={() => scanFinger(position)}
-                  className="w-full"
-                >
-                  {scanning && currentFinger === position ? (
-                    <span>Scanning...</span>
-                  ) : analyzing ? (
-                    <span>Analyzing...</span>
-                  ) : (
-                    <span>Scan</span>
-                  )}
-                </Button>
-              )}
-            </Card>
-          );
-        })}
+        {fingerPositions.map((position) => (
+          <FingerCard
+            key={position}
+            position={position}
+            scanData={getScannedData(position)}
+            onScan={scanFinger}
+            onRemove={removeScan}
+            scanning={scanning}
+            analyzing={analyzing}
+            isCurrentFinger={currentFinger === position}
+            isConnected={isConnected}
+          />
+        ))}
       </div>
     </div>
   );
