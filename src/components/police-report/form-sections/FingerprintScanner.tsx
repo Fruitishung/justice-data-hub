@@ -151,11 +151,27 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
           String.fromCharCode(...new Uint8Array(result.data))
         );
 
+        const { data: uploadResponse, error: uploadError } = await supabase.functions.invoke(
+          'upload-fingerprint',
+          {
+            body: {
+              fingerprintData: base64String,
+              position,
+              incidentReportId: form.getValues('id')
+            }
+          }
+        );
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
         const scanData = {
           position,
           scanData: base64String,
           quality: result.quality,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          image_path: uploadResponse.publicUrl
         };
         
         form.setValue('suspectFingerprints', [
