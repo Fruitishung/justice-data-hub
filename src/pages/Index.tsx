@@ -4,7 +4,7 @@ import { Hero } from "@/components/Hero";
 import ReportForm from "@/components/police-report/ReportForm";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import GenerateMockDataButton from "@/components/GenerateMockDataButton";
+import { Database } from "lucide-react";
 
 const Index = () => {
   return (
@@ -31,7 +31,12 @@ const Index = () => {
                 <Link to="/mctetts">Access MCTETTS System</Link>
               </Button>
               <div>
-                <GenerateMockDataButton />
+                <Button asChild variant="outline">
+                  <Link to="/mock-data" className="flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    View Training Data
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

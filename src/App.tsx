@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ArrestTagPage from "./pages/ArrestTagPage";
 import MCTETTSPage from "./pages/MCTETTSPage";
+import MockDataPage from "./pages/MockDataPage";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/arrest-tag/:id" element={<ArrestTagPage />} />
           <Route path="/mctetts" element={<MCTETTSPage />} />
+          <Route path="/mock-data" element={<MockDataPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
