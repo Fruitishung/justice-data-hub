@@ -4,6 +4,7 @@ import { Hero } from "@/components/Hero";
 import ReportForm from "@/components/police-report/ReportForm";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import GenerateMockDataButton from "@/components/GenerateMockDataButton";
 
 const Index = () => {
   return (
@@ -25,10 +26,13 @@ const Index = () => {
             <p className="mt-4 text-lg text-muted-foreground">
               Select a category to enter report details
             </p>
-            <div className="mt-6">
+            <div className="mt-6 space-y-4">
               <Button asChild variant="outline">
                 <Link to="/mctetts">Access MCTETTS System</Link>
               </Button>
+              <div>
+                <GenerateMockDataButton />
+              </div>
             </div>
           </div>
           
