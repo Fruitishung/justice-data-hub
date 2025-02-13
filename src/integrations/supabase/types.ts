@@ -82,6 +82,7 @@ export type Database = {
           created_at: string | null
           id: string
           incident_report_id: string | null
+          mugshot_url: string | null
           processing_status: string | null
           suspect_name: string | null
           tag_number: string
@@ -94,6 +95,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           incident_report_id?: string | null
+          mugshot_url?: string | null
           processing_status?: string | null
           suspect_name?: string | null
           tag_number: string
@@ -106,6 +108,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           incident_report_id?: string | null
+          mugshot_url?: string | null
           processing_status?: string | null
           suspect_name?: string | null
           tag_number?: string

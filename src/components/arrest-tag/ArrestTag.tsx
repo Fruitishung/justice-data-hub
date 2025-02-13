@@ -5,11 +5,14 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const ArrestTag = () => {
   const { id } = useParams();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: arrestTag, isLoading } = useQuery({
+  const { data: arrestTag, isLoading, refetch } = useQuery({
     queryKey: ["arrest-tag", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,12 +26,32 @@ const ArrestTag = () => {
     },
   });
 
-  if (isLoading) {
-    return <div>Loading arrest tag...</div>;
-  }
-
   const handlePrint = () => {
     window.print();
+  };
+
+  const generateMugshot = async () => {
+    if (!arrestTag) return;
+    
+    setIsGenerating(true);
+    try {
+      const { error } = await supabase.functions.invoke("generate-mugshot", {
+        body: {
+          suspect_name: arrestTag.suspect_name,
+          arrest_tag_id: arrestTag.id,
+        },
+      });
+
+      if (error) throw error;
+      
+      await refetch();
+      toast.success("Mugshot generated successfully");
+    } catch (error) {
+      console.error("Error generating mugshot:", error);
+      toast.error("Failed to generate mugshot");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -39,6 +62,10 @@ const ArrestTag = () => {
       day: 'numeric'
     });
   };
+
+  if (isLoading) {
+    return <div>Loading arrest tag...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-secondary p-8">
@@ -62,32 +89,56 @@ const ArrestTag = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-semibold text-gray-600">Suspect Name</h3>
-              <p className="text-xl">{arrestTag?.suspect_name}</p>
+          <div className="flex items-start gap-8">
+            <div className="flex-1 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold text-gray-600">Suspect Name</h3>
+                  <p className="text-xl">{arrestTag?.suspect_name}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-600">Booking Date</h3>
+                  <p className="text-xl">
+                    {formatDate(arrestTag?.booking_date)}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-600">Charges</h3>
+                <p className="text-xl">{arrestTag?.charges}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-600">Arresting Officer</h3>
+                <p className="text-xl">{arrestTag?.arresting_officer}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-600">Case Number</h3>
+                <p className="text-xl">{arrestTag?.incident_reports?.case_number}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-600">Booking Date</h3>
-              <p className="text-xl">
-                {formatDate(arrestTag?.booking_date)}
-              </p>
+
+            <div className="w-64 space-y-4">
+              {arrestTag?.mugshot_url ? (
+                <img 
+                  src={arrestTag.mugshot_url} 
+                  alt="Suspect Mugshot" 
+                  className="w-full rounded-lg shadow-md"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-lg">
+                  <Button
+                    onClick={generateMugshot}
+                    disabled={isGenerating}
+                    variant="secondary"
+                  >
+                    {isGenerating ? "Generating..." : "Generate Mugshot"}
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-600">Charges</h3>
-            <p className="text-xl">{arrestTag?.charges}</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-600">Arresting Officer</h3>
-            <p className="text-xl">{arrestTag?.arresting_officer}</p>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-600">Case Number</h3>
-            <p className="text-xl">{arrestTag?.incident_reports?.case_number}</p>
           </div>
 
           <div className="mt-8">
@@ -102,4 +153,3 @@ const ArrestTag = () => {
 };
 
 export default ArrestTag;
-
