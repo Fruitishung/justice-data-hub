@@ -297,6 +297,7 @@ export type Database = {
           created_at: string | null
           finger_position: string
           id: string
+          image_path: string | null
           incident_report_id: string | null
           minutiae_points: Json | null
           pattern_type: string | null
@@ -310,6 +311,7 @@ export type Database = {
           created_at?: string | null
           finger_position: string
           id?: string
+          image_path?: string | null
           incident_report_id?: string | null
           minutiae_points?: Json | null
           pattern_type?: string | null
@@ -323,6 +325,7 @@ export type Database = {
           created_at?: string | null
           finger_position?: string
           id?: string
+          image_path?: string | null
           incident_report_id?: string | null
           minutiae_points?: Json | null
           pattern_type?: string | null
