@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 const GenerateMockDataButton = () => {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -10,22 +11,13 @@ const GenerateMockDataButton = () => {
   const generateMockData = async () => {
     setIsGenerating(true)
     try {
-      const response = await fetch(
-        'https://iqotjboqyqgborcdfsol.supabase.co/functions/v1/generate-mock-data',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          }
-        }
-      )
+      const { data, error } = await supabase.functions.invoke('generate-mock-data', {
+        body: {} // Empty body since our function doesn't require any parameters
+      })
 
-      if (!response.ok) {
-        throw new Error('Failed to generate mock data')
+      if (error) {
+        throw error
       }
-
-      const data = await response.json()
       
       toast({
         title: "Mock Data Generated",
