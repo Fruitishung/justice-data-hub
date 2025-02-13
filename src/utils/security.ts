@@ -19,7 +19,6 @@ export const checkFeatureAccess = async (featureName: string): Promise<boolean> 
     const { data: permissions, error } = await supabase
       .from('user_permissions')
       .select('*')
-      .returns<UserPermissions>()
       .single();
 
     if (error || !permissions) {
@@ -27,7 +26,8 @@ export const checkFeatureAccess = async (featureName: string): Promise<boolean> 
       return false;
     }
 
-    return permissions.allowed_features?.includes(featureName) ?? false;
+    const userPermissions = permissions as UserPermissions;
+    return userPermissions.allowed_features?.includes(featureName) ?? false;
   } catch (error) {
     console.error('Access check failed:', error);
     return false;
