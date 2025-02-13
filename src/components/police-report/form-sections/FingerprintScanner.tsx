@@ -20,11 +20,18 @@ interface MatchResult {
   matchedFingerPosition: string;
 }
 
+interface BiometricMatch extends MatchResult {
+  patternType?: string;
+  ridgeCount?: number;
+  whorlPattern?: string;
+  handDominance?: string;
+}
+
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [scanning, setScanning] = useState(false);
   const [currentFinger, setCurrentFinger] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [matches, setMatches] = useState<BiometricMatch[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
   
@@ -82,12 +89,28 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
       if (error) throw error;
 
-      setMatches(data.matches);
+      const biometricMatches = await Promise.all(
+        data.matches.map(async (match: MatchResult) => {
+          const { data: biometricData } = await supabase
+            .from('suspect_biometrics')
+            .select('*')
+            .eq('incident_report_id', match.id)
+            .maybeSingle();
 
-      if (data.matches.length > 0) {
+          return {
+            ...match,
+            patternType: biometricData?.fingerprint_classification,
+            handDominance: biometricData?.hand_dominance,
+          };
+        })
+      );
+
+      setMatches(biometricMatches);
+
+      if (biometricMatches.length > 0) {
         toast({
           title: "Match Found!",
-          description: `Found ${data.matches.length} potential matches with other records.`,
+          description: `Found ${biometricMatches.length} potential matches with biometric data.`,
         });
       } else {
         toast({
@@ -124,7 +147,6 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
       const result = await scannerUtils.captureFingerprint();
       
       if (result) {
-        // Convert ArrayBuffer to base64 string for storage
         const base64String = btoa(
           String.fromCharCode(...new Uint8Array(result.data))
         );
@@ -136,11 +158,11 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
           timestamp: new Date().toISOString()
         };
         
-        // Update form data
-        const currentFingerprints = form.getValues('suspectFingerprints') || [];
-        form.setValue('suspectFingerprints', [...currentFingerprints, scanData]);
+        form.setValue('suspectFingerprints', [
+          ...form.getValues('suspectFingerprints') || [],
+          scanData
+        ]);
         
-        // Analyze the new scan
         await analyzeFingerprint(scanData);
       }
     } catch (error) {
@@ -170,7 +192,6 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     return fingerprints.find(scan => scan.position === position);
   };
 
-  // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       scannerUtils.disconnect();
@@ -199,13 +220,23 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
           </h3>
           <div className="space-y-2">
             {matches.map((match, index) => (
-              <div key={match.id} className="flex items-center justify-between bg-white p-2 rounded">
-                <div>
+              <div key={match.id} className="flex flex-col bg-white p-3 rounded">
+                <div className="flex items-center justify-between">
                   <span className="font-medium">{match.name}</span>
-                  <span className="text-sm text-muted-foreground ml-2">
+                  <span className="text-sm text-muted-foreground">
                     ({(match.similarity * 100).toFixed(1)}% match on {match.matchedFingerPosition})
                   </span>
                 </div>
+                {(match.patternType || match.handDominance) && (
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {match.patternType && (
+                      <span className="mr-3">Pattern: {match.patternType}</span>
+                    )}
+                    {match.handDominance && (
+                      <span>Dominant Hand: {match.handDominance}</span>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -1,4 +1,3 @@
-
 // Types for fingerprint scanner interactions
 export interface ScannerDevice {
   isConnected: boolean;
@@ -10,9 +9,16 @@ export interface ScannerDevice {
 export interface FingerprintData {
   data: ArrayBuffer;
   quality: number;
+  biometrics?: BiometricData;
+}
+
+export interface BiometricData {
+  patternType: string;
+  ridgeCount: number;
+  whorlPattern?: string;
+  handDominance?: string;
 }
 
 // Export the Digital Persona scanner as the default scanner
 import { DigitalPersonaScanner } from './digitalPersonaScanner';
 export const scannerUtils = new DigitalPersonaScanner();
-

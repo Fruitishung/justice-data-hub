@@ -271,33 +271,66 @@ export type Database = {
           },
         ]
       }
+      fingerprint_patterns: {
+        Row: {
+          base_template: string
+          created_at: string | null
+          id: string
+          pattern_name: string
+        }
+        Insert: {
+          base_template: string
+          created_at?: string | null
+          id?: string
+          pattern_name: string
+        }
+        Update: {
+          base_template?: string
+          created_at?: string | null
+          id?: string
+          pattern_name?: string
+        }
+        Relationships: []
+      }
       fingerprint_scans: {
         Row: {
           created_at: string | null
           finger_position: string
           id: string
           incident_report_id: string | null
+          minutiae_points: Json | null
+          pattern_type: string | null
+          ridge_count: number | null
           scan_data: string
           scan_date: string | null
           scan_quality: number | null
+          whorl_pattern: string | null
         }
         Insert: {
           created_at?: string | null
           finger_position: string
           id?: string
           incident_report_id?: string | null
+          minutiae_points?: Json | null
+          pattern_type?: string | null
+          ridge_count?: number | null
           scan_data: string
           scan_date?: string | null
           scan_quality?: number | null
+          whorl_pattern?: string | null
         }
         Update: {
           created_at?: string | null
           finger_position?: string
           id?: string
           incident_report_id?: string | null
+          minutiae_points?: Json | null
+          pattern_type?: string | null
+          ridge_count?: number | null
           scan_data?: string
           scan_date?: string | null
           scan_quality?: number | null
+          whorl_pattern?: string | null
         }
         Relationships: [
           {
@@ -622,6 +655,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      suspect_biometrics: {
+        Row: {
+          created_at: string | null
+          fingerprint_classification: string | null
+          hand_dominance: string | null
+          id: string
+          incident_report_id: string | null
+          palm_print_data: Json | null
+          suspect_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          fingerprint_classification?: string | null
+          hand_dominance?: string | null
+          id?: string
+          incident_report_id?: string | null
+          palm_print_data?: Json | null
+          suspect_name: string
+        }
+        Update: {
+          created_at?: string | null
+          fingerprint_classification?: string | null
+          hand_dominance?: string | null
+          id?: string
+          incident_report_id?: string | null
+          palm_print_data?: Json | null
+          suspect_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suspect_biometrics_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_permissions: {
         Row: {
