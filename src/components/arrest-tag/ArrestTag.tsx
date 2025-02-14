@@ -19,11 +19,12 @@ const ArrestTag = () => {
         .from("arrest_tags")
         .select("*, incident_reports(*)")
         .eq("incident_report_id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!id, // Only run query if we have an ID
   });
 
   const handlePrint = () => {
@@ -63,8 +64,34 @@ const ArrestTag = () => {
     });
   };
 
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-secondary p-8">
+        <Card className="max-w-3xl mx-auto p-8">
+          <h1 className="text-2xl font-bold text-red-600">No arrest tag ID provided</h1>
+        </Card>
+      </div>
+    );
+  }
+
   if (isLoading) {
-    return <div>Loading arrest tag...</div>;
+    return (
+      <div className="min-h-screen bg-secondary p-8">
+        <Card className="max-w-3xl mx-auto p-8">
+          <div>Loading arrest tag...</div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!arrestTag) {
+    return (
+      <div className="min-h-screen bg-secondary p-8">
+        <Card className="max-w-3xl mx-auto p-8">
+          <h1 className="text-2xl font-bold text-red-600">Arrest tag not found</h1>
+        </Card>
+      </div>
+    );
   }
 
   return (
