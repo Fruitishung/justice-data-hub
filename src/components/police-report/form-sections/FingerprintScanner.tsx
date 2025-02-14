@@ -9,6 +9,7 @@ import { Fingerprint } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { checkFeatureAccess } from "@/utils/security"
 import { scannerUtils } from "@/utils/fingerprintScanner"
+import { useParams } from "react-router-dom"
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>
@@ -18,6 +19,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [isScanning, setIsScanning] = useState(false)
   const [hasAccess, setHasAccess] = useState(false)
   const { toast } = useToast()
+  const { id } = useParams() // Get route params
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -51,8 +53,24 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
         String.fromCharCode(...new Uint8Array(scanResult.data))
       )
 
-      // For new reports, we'll store the fingerprint data temporarily in the form
-      // and create the actual database records when the report is submitted
+      if (id && id !== 'new') {
+        // If we have a valid report ID, save directly to the database
+        const { error: scanError } = await supabase
+          .from('fingerprint_scans')
+          .insert({
+            finger_position: 'right_index',
+            scan_data: base64String,
+            scan_quality: scanResult.quality,
+            incident_report_id: id,
+            scan_date: new Date().toISOString()
+          })
+
+        if (scanError) {
+          throw scanError
+        }
+      }
+
+      // Update form state regardless of whether we're creating or editing
       const currentFingerprints = form.getValues("suspectFingerprints") || []
       form.setValue("suspectFingerprints", [
         ...currentFingerprints,
