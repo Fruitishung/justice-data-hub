@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +12,14 @@ import MockDataPage from "./pages/MockDataPage";
 import ReportDetailsPage from "./pages/ReportDetailsPage";
 import StudentDataProtection from "./pages/StudentDataProtection";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,6 +33,7 @@ const App = () => (
           <Route path="/mctetts" element={<MCTETTSPage />} />
           <Route path="/mock-data" element={<MockDataPage />} />
           <Route path="/report/:id" element={<ReportDetailsPage />} />
+          <Route path="/report/new" element={<ReportDetailsPage />} />
           <Route path="/student-data-protection" element={<StudentDataProtection />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
