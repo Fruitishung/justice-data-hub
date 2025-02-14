@@ -9,22 +9,26 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 const ArrestTag = () => {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params.id;
+
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: arrestTag, isLoading, refetch } = useQuery({
     queryKey: ["arrest-tag", id],
     queryFn: async () => {
+      if (!id) throw new Error("No ID provided");
+      
       const { data, error } = await supabase
         .from("arrest_tags")
         .select("*, incident_reports(*)")
-        .eq("incident_report_id", id)
+        .eq("id", id) // Changed from incident_report_id to id
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!id, // Only run query if we have an ID
+    enabled: !!id,
   });
 
   const handlePrint = () => {
