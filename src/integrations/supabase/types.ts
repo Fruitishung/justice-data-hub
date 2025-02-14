@@ -899,6 +899,12 @@ export type Database = {
           avg_completion_time_hours: number
         }[]
       }
+      has_feature_access: {
+        Args: {
+          feature_name: string
+        }
+        Returns: boolean
+      }
       search_property: {
         Args: {
           search_term: string
