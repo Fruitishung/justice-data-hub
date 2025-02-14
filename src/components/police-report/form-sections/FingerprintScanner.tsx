@@ -1,14 +1,14 @@
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
-import { Fingerprint } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { Fingerprint } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { checkFeatureAccess } from "@/utils/security"
-import { digitalPersonaScanner } from "@/utils/digitalPersonaScanner"
+import { scannerUtils } from "@/utils/fingerprintScanner" // Fixed import
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>
@@ -39,33 +39,61 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
     try {
       setIsScanning(true)
-      const scanResult = await digitalPersonaScanner.capture()
+      const currentCase = form.getValues("caseNumber")
       
-      if (!scanResult.success) {
-        throw new Error(scanResult.error || "Failed to capture fingerprint")
+      // Capture fingerprint
+      const scanResult = await scannerUtils.captureFingerprint()
+      if (!scanResult) {
+        throw new Error("Failed to capture fingerprint")
       }
 
-      // Upload scan data to Supabase
-      const { data: fingerprint, error: uploadError } = await supabase
-        .from('fingerprint_scans')
-        .insert({
-          scan_data: scanResult.data,
-          finger_position: 'right_index',
-          incident_report_id: form.getValues('id')
-        })
-        .select()
-        .single()
+      // Convert ArrayBuffer to base64
+      const base64String = btoa(
+        String.fromCharCode(...new Uint8Array(scanResult.data))
+      )
+
+      // Upload to Supabase storage via edge function
+      const { data: uploadResponse, error: uploadError } = await supabase.functions.invoke(
+        'upload-fingerprint',
+        {
+          body: {
+            fingerprintData: base64String,
+            position: 'right_index',
+            incidentReportId: currentCase
+          }
+        }
+      )
 
       if (uploadError) {
         throw uploadError
       }
 
-      // Update form with fingerprint data
-      const currentSuspectDetails = form.getValues('suspectDetails') || {}
-      form.setValue('suspectDetails', {
-        ...currentSuspectDetails,
-        fingerprints: [...(currentSuspectDetails.fingerprints || []), fingerprint.id]
-      })
+      // Save scan details in fingerprint_scans table
+      const { error: scanError } = await supabase
+        .from('fingerprint_scans')
+        .insert({
+          finger_position: 'right_index',
+          scan_data: base64String,
+          scan_quality: scanResult.quality,
+          incident_report_id: currentCase,
+          image_path: uploadResponse.publicUrl
+        })
+
+      if (scanError) {
+        throw scanError
+      }
+
+      // Update form state
+      const currentFingerprints = form.getValues("suspectFingerprints") || []
+      form.setValue("suspectFingerprints", [
+        ...currentFingerprints,
+        {
+          position: 'right_index',
+          scanData: base64String,
+          quality: scanResult.quality,
+          timestamp: new Date().toISOString()
+        }
+      ])
 
       toast({
         title: "Success",
