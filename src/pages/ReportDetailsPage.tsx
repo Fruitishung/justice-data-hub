@@ -6,23 +6,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReportForm from '@/components/police-report/ReportForm';
+import { Database } from '@/integrations/supabase/types';
 
-interface EvidencePhoto {
-  id: string;
-  file_path: string;
-}
-
-interface IncidentReport {
-  id: string;
-  case_number: string;
-  incident_date: string;
-  incident_description: string;
-  location_address: string;
-  report_status: string;
-  evidence_description: string;
-  evidence_location: string;
-  evidence_photos: EvidencePhoto[];
-}
+type IncidentReport = Database['public']['Tables']['incident_reports']['Row'] & {
+  evidence_photos: { id: string; file_path: string; }[];
+  suspect_fingerprints: {
+    id: string;
+    finger_position: string;
+    scan_data: string;
+    scan_quality: number | null;
+    scan_date: string | null;
+  }[];
+};
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
@@ -30,18 +25,30 @@ const ReportDetailsPage = () => {
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
+      if (!id) throw new Error('No ID provided');
+      
       const { data, error } = await supabase
         .from('incident_reports')
         .select(`
           *,
-          evidence_photos,
-          suspect_fingerprints:fingerprint_scans(*)
+          evidence_photos (
+            id,
+            file_path
+          ),
+          suspect_fingerprints:fingerprint_scans (
+            id,
+            finger_position,
+            scan_data,
+            scan_quality,
+            scan_date
+          )
         `)
         .eq('id', id)
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      if (!data) throw new Error('Report not found');
+      return data as IncidentReport;
     },
     enabled: !!id && id !== 'new'
   });
@@ -87,9 +94,9 @@ const ReportDetailsPage = () => {
           <div className="space-y-2">
             <p><strong>Description:</strong> {report.evidence_description}</p>
             <p><strong>Location:</strong> {report.evidence_location}</p>
-            {Array.isArray(report.evidence_photos) && report.evidence_photos.length > 0 && (
+            {report.evidence_photos && report.evidence_photos.length > 0 && (
               <div className="grid grid-cols-2 gap-2 mt-4">
-                {report.evidence_photos.map((photo: EvidencePhoto) => (
+                {report.evidence_photos.map((photo) => (
                   <div key={photo.id} className="aspect-square bg-gray-100 rounded">
                     <img
                       src={`${supabase.storage.from('evidence_photos').getPublicUrl(photo.file_path).data.publicUrl}`}

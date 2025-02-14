@@ -7,14 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Database } from '@/integrations/supabase/types';
+
+type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'] & {
+  incident_reports: Database['public']['Tables']['incident_reports']['Row'] | null;
+};
 
 const ArrestTag = () => {
-  const params = useParams();
-  const id = params.id;
-
+  const { id } = useParams();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: arrestTag, isLoading, refetch } = useQuery({
+  const { data: arrestTag, isLoading, refetch } = useQuery<ArrestTag>({
     queryKey: ["arrest-tag", id],
     queryFn: async () => {
       if (!id) throw new Error("No ID provided");
@@ -22,11 +25,12 @@ const ArrestTag = () => {
       const { data, error } = await supabase
         .from("arrest_tags")
         .select("*, incident_reports(*)")
-        .eq("id", id) // Changed from incident_report_id to id
+        .eq("id", id)
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      if (!data) throw new Error("Arrest tag not found");
+      return data as ArrestTag;
     },
     enabled: !!id,
   });
