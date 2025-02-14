@@ -10,6 +10,7 @@ import ArrestTagPage from "./pages/ArrestTagPage";
 import MCTETTSPage from "./pages/MCTETTSPage";
 import MockDataPage from "./pages/MockDataPage";
 import ReportDetailsPage from "./pages/ReportDetailsPage";
+import ReportsListPage from "./pages/ReportsListPage";
 import StudentDataProtection from "./pages/StudentDataProtection";
 
 const queryClient = new QueryClient({
@@ -29,11 +30,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/reports" element={<ReportsListPage />} />
           <Route path="/arrest-tag/:id" element={<ArrestTagPage />} />
+          <Route path="/arrest-tags" element={<ArrestTagPage />} />
           <Route path="/mctetts" element={<MCTETTSPage />} />
           <Route path="/mock-data" element={<MockDataPage />} />
-          <Route path="/report/:id" element={<ReportDetailsPage />} />
           <Route path="/report/new" element={<ReportDetailsPage />} />
+          <Route path="/report/:id" element={<ReportDetailsPage />} />
           <Route path="/student-data-protection" element={<StudentDataProtection />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

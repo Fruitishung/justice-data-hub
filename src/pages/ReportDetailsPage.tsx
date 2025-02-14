@@ -7,10 +7,27 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReportForm from '@/components/police-report/ReportForm';
 
+interface EvidencePhoto {
+  id: string;
+  file_path: string;
+}
+
+interface IncidentReport {
+  id: string;
+  case_number: string;
+  incident_date: string;
+  incident_description: string;
+  location_address: string;
+  report_status: string;
+  evidence_description: string;
+  evidence_location: string;
+  evidence_photos: EvidencePhoto[];
+}
+
 const ReportDetailsPage = () => {
   const { id } = useParams();
 
-  const { data: report, isLoading } = useQuery({
+  const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,10 +43,9 @@ const ReportDetailsPage = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id && id !== 'new' // Only run query if we have a valid ID
+    enabled: !!id && id !== 'new'
   });
 
-  // If we're creating a new report or loading, show the form
   if (id === 'new' || isLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -41,7 +57,6 @@ const ReportDetailsPage = () => {
     );
   }
 
-  // If we couldn't find the report
   if (!report) {
     return (
       <div className="container mx-auto p-6">
@@ -72,9 +87,9 @@ const ReportDetailsPage = () => {
           <div className="space-y-2">
             <p><strong>Description:</strong> {report.evidence_description}</p>
             <p><strong>Location:</strong> {report.evidence_location}</p>
-            {report.evidence_photos && (
+            {Array.isArray(report.evidence_photos) && report.evidence_photos.length > 0 && (
               <div className="grid grid-cols-2 gap-2 mt-4">
-                {report.evidence_photos.map((photo: any) => (
+                {report.evidence_photos.map((photo: EvidencePhoto) => (
                   <div key={photo.id} className="aspect-square bg-gray-100 rounded">
                     <img
                       src={`${supabase.storage.from('evidence_photos').getPublicUrl(photo.file_path).data.publicUrl}`}
