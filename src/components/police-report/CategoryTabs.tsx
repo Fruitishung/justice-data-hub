@@ -1,56 +1,42 @@
 
-import { 
-  Clipboard, 
-  Car, 
-  MapPin, 
-  AlertCircle,
-  FileText,
-  UserMinus,
-  UserX,
-  Camera,
-  Mic
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Database, AlertCircle, Car, FileText, Link, MapPin, UserX, Users } from "lucide-react";
 
 const CategoryTabs = ({ children }: { children: React.ReactNode }) => {
   return (
     <Tabs defaultValue="incident" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9">
+      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         <TabsTrigger value="incident" className="flex items-center gap-2">
-          <Clipboard className="w-4 h-4" />
-          <span className="hidden sm:inline">Incident</span>
+          <Link className="h-4 w-4" />
+          Incident
         </TabsTrigger>
         <TabsTrigger value="vehicle" className="flex items-center gap-2">
-          <Car className="w-4 h-4" />
-          <span className="hidden sm:inline">Vehicle</span>
+          <Car className="h-4 w-4" />
+          Vehicle
         </TabsTrigger>
         <TabsTrigger value="location" className="flex items-center gap-2">
-          <MapPin className="w-4 h-4" />
-          <span className="hidden sm:inline">Location</span>
+          <MapPin className="h-4 w-4" />
+          Location
         </TabsTrigger>
         <TabsTrigger value="evidence" className="flex items-center gap-2">
-          <FileText className="w-4 h-4" />
-          <span className="hidden sm:inline">Evidence</span>
+          <FileText className="h-4 w-4" />
+          Evidence
         </TabsTrigger>
         <TabsTrigger value="emergency" className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">Emergency</span>
+          <AlertCircle className="h-4 w-4" />
+          Emergency
         </TabsTrigger>
         <TabsTrigger value="victim" className="flex items-center gap-2">
-          <UserMinus className="w-4 h-4" />
-          <span className="hidden sm:inline">Victim</span>
+          <Users className="h-4 w-4" />
+          Victim
         </TabsTrigger>
         <TabsTrigger value="suspect" className="flex items-center gap-2">
-          <UserX className="w-4 h-4" />
-          <span className="hidden sm:inline">Suspect</span>
+          <UserX className="h-4 w-4" />
+          Suspect
         </TabsTrigger>
         <TabsTrigger value="photos" className="flex items-center gap-2">
-          <Camera className="w-4 h-4" />
-          <span className="hidden sm:inline">Photos</span>
-        </TabsTrigger>
-        <TabsTrigger value="dictation" className="flex items-center gap-2">
-          <Mic className="w-4 h-4" />
-          <span className="hidden sm:inline">Dictation</span>
+          <Database className="h-4 w-4" />
+          Photos
         </TabsTrigger>
       </TabsList>
       {children}
