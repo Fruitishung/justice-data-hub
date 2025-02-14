@@ -10,6 +10,7 @@ import ArrestTagPage from "./pages/ArrestTagPage";
 import MCTETTSPage from "./pages/MCTETTSPage";
 import MockDataPage from "./pages/MockDataPage";
 import ReportDetailsPage from "./pages/ReportDetailsPage";
+import StudentDataProtection from "./pages/StudentDataProtection";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,7 @@ const App = () => (
           <Route path="/mctetts" element={<MCTETTSPage />} />
           <Route path="/mock-data" element={<MockDataPage />} />
           <Route path="/report/:id" element={<ReportDetailsPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/student-data-protection" element={<StudentDataProtection />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
