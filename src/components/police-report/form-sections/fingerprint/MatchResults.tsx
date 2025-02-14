@@ -1,6 +1,4 @@
 
-import { UserCheck } from "lucide-react";
-
 interface BiometricMatch {
   id: string;
   name: string;
@@ -21,10 +19,7 @@ const MatchResults = ({ matches }: MatchResultsProps) => {
 
   return (
     <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-      <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-        <UserCheck className="text-yellow-600" />
-        Potential Matches Found
-      </h3>
+      <h3 className="text-lg font-semibold mb-2">Potential Matches Found</h3>
       <div className="space-y-2">
         {matches.map((match) => (
           <div key={match.id} className="flex flex-col bg-white p-3 rounded">
