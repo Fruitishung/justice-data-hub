@@ -462,6 +462,39 @@ export type Database = {
         }
         Relationships: []
       }
+      minor_data_access_logs: {
+        Row: {
+          access_reason: string
+          access_type: string
+          accessed_at: string
+          accessed_by_user_id: string | null
+          id: string
+          ip_address: string | null
+          student_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_reason: string
+          access_type: string
+          accessed_at?: string
+          accessed_by_user_id?: string | null
+          id?: string
+          ip_address?: string | null
+          student_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_reason?: string
+          access_type?: string
+          accessed_at?: string
+          accessed_by_user_id?: string | null
+          id?: string
+          ip_address?: string | null
+          student_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       narrative_reports: {
         Row: {
           created_at: string | null
@@ -623,6 +656,54 @@ export type Database = {
           id?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      student_data_protection: {
+        Row: {
+          created_at: string
+          data_access_restrictions: string[] | null
+          data_retention_policy: string
+          guardian_email: string | null
+          id: string
+          parental_consent_date: string | null
+          parental_consent_obtained: boolean | null
+          school_district: string | null
+          school_email: string | null
+          school_system: Database["public"]["Enums"]["school_system"] | null
+          updated_at: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          created_at?: string
+          data_access_restrictions?: string[] | null
+          data_retention_policy?: string
+          guardian_email?: string | null
+          id?: string
+          parental_consent_date?: string | null
+          parental_consent_obtained?: boolean | null
+          school_district?: string | null
+          school_email?: string | null
+          school_system?: Database["public"]["Enums"]["school_system"] | null
+          updated_at?: string
+          user_id: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          created_at?: string
+          data_access_restrictions?: string[] | null
+          data_retention_policy?: string
+          guardian_email?: string | null
+          id?: string
+          parental_consent_date?: string | null
+          parental_consent_obtained?: boolean | null
+          school_district?: string | null
+          school_email?: string | null
+          school_system?: Database["public"]["Enums"]["school_system"] | null
+          updated_at?: string
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
         }
         Relationships: []
       }
@@ -905,6 +986,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_minor: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
+      log_minor_data_access: {
+        Args: {
+          p_student_id: string
+          p_access_type: string
+          p_access_reason: string
+        }
+        Returns: undefined
+      }
       search_property: {
         Args: {
           search_term: string
@@ -983,8 +1078,10 @@ export type Database = {
         | "left_ring"
         | "left_little"
       penal_code_type: "211" | "187"
+      school_system: "google_edu" | "microsoft_edu" | "other"
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
       user_role: "viewer" | "user" | "admin"
+      user_type: "adult" | "minor"
       warrant_status: "active" | "cleared" | "expired"
     }
     CompositeTypes: {
