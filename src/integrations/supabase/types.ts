@@ -1079,6 +1079,7 @@ export type Database = {
         | "left_little"
       penal_code_type: "211" | "187"
       school_system: "google_edu" | "microsoft_edu" | "other"
+      school_system_type: "google_edu" | "microsoft_edu" | "other"
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
       user_role: "viewer" | "user" | "admin"
       user_type: "adult" | "minor"
