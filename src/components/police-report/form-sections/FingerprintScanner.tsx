@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UseFormReturn } from "react-hook-form"
@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Fingerprint } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { checkFeatureAccess } from "@/utils/security"
-import { scannerUtils } from "@/utils/fingerprintScanner" // Fixed import
+import { scannerUtils } from "@/utils/fingerprintScanner"
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>
@@ -39,7 +39,6 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
     try {
       setIsScanning(true)
-      const currentCase = form.getValues("caseNumber")
       
       // Capture fingerprint
       const scanResult = await scannerUtils.captureFingerprint()
@@ -52,38 +51,8 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
         String.fromCharCode(...new Uint8Array(scanResult.data))
       )
 
-      // Upload to Supabase storage via edge function
-      const { data: uploadResponse, error: uploadError } = await supabase.functions.invoke(
-        'upload-fingerprint',
-        {
-          body: {
-            fingerprintData: base64String,
-            position: 'right_index',
-            incidentReportId: currentCase
-          }
-        }
-      )
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      // Save scan details in fingerprint_scans table
-      const { error: scanError } = await supabase
-        .from('fingerprint_scans')
-        .insert({
-          finger_position: 'right_index',
-          scan_data: base64String,
-          scan_quality: scanResult.quality,
-          incident_report_id: currentCase,
-          image_path: uploadResponse.publicUrl
-        })
-
-      if (scanError) {
-        throw scanError
-      }
-
-      // Update form state
+      // For new reports, we'll store the fingerprint data temporarily in the form
+      // and create the actual database records when the report is submitted
       const currentFingerprints = form.getValues("suspectFingerprints") || []
       form.setValue("suspectFingerprints", [
         ...currentFingerprints,
@@ -97,7 +66,7 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
       toast({
         title: "Success",
-        description: "Fingerprint scan completed and uploaded successfully",
+        description: "Fingerprint scan completed successfully",
       })
 
     } catch (error) {
