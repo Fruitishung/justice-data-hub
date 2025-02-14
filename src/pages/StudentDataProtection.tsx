@@ -29,14 +29,19 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+type SchoolSystemType = "google_edu" | "microsoft_edu" | "other";
+
 interface ProtectionSettings {
   id: string;
-  school_system: string;
+  school_system: SchoolSystemType;
   school_email: string;
   school_district: string;
   guardian_email: string | null;
   parental_consent_obtained: boolean;
   parental_consent_date: string | null;
+  data_retention_policy: string;
+  data_access_restrictions: string[];
+  user_type: "adult" | "minor";
 }
 
 interface AccessLog {
@@ -100,13 +105,14 @@ const StudentDataProtection = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const newSettings = { ...settings, ...updates };
-    
     if (settings?.id) {
       // Update existing settings
       const { error } = await supabase
         .from('student_data_protection')
-        .update(updates)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', settings.id);
 
       if (error) {
@@ -117,11 +123,23 @@ const StudentDataProtection = () => {
         });
         return;
       }
+
+      setSettings({ ...settings, ...updates });
     } else {
       // Insert new settings
-      const { error } = await supabase
+      const newSettings = {
+        user_id: user.id,
+        user_type: "minor" as const,
+        data_retention_policy: "standard",
+        data_access_restrictions: [],
+        ...updates
+      };
+
+      const { error, data } = await supabase
         .from('student_data_protection')
-        .insert([{ ...newSettings, user_id: user.id }]);
+        .insert(newSettings)
+        .select()
+        .single();
 
       if (error) {
         toast({
@@ -131,9 +149,12 @@ const StudentDataProtection = () => {
         });
         return;
       }
+
+      if (data) {
+        setSettings(data);
+      }
     }
 
-    setSettings(newSettings as ProtectionSettings);
     toast({
       title: "Success",
       description: "Protection settings updated successfully",
@@ -163,7 +184,7 @@ const StudentDataProtection = () => {
                 <Label htmlFor="school-system">School System</Label>
                 <Select
                   value={settings?.school_system || ""}
-                  onValueChange={(value) =>
+                  onValueChange={(value: SchoolSystemType) =>
                     updateSettings({ school_system: value })
                   }
                 >
