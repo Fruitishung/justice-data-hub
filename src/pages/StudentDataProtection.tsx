@@ -1,13 +1,23 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -17,121 +27,122 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface ProtectionSettings {
+  id: string;
+  school_system: string;
+  school_email: string;
+  school_district: string;
+  guardian_email: string | null;
+  parental_consent_obtained: boolean;
+  parental_consent_date: string | null;
+}
+
+interface AccessLog {
+  id: string;
+  accessed_at: string;
+  accessed_by_user_id: string;
+  student_id: string;
+  access_type: string;
+  access_reason: string;
+}
 
 const StudentDataProtection = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [settings, setSettings] = useState<ProtectionSettings | null>(null);
+  const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [protection, setProtection] = useState<any>(null);
-  const [accessLogs, setAccessLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    checkAdminStatus();
-    loadData();
-  }, []);
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const checkAdminStatus = async () => {
-    const { data: permissions } = await supabase
-      .from('user_permissions')
-      .select('role')
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-      .single();
-
-    setIsAdmin(permissions?.role === 'admin');
-  };
-
-  const loadData = async () => {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
+      // Check if user is admin
+      const { data: permissions } = await supabase
+        .from('user_permissions')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
       
-      // Load protection settings
-      const { data: protectionData, error: protectionError } = await supabase
+      setIsAdmin(permissions?.role === 'admin');
+
+      // Fetch protection settings
+      const { data: protectionData } = await supabase
         .from('student_data_protection')
         .select('*')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (protectionError && protectionError.code !== 'PGRST116') {
-        throw protectionError;
+      if (protectionData) {
+        setSettings(protectionData);
       }
 
-      setProtection(protectionData || {});
-
-      // Load access logs if admin
-      if (isAdmin) {
-        const { data: logsData, error: logsError } = await supabase
+      // Fetch access logs if admin
+      if (permissions?.role === 'admin') {
+        const { data: logs } = await supabase
           .from('minor_data_access_logs')
-          .select(`
-            *,
-            accessed_by:accessed_by_user_id (
-              email
-            ),
-            student:student_id (
-              email
-            )
-          `)
+          .select('*')
           .order('accessed_at', { ascending: false })
           .limit(50);
 
-        if (logsError) throw logsError;
-        setAccessLogs(logsData || []);
+        if (logs) {
+          setAccessLogs(logs);
+        }
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load data protection settings.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const updateProtection = async (updates: any) => {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
+    fetchData();
+  }, []);
+
+  const updateSettings = async (updates: Partial<ProtectionSettings>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const newSettings = { ...settings, ...updates };
+    
+    if (settings?.id) {
+      // Update existing settings
       const { error } = await supabase
         .from('student_data_protection')
-        .upsert({
-          user_id: userId,
-          ...protection,
-          ...updates,
-          updated_at: new Date().toISOString(),
+        .update(updates)
+        .eq('id', settings.id);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update protection settings",
         });
+        return;
+      }
+    } else {
+      // Insert new settings
+      const { error } = await supabase
+        .from('student_data_protection')
+        .insert([{ ...newSettings, user_id: user.id }]);
 
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Data protection settings updated.",
-      });
-
-      loadData();
-    } catch (error) {
-      console.error('Error updating protection:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update settings.",
-        variant: "destructive",
-      });
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create protection settings",
+        });
+        return;
+      }
     }
-  };
 
-  if (loading) {
-    return <div className="p-8">Loading...</div>;
-  }
+    setSettings(newSettings as ProtectionSettings);
+    toast({
+      title: "Success",
+      description: "Protection settings updated successfully",
+    });
+  };
 
   return (
     <div className="container mx-auto p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Student Data Protection</h1>
-        <Button variant="outline" onClick={() => navigate("/")}>
-          Back to Home
-        </Button>
-      </div>
+      <h1 className="text-3xl font-bold mb-8">Student Data Protection</h1>
 
       <Tabs defaultValue="settings">
         <TabsList>
@@ -140,93 +151,123 @@ const StudentDataProtection = () => {
         </TabsList>
 
         <TabsContent value="settings">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div>
-                <Label>School System</Label>
-                <select
-                  className="w-full p-2 border rounded"
-                  value={protection.school_system || ''}
-                  onChange={(e) => updateProtection({ school_system: e.target.value })}
+          <Card>
+            <CardHeader>
+              <CardTitle>Protection Settings</CardTitle>
+              <CardDescription>
+                Configure your student data protection settings and parental consent
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="school-system">School System</Label>
+                <Select
+                  value={settings?.school_system || ""}
+                  onValueChange={(value) =>
+                    updateSettings({ school_system: value })
+                  }
                 >
-                  <option value="">Select System</option>
-                  <option value="google_edu">Google Education</option>
-                  <option value="microsoft_edu">Microsoft Education</option>
-                  <option value="other">Other</option>
-                </select>
+                  <SelectTrigger id="school-system">
+                    <SelectValue placeholder="Select school system" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="google_edu">Google Education</SelectItem>
+                    <SelectItem value="microsoft_edu">
+                      Microsoft Education
+                    </SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div>
-                <Label>School Email</Label>
+              <div className="space-y-2">
+                <Label htmlFor="school-email">School Email</Label>
                 <Input
+                  id="school-email"
                   type="email"
-                  value={protection.school_email || ''}
-                  onChange={(e) => updateProtection({ school_email: e.target.value })}
+                  value={settings?.school_email || ""}
+                  onChange={(e) =>
+                    updateSettings({ school_email: e.target.value })
+                  }
                 />
               </div>
 
-              <div>
-                <Label>School District</Label>
+              <div className="space-y-2">
+                <Label htmlFor="school-district">School District</Label>
                 <Input
-                  value={protection.school_district || ''}
-                  onChange={(e) => updateProtection({ school_district: e.target.value })}
+                  id="school-district"
+                  value={settings?.school_district || ""}
+                  onChange={(e) =>
+                    updateSettings({ school_district: e.target.value })
+                  }
                 />
               </div>
 
               <div className="flex items-center space-x-2">
                 <Switch
-                  checked={protection.parental_consent_obtained || false}
-                  onCheckedChange={(checked) => 
-                    updateProtection({ 
+                  id="parental-consent"
+                  checked={settings?.parental_consent_obtained || false}
+                  onCheckedChange={(checked) => {
+                    const updates: Partial<ProtectionSettings> = {
                       parental_consent_obtained: checked,
-                      parental_consent_date: checked ? new Date().toISOString() : null
-                    })
-                  }
+                      parental_consent_date: checked ? new Date().toISOString() : null,
+                    };
+                    updateSettings(updates);
+                  }}
                 />
-                <Label>Parental Consent Obtained</Label>
+                <Label htmlFor="parental-consent">Parental Consent Obtained</Label>
               </div>
 
-              {protection.parental_consent_obtained && (
-                <div>
-                  <Label>Guardian Email</Label>
+              {settings?.parental_consent_obtained && (
+                <div className="space-y-2">
+                  <Label htmlFor="guardian-email">Guardian Email</Label>
                   <Input
+                    id="guardian-email"
                     type="email"
-                    value={protection.guardian_email || ''}
-                    onChange={(e) => updateProtection({ guardian_email: e.target.value })}
+                    value={settings?.guardian_email || ""}
+                    onChange={(e) =>
+                      updateSettings({ guardian_email: e.target.value })
+                    }
                   />
                 </div>
               )}
-            </div>
+            </CardContent>
           </Card>
         </TabsContent>
 
         {isAdmin && (
           <TabsContent value="logs">
-            <Card className="p-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Accessed By</TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Access Type</TableHead>
-                    <TableHead>Reason</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {accessLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>
-                        {format(new Date(log.accessed_at), 'MMM d, yyyy HH:mm')}
-                      </TableCell>
-                      <TableCell>{log.accessed_by?.email}</TableCell>
-                      <TableCell>{log.student?.email}</TableCell>
-                      <TableCell>{log.access_type}</TableCell>
-                      <TableCell>{log.access_reason}</TableCell>
+            <Card>
+              <CardHeader>
+                <CardTitle>Access Logs</CardTitle>
+                <CardDescription>
+                  View recent access to student data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Access Type</TableHead>
+                      <TableHead>Reason</TableHead>
+                      <TableHead>Student ID</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {accessLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell>
+                          {new Date(log.accessed_at).toLocaleString()}
+                        </TableCell>
+                        <TableCell>{log.access_type}</TableCell>
+                        <TableCell>{log.access_reason}</TableCell>
+                        <TableCell>{log.student_id}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
             </Card>
           </TabsContent>
         )}
