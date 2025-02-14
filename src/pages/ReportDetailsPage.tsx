@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import ReportForm from '@/components/police-report/ReportForm';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
@@ -20,40 +21,27 @@ const ReportDetailsPage = () => {
           suspect_fingerprints:fingerprint_scans(*)
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
-    }
-  });
-
-  const { data: photos, isLoading: photosLoading } = useQuery({
-    queryKey: ['report-photos', id],
-    queryFn: async () => {
-      if (!report?.evidence_photos) return [];
-
-      const { data: filesData } = await supabase
-        .storage
-        .from('evidence_photos')
-        .list(id as string);
-
-      return filesData || [];
     },
-    enabled: !!report
+    enabled: !!id && id !== 'new' // Only run query if we have a valid ID
   });
 
-  if (isLoading) {
+  // If we're creating a new report or loading, show the form
+  if (id === 'new' || isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <Skeleton className="h-12 w-1/3" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-        </div>
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">
+          {id === 'new' ? 'Create New Report' : 'Loading Report...'}
+        </h1>
+        {id === 'new' ? <ReportForm /> : <Skeleton className="h-96" />}
       </div>
     );
   }
 
+  // If we couldn't find the report
   if (!report) {
     return (
       <div className="container mx-auto p-6">
@@ -84,14 +72,12 @@ const ReportDetailsPage = () => {
           <div className="space-y-2">
             <p><strong>Description:</strong> {report.evidence_description}</p>
             <p><strong>Location:</strong> {report.evidence_location}</p>
-            {photosLoading ? (
-              <Skeleton className="h-32 w-full" />
-            ) : (
+            {report.evidence_photos && (
               <div className="grid grid-cols-2 gap-2 mt-4">
-                {photos?.map((photo) => (
-                  <div key={photo.name} className="aspect-square bg-gray-100 rounded">
+                {report.evidence_photos.map((photo: any) => (
+                  <div key={photo.id} className="aspect-square bg-gray-100 rounded">
                     <img
-                      src={`${supabase.storage.from('evidence_photos').getPublicUrl(photo.name).data.publicUrl}`}
+                      src={`${supabase.storage.from('evidence_photos').getPublicUrl(photo.file_path).data.publicUrl}`}
                       alt="Evidence"
                       className="w-full h-full object-cover rounded"
                     />
