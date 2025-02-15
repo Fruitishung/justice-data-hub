@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,17 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/");
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -39,12 +50,12 @@ const AuthPage = () => {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: loginPassword,
       });
 
-      if (error) throw error;
+      if (signInError) throw signInError;
 
       toast({
         title: "Success",
@@ -74,26 +85,31 @@ const AuthPage = () => {
       return;
     }
 
+    if (!schoolName.trim()) {
+      setError("School name is required");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            username,
-            school_name: schoolName,
+            username: username.trim(),
+            school_name: schoolName.trim(),
             legal_disclaimer_accepted: disclaimerAccepted,
           },
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
       toast({
         title: "Success",
         description: "Registration successful! Please check your email to verify your account.",
       });
-      navigate("/");
     } catch (error: any) {
       setError(error.message);
       toast({
