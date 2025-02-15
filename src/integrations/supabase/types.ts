@@ -746,6 +746,36 @@ export type Database = {
         }
         Relationships: []
       }
+      student_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          legal_disclaimer_accepted: boolean | null
+          legal_disclaimer_date: string | null
+          school_name: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          legal_disclaimer_accepted?: boolean | null
+          legal_disclaimer_date?: string | null
+          school_name: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          legal_disclaimer_accepted?: boolean | null
+          legal_disclaimer_date?: string | null
+          school_name?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
