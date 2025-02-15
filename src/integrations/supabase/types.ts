@@ -659,6 +659,33 @@ export type Database = {
         }
         Relationships: []
       }
+      report_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_data_protection: {
         Row: {
           created_at: string
@@ -777,6 +804,53 @@ export type Database = {
             columns: ["incident_report_id"]
             isOneToOne: false
             referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      template_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          guidance_notes: string | null
+          id: string
+          order_index: number
+          required_fields: string[] | null
+          section_type: Database["public"]["Enums"]["template_section_type"]
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          guidance_notes?: string | null
+          id?: string
+          order_index: number
+          required_fields?: string[] | null
+          section_type: Database["public"]["Enums"]["template_section_type"]
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          guidance_notes?: string | null
+          id?: string
+          order_index?: number
+          required_fields?: string[] | null
+          section_type?: Database["public"]["Enums"]["template_section_type"]
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_sections_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "report_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1081,6 +1155,15 @@ export type Database = {
       school_system: "google_edu" | "microsoft_edu" | "other"
       school_system_type: "google_edu" | "microsoft_edu" | "other"
       subscription_tier: "free" | "basic" | "professional" | "enterprise"
+      template_section_type:
+        | "incident"
+        | "vehicle"
+        | "location"
+        | "evidence"
+        | "emergency"
+        | "victim"
+        | "suspect"
+        | "photos"
       user_role: "viewer" | "user" | "admin"
       user_type: "adult" | "minor"
       warrant_status: "active" | "cleared" | "expired"
