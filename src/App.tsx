@@ -12,6 +12,7 @@ import MockDataPage from "./pages/MockDataPage";
 import ReportDetailsPage from "./pages/ReportDetailsPage";
 import ReportsListPage from "./pages/ReportsListPage";
 import StudentDataProtection from "./pages/StudentDataProtection";
+import AuthPage from "./pages/AuthPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/reports" element={<ReportsListPage />} />
           <Route path="/arrest-tag/:id" element={<ArrestTagPage />} />
           <Route path="/arrest-tags" element={<ArrestTagPage />} />
