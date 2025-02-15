@@ -351,7 +351,9 @@ export type Database = {
       incident_reports: {
         Row: {
           case_number: string | null
+          conclusion_details: Json | null
           created_at: string | null
+          disposition_details: Json | null
           emergency_response: string | null
           emergency_units: string | null
           evidence_description: string | null
@@ -361,6 +363,7 @@ export type Database = {
           id: string
           incident_date: string | null
           incident_description: string | null
+          investigation_details: Json | null
           location_address: string | null
           location_details: string | null
           officer_badge_number: string | null
@@ -375,6 +378,7 @@ export type Database = {
           report_status: string | null
           report_type: string | null
           resolution_date: string | null
+          source_details: Json | null
           suspect_details: Json | null
           vehicle_color: string | null
           vehicle_crime_involvement: Json | null
@@ -388,7 +392,9 @@ export type Database = {
         }
         Insert: {
           case_number?: string | null
+          conclusion_details?: Json | null
           created_at?: string | null
+          disposition_details?: Json | null
           emergency_response?: string | null
           emergency_units?: string | null
           evidence_description?: string | null
@@ -398,6 +404,7 @@ export type Database = {
           id?: string
           incident_date?: string | null
           incident_description?: string | null
+          investigation_details?: Json | null
           location_address?: string | null
           location_details?: string | null
           officer_badge_number?: string | null
@@ -412,6 +419,7 @@ export type Database = {
           report_status?: string | null
           report_type?: string | null
           resolution_date?: string | null
+          source_details?: Json | null
           suspect_details?: Json | null
           vehicle_color?: string | null
           vehicle_crime_involvement?: Json | null
@@ -425,7 +433,9 @@ export type Database = {
         }
         Update: {
           case_number?: string | null
+          conclusion_details?: Json | null
           created_at?: string | null
+          disposition_details?: Json | null
           emergency_response?: string | null
           emergency_units?: string | null
           evidence_description?: string | null
@@ -435,6 +445,7 @@ export type Database = {
           id?: string
           incident_date?: string | null
           incident_description?: string | null
+          investigation_details?: Json | null
           location_address?: string | null
           location_details?: string | null
           officer_badge_number?: string | null
@@ -449,6 +460,7 @@ export type Database = {
           report_status?: string | null
           report_type?: string | null
           resolution_date?: string | null
+          source_details?: Json | null
           suspect_details?: Json | null
           vehicle_color?: string | null
           vehicle_crime_involvement?: Json | null
