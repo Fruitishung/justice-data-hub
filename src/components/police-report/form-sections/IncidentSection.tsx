@@ -12,6 +12,7 @@ import { RecordButton } from "./dictation/RecordButton"
 import { AudioVisualizer } from "./dictation/AudioVisualizer"
 import CaseNumberDisplay from "./CaseNumberDisplay"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState } from "react"
 
 interface IncidentSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -21,6 +22,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
   const { toast } = useToast();
   const { recognition, isRecording, setIsRecording, isProcessing } = useSpeechRecognition(form);
   const { audioLevel, startVisualization, stopVisualization } = useAudioVisualization();
+  const [showTemplate, setShowTemplate] = useState(false);
 
   const toggleRecording = async () => {
     if (!recognition) {
@@ -42,6 +44,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     } else {
       await startVisualization();
       recognition.start();
+      setShowTemplate(true);
       toast({
         title: "Recording Started",
         description: "Voice dictation is now active. Speak clearly into your microphone.",
@@ -51,6 +54,10 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     setIsRecording(!isRecording);
   };
 
+  const handleDescriptionFocus = () => {
+    setShowTemplate(true);
+  };
+
   const caseNumber = form.watch("caseNumber");
 
   return (
@@ -58,14 +65,16 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
       <div className="space-y-6">
         <CaseNumberDisplay caseNumber={caseNumber} />
         
-        <Alert className="bg-muted/50">
-          <AlertDescription className="text-xs text-muted-foreground">
-            Template Example:<br />
-            On [DATE] at approximately [TIME] hours while [ASSIGNMENT/PATROL STATUS], 
-            I observed [INITIAL OBSERVATION/SUSPICIOUS BEHAVIOR]. 
-            The incident occurred at [LOCATION]. [DESCRIBE PROBABLE CAUSE FOR CONTACT].
-          </AlertDescription>
-        </Alert>
+        {showTemplate && (
+          <Alert className="bg-muted/50">
+            <AlertDescription className="text-xs text-muted-foreground">
+              Template Example:<br />
+              On [DATE] at approximately [TIME] hours while [ASSIGNMENT/PATROL STATUS], 
+              I observed [INITIAL OBSERVATION/SUSPICIOUS BEHAVIOR]. 
+              The incident occurred at [LOCATION]. [DESCRIBE PROBABLE CAUSE FOR CONTACT].
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Input
           type="datetime-local"
@@ -80,6 +89,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
                 placeholder="Incident Description"
                 className="flex-1 min-h-[200px]"
                 {...form.register("incidentDescription")}
+                onFocus={handleDescriptionFocus}
               />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/5 flex items-center justify-center rounded-md">
