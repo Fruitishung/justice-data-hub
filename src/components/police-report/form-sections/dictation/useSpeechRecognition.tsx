@@ -11,16 +11,14 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const transcriptBufferRef = useRef<string>('');
   const processingTimeoutRef = useRef<NodeJS.Timeout>();
-  const maxTranscriptLength = 5000; // Limit transcript length for security
+  const maxTranscriptLength = 5000;
   const { toast } = useToast();
 
-  // Sanitize and validate input text
   const sanitizeText = (text: string): string => {
     if (!text) return '';
-    // Remove potential HTML/script tags and limit length
     const sanitized = text
-      .replace(/<[^>]*>?/gm, '') // Remove HTML tags
-      .replace(/[^\w\s.,!?-]/g, '') // Only allow basic punctuation and alphanumeric
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/[^\w\s.,!?-]/g, '')
       .trim();
     return sanitized.slice(0, maxTranscriptLength);
   };
@@ -52,13 +50,16 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   };
 
   useEffect(() => {
-    let isMounted = true; // Prevent memory leaks
+    let isMounted = true;
 
-    if (typeof window !== 'undefined') {
+    const initializeSpeechRecognition = async () => {
       try {
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (typeof window === 'undefined') return;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
+          console.error("Speech recognition not supported");
           toast({
             title: "Not Supported",
             description: "Speech recognition is not supported in your browser.",
@@ -71,19 +72,37 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         recognitionInstance.continuous = true;
         recognitionInstance.interimResults = true;
         recognitionInstance.lang = 'en-US';
+
+        // Request microphone permission explicitly
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop()); // Stop the stream after permission check
+          console.log("Microphone permission granted");
+        } catch (error) {
+          console.error("Microphone permission denied:", error);
+          toast({
+            title: "Permission Denied",
+            description: "Please allow microphone access for voice dictation.",
+            variant: "destructive",
+          });
+          return;
+        }
         
         recognitionInstance.onresult = async (event: any) => {
           if (!isMounted) return;
+          
+          console.log("Speech recognition result received");
 
           try {
             const transcript = Array.from(event.results)
               .map((result: any) => result[0].transcript)
               .join(' ');
             
+            console.log("Raw transcript:", transcript);
+            
             const currentDescription = form.getValues('incidentDescription') || '';
             const newTranscript = sanitizeText(transcript);
             
-            // Check combined length
             if ((currentDescription + newTranscript).length > maxTranscriptLength) {
               toast({
                 title: "Warning",
@@ -104,6 +123,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
               
               if (transcriptBufferRef.current) {
                 const correctedText = await correctText(transcriptBufferRef.current);
+                console.log("Corrected text:", correctedText);
                 form.setValue('incidentDescription', 
                   ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
                 );
@@ -124,9 +144,9 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
         recognitionInstance.onerror = (event: any) => {
           if (!isMounted) return;
+          console.error("Speech recognition error:", event.error);
           
           if (event.error !== 'aborted') {
-            console.error('Speech recognition error:', event.error);
             toast({
               title: "Error",
               description: "There was an error with the speech recognition. Please try again.",
@@ -138,10 +158,12 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
         recognitionInstance.onend = () => {
           if (!isMounted) return;
+          console.log("Speech recognition ended");
           
           if (isRecording) {
             try {
               recognitionInstance.start();
+              console.log("Speech recognition restarted");
             } catch (error) {
               console.error('Error restarting recognition:', error);
               setIsRecording(false);
@@ -150,6 +172,8 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         };
 
         setRecognition(recognitionInstance);
+        console.log("Speech recognition initialized successfully");
+
       } catch (error) {
         console.error('Error initializing speech recognition:', error);
         if (isMounted) {
@@ -160,7 +184,9 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           });
         }
       }
-    }
+    };
+
+    initializeSpeechRecognition();
 
     return () => {
       isMounted = false;
@@ -176,7 +202,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         clearTimeout(processingTimeoutRef.current);
       }
     };
-  }, [form, toast, isRecording]);
+  }, [form, toast]);
 
   return { recognition, isRecording, setIsRecording, isProcessing };
 };
