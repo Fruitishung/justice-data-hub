@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -14,6 +14,13 @@ import { EvidenceSection } from '@/components/report-details/EvidenceSection';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!id) {
+      navigate('/report/new');
+    }
+  }, [id, navigate]);
 
   // For new reports, initialize with empty data
   const emptyReport: IncidentReport = {
@@ -63,13 +70,16 @@ const ReportDetailsPage = () => {
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
+      if (!id) {
+        console.log('No ID provided, redirecting to new report');
+        return emptyReport;
+      }
+
       // For new reports, return empty report immediately
       if (id === 'new') {
         console.log('Creating new report');
         return emptyReport;
       }
-
-      if (!id) throw new Error('No ID provided');
       
       console.log('Fetching report details for ID:', id);
       
@@ -100,9 +110,15 @@ const ReportDetailsPage = () => {
         console.error('Error fetching report:', error);
         throw error;
       }
-      if (!data) {
+
+      if (!data && id !== 'new') {
         console.error('No report found for ID:', id);
         throw new Error('Report not found');
+      }
+
+      // If we get here and it's a new report, return the empty report
+      if (!data && id === 'new') {
+        return emptyReport;
       }
 
       // Parse the JSON fields
@@ -113,11 +129,10 @@ const ReportDetailsPage = () => {
 
       console.log('Fetched report:', parsedData);
       return parsedData;
-    },
-    // Enable the query for both existing reports and new reports
-    enabled: true
+    }
   });
 
+  // If we're still loading, show the loading state
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -127,7 +142,8 @@ const ReportDetailsPage = () => {
     );
   }
 
-  if (!report && id !== 'new') {
+  // If no report and not a new report, show error
+  if (!report && id && id !== 'new') {
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold text-red-600">Report not found</h1>
@@ -135,7 +151,7 @@ const ReportDetailsPage = () => {
     );
   }
 
-  // Use either the fetched report or empty report for new cases
+  // At this point, we either have a report or we're creating a new one
   const displayReport = report || emptyReport;
 
   return (
