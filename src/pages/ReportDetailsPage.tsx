@@ -10,6 +10,30 @@ import ReportForm from '@/components/police-report/ReportForm';
 import { Database } from '@/integrations/supabase/types';
 import { Separator } from '@/components/ui/separator';
 
+type SuspectDetails = {
+  first_name?: string;
+  last_name?: string;
+  dob?: string;
+  address?: string;
+  gender?: string;
+  height?: string;
+  weight?: string;
+  hair?: string;
+  eyes?: string;
+  clothing?: string;
+  identifying_marks?: string;
+  direction?: string;
+  arrest_history?: string;
+  charges?: string;
+  in_custody?: boolean;
+  cell_phone?: string;
+  home_phone?: string;
+  work_phone?: string;
+  weapon?: string;
+  strong_hand?: string;
+  parole_officer?: string;
+};
+
 type IncidentReport = Database['public']['Tables']['incident_reports']['Row'] & {
   evidence_photos: { id: string; file_path: string; }[];
   ai_crime_scene_photos: { id: string; image_path: string; }[];
@@ -20,6 +44,7 @@ type IncidentReport = Database['public']['Tables']['incident_reports']['Row'] & 
     scan_quality: number | null;
     scan_date: string | null;
   }[];
+  suspect_details: SuspectDetails;
 };
 
 const ReportDetailsPage = () => {
@@ -64,19 +89,34 @@ const ReportDetailsPage = () => {
         throw new Error('Report not found');
       }
 
-      console.log('Fetched report:', data);
-      return data as IncidentReport;
+      // Parse the JSON fields
+      const parsedData = {
+        ...data,
+        suspect_details: data.suspect_details as SuspectDetails
+      };
+
+      console.log('Fetched report:', parsedData);
+      return parsedData as IncidentReport;
     },
     enabled: !!id && id !== 'new'
   });
 
-  if (id === 'new' || isLoading) {
+  if (id === 'new') {
     return (
       <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">
-          {id === 'new' ? 'Create New Report' : 'Loading Report...'}
-        </h1>
-        {id === 'new' ? <ReportForm /> : <Skeleton className="h-96" />}
+        <h1 className="text-3xl font-bold mb-6">Create New Report</h1>
+        <Card className="p-6">
+          <ReportForm />
+        </Card>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Loading Report...</h1>
+        <Skeleton className="h-96" />
       </div>
     );
   }
@@ -170,7 +210,7 @@ const ReportDetailsPage = () => {
                     <h3 className="text-lg font-semibold mb-2">Suspect Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <p><strong>Name:</strong> {`${report.suspect_details.first_name} ${report.suspect_details.last_name}`}</p>
+                        <p><strong>Name:</strong> {`${report.suspect_details.first_name || ''} ${report.suspect_details.last_name || ''}`}</p>
                         <p><strong>DOB:</strong> {report.suspect_details.dob}</p>
                         <p><strong>Gender:</strong> {report.suspect_details.gender}</p>
                         <p><strong>Height:</strong> {report.suspect_details.height}</p>
