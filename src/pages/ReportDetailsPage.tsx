@@ -3,14 +3,9 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ReportForm from '@/components/police-report/ReportForm';
 import { type IncidentReport } from '@/types/reports';
-import { FaceSheet } from '@/components/report-details/FaceSheet';
-import { PhotosSection } from '@/components/report-details/PhotosSection';
-import { EvidenceSection } from '@/components/report-details/EvidenceSection';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
@@ -151,34 +146,12 @@ const ReportDetailsPage = () => {
     );
   }
 
-  // At this point, we either have a report or we're creating a new one
-  const displayReport = report || emptyReport;
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">
-        {id === 'new' ? 'Create New Report' : `Report Details - ${displayReport.case_number}`}
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">
+        {id === 'new' ? 'Create New Report' : `Edit Report - ${report?.case_number}`}
       </h1>
-
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList>
-          <TabsTrigger value="details">Face Sheet</TabsTrigger>
-          <TabsTrigger value="photos">Crime Scene Photos</TabsTrigger>
-          <TabsTrigger value="evidence">Evidence</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="details">
-          <FaceSheet report={displayReport} />
-        </TabsContent>
-
-        <TabsContent value="photos">
-          <PhotosSection report={displayReport} />
-        </TabsContent>
-
-        <TabsContent value="evidence">
-          <EvidenceSection report={displayReport} />
-        </TabsContent>
-      </Tabs>
+      <ReportForm />
     </div>
   );
 };
