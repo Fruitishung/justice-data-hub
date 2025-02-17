@@ -65,6 +65,7 @@ const ReportDetailsPage = () => {
     queryFn: async () => {
       // For new reports, return empty report immediately
       if (id === 'new') {
+        console.log('Creating new report');
         return emptyReport;
       }
 
@@ -113,7 +114,8 @@ const ReportDetailsPage = () => {
       console.log('Fetched report:', parsedData);
       return parsedData;
     },
-    enabled: !!id
+    // Enable the query for both existing reports and new reports
+    enabled: true
   });
 
   if (isLoading) {
@@ -125,7 +127,7 @@ const ReportDetailsPage = () => {
     );
   }
 
-  if (!report) {
+  if (!report && id !== 'new') {
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold text-red-600">Report not found</h1>
@@ -133,10 +135,13 @@ const ReportDetailsPage = () => {
     );
   }
 
+  // Use either the fetched report or empty report for new cases
+  const displayReport = report || emptyReport;
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">
-        {id === 'new' ? 'Create New Report' : `Report Details - ${report.case_number}`}
+        {id === 'new' ? 'Create New Report' : `Report Details - ${displayReport.case_number}`}
       </h1>
 
       <Tabs defaultValue="details" className="w-full">
@@ -147,15 +152,15 @@ const ReportDetailsPage = () => {
         </TabsList>
 
         <TabsContent value="details">
-          <FaceSheet report={report} />
+          <FaceSheet report={displayReport} />
         </TabsContent>
 
         <TabsContent value="photos">
-          <PhotosSection report={report} />
+          <PhotosSection report={displayReport} />
         </TabsContent>
 
         <TabsContent value="evidence">
-          <EvidenceSection report={report} />
+          <EvidenceSection report={displayReport} />
         </TabsContent>
       </Tabs>
     </div>
