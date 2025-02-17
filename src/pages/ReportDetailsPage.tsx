@@ -15,22 +15,31 @@ import { EvidenceSection } from '@/components/report-details/EvidenceSection';
 const ReportDetailsPage = () => {
   const { id } = useParams();
 
-  // If we're creating a new report, show the form immediately
-  if (id === 'new') {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Create New Report</h1>
-        <Card className="p-6">
-          <ReportForm />
-        </Card>
-      </div>
-    );
-  }
+  // For new reports, initialize with empty data
+  const emptyReport: IncidentReport = {
+    id: '',
+    case_number: 'NEW',
+    incident_date: null,
+    incident_description: '',
+    report_status: 'Open',
+    created_at: new Date().toISOString(),
+    evidence_photos: [],
+    ai_crime_scene_photos: [],
+    suspect_fingerprints: [],
+    suspect_details: {},
+    location_address: '',
+    location_details: '',
+    evidence_description: '',
+    evidence_location: '',
+    emergency_response: '',
+    emergency_units: ''
+  };
 
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
       if (!id) throw new Error('No ID provided');
+      if (id === 'new') return emptyReport;
       
       console.log('Fetching report details for ID:', id);
       
@@ -98,7 +107,7 @@ const ReportDetailsPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">
-        Report Details - {report.case_number}
+        {id === 'new' ? 'Create New Report' : `Report Details - ${report.case_number}`}
       </h1>
 
       <Tabs defaultValue="details" className="w-full">
