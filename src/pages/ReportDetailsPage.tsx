@@ -32,7 +32,32 @@ const ReportDetailsPage = () => {
     evidence_description: '',
     evidence_location: '',
     emergency_response: '',
-    emergency_units: ''
+    emergency_units: '',
+    conclusion_details: null,
+    disposition_details: null,
+    evidence_property: null,
+    investigation_details: null,
+    source_details: null,
+    penal_code: null,
+    resolution_date: null,
+    vehicle_crime_involvement: null,
+    vehicle_towing_authority: null,
+    victim_details: null,
+    report_priority: null,
+    report_category: null,
+    report_type: null,
+    vehicle_year: null,
+    vehicle_color: null,
+    vehicle_plate: null,
+    vehicle_vin: null,
+    vehicle_model: null,
+    vehicle_make: null,
+    person_description: null,
+    person_name: null,
+    officer_name: null,
+    officer_rank: null,
+    officer_badge_number: null,
+    report_resolution: null
   };
 
   const { data: report, isLoading } = useQuery<IncidentReport>({
