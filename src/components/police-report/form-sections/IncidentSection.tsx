@@ -29,12 +29,24 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     const currentValue = form.getValues("incidentDescription");
     if (!currentValue) {
       form.setValue("incidentDescription", 
-        "Source of Activity:\n\n" +
-        "Location:\n\n" +
-        "Time:\n\n" +
-        "Initial Observation:\n\n" +
-        "Probable Cause:\n\n" +
-        "Actions Taken:\n\n"
+        "Source of Activity:\n" +
+        "(How did this incident come to your attention? e.g., dispatch call, on-view, citizen report)\n\n" +
+        "Investigation:\n" +
+        "(Detail your investigative steps, interviews conducted, evidence collected)\n\n" +
+        "Location:\n" +
+        "(Specific address or location details)\n\n" +
+        "Time:\n" +
+        "(Time and date of the incident)\n\n" +
+        "Initial Observation:\n" +
+        "(What did you first observe upon arrival?)\n\n" +
+        "Probable Cause:\n" +
+        "(Facts that established probable cause)\n\n" +
+        "Actions Taken:\n" +
+        "(What actions did you take in response?)\n\n" +
+        "Conclusions/Deductions:\n" +
+        "(Based on evidence and investigation, what conclusions were drawn?)\n\n" +
+        "Disposition:\n" +
+        "(Final outcome, charges filed, pending follow-up, case status)\n\n"
       );
     }
   };
