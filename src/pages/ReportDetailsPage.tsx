@@ -63,8 +63,12 @@ const ReportDetailsPage = () => {
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
+      // For new reports, return empty report immediately
+      if (id === 'new') {
+        return emptyReport;
+      }
+
       if (!id) throw new Error('No ID provided');
-      if (id === 'new') return emptyReport;
       
       console.log('Fetching report details for ID:', id);
       
@@ -121,34 +125,6 @@ const ReportDetailsPage = () => {
     );
   }
 
-  // Special handling for new reports - don't show error
-  if (id === 'new') {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Create New Report</h1>
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList>
-            <TabsTrigger value="details">Face Sheet</TabsTrigger>
-            <TabsTrigger value="photos">Crime Scene Photos</TabsTrigger>
-            <TabsTrigger value="evidence">Evidence</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details">
-            <FaceSheet report={emptyReport} />
-          </TabsContent>
-
-          <TabsContent value="photos">
-            <PhotosSection report={emptyReport} />
-          </TabsContent>
-
-          <TabsContent value="evidence">
-            <EvidenceSection report={emptyReport} />
-          </TabsContent>
-        </Tabs>
-      </div>
-    );
-  }
-
   if (!report) {
     return (
       <div className="container mx-auto p-6">
@@ -160,7 +136,7 @@ const ReportDetailsPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">
-        Report Details - {report.case_number}
+        {id === 'new' ? 'Create New Report' : `Report Details - ${report.case_number}`}
       </h1>
 
       <Tabs defaultValue="details" className="w-full">
