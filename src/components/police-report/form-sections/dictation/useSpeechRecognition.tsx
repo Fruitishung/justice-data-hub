@@ -49,14 +49,29 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
     }
   };
 
+  const startRecognition = async (recognitionInstance: SpeechRecognition) => {
+    try {
+      await recognitionInstance.start();
+      console.log("Speech recognition started successfully");
+    } catch (error) {
+      console.error('Error starting recognition:', error);
+      setIsRecording(false);
+      toast({
+        title: "Error",
+        description: "Failed to start speech recognition. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
+    let currentRecognition: SpeechRecognition | null = null;
 
     const initializeSpeechRecognition = async () => {
       try {
         if (typeof window === 'undefined') return;
 
-        // Use the properly typed window object
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
@@ -77,7 +92,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         // Request microphone permission explicitly
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(track => track.stop()); // Stop the stream after permission check
+          stream.getTracks().forEach(track => track.stop());
           console.log("Microphone permission granted");
         } catch (error) {
           console.error("Microphone permission denied:", error);
@@ -92,45 +107,54 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         recognitionInstance.onresult = async (event: SpeechRecognitionEvent) => {
           if (!isMounted) return;
           
-          console.log("Speech recognition result received");
-
           try {
-            const transcript = Array.from(event.results)
-              .map((result) => result[0].transcript)
-              .join(' ');
-            
-            console.log("Raw transcript:", transcript);
-            
-            const currentDescription = form.getValues('incidentDescription') || '';
-            const newTranscript = sanitizeText(transcript);
-            
-            if ((currentDescription + newTranscript).length > maxTranscriptLength) {
-              toast({
-                title: "Warning",
-                description: "Maximum text length reached.",
-                variant: "destructive",
-              });
-              return;
-            }
+            let finalTranscript = '';
+            let interimTranscript = '';
 
-            transcriptBufferRef.current += ' ' + newTranscript;
-
-            if (processingTimeoutRef.current) {
-              clearTimeout(processingTimeoutRef.current);
-            }
-
-            processingTimeoutRef.current = setTimeout(async () => {
-              if (!isMounted) return;
-              
-              if (transcriptBufferRef.current) {
-                const correctedText = await correctText(transcriptBufferRef.current);
-                console.log("Corrected text:", correctedText);
-                form.setValue('incidentDescription', 
-                  ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
-                );
-                transcriptBufferRef.current = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const result = event.results[i];
+              if (result.isFinal) {
+                finalTranscript += result[0].transcript;
+              } else {
+                interimTranscript += result[0].transcript;
               }
-            }, 500);
+            }
+            
+            console.log("Final transcript:", finalTranscript);
+            console.log("Interim transcript:", interimTranscript);
+            
+            if (finalTranscript) {
+              const currentDescription = form.getValues('incidentDescription') || '';
+              const newTranscript = sanitizeText(finalTranscript);
+              
+              if ((currentDescription + newTranscript).length > maxTranscriptLength) {
+                toast({
+                  title: "Warning",
+                  description: "Maximum text length reached.",
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              transcriptBufferRef.current += ' ' + newTranscript;
+
+              if (processingTimeoutRef.current) {
+                clearTimeout(processingTimeoutRef.current);
+              }
+
+              processingTimeoutRef.current = setTimeout(async () => {
+                if (!isMounted) return;
+                
+                if (transcriptBufferRef.current) {
+                  const correctedText = await correctText(transcriptBufferRef.current);
+                  console.log("Corrected text:", correctedText);
+                  form.setValue('incidentDescription', 
+                    ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
+                  );
+                  transcriptBufferRef.current = '';
+                }
+              }, 1000);
+            }
           } catch (error) {
             console.error('Error processing speech result:', error);
             if (isMounted) {
@@ -147,33 +171,41 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           if (!isMounted) return;
           console.error("Speech recognition error:", event.error);
           
+          if (event.error === 'no-speech') {
+            console.log("No speech detected");
+            return;
+          }
+          
           if (event.error !== 'aborted') {
             toast({
               title: "Error",
               description: "There was an error with the speech recognition. Please try again.",
               variant: "destructive",
             });
+            setIsRecording(false);
           }
-          setIsRecording(false);
         };
 
         recognitionInstance.onend = () => {
           if (!isMounted) return;
           console.log("Speech recognition ended");
           
-          if (isRecording) {
-            try {
-              recognitionInstance.start();
-              console.log("Speech recognition restarted");
-            } catch (error) {
-              console.error('Error restarting recognition:', error);
-              setIsRecording(false);
-            }
+          // Only restart if we're still supposed to be recording
+          if (isRecording && currentRecognition) {
+            console.log("Attempting to restart speech recognition");
+            startRecognition(currentRecognition);
+          } else {
+            setIsRecording(false);
           }
         };
 
+        currentRecognition = recognitionInstance;
         setRecognition(recognitionInstance);
         console.log("Speech recognition initialized successfully");
+
+        if (isRecording) {
+          startRecognition(recognitionInstance);
+        }
 
       } catch (error) {
         console.error('Error initializing speech recognition:', error);
@@ -191,10 +223,10 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
     return () => {
       isMounted = false;
-      if (recognition) {
+      if (currentRecognition) {
         try {
-          recognition.abort();
-          recognition.stop();
+          currentRecognition.abort();
+          currentRecognition.stop();
         } catch (error) {
           console.error('Error cleaning up recognition:', error);
         }
