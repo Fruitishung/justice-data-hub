@@ -1,12 +1,11 @@
 
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { sanitizeText } from "../utils/textProcessing";
 
 export const correctText = async (
   text: string,
-  maxLength: number,
-  toast: ReturnType<typeof useToast>
+  maxLength: number
 ): Promise<string> => {
   try {
     if (!text || text.length > maxLength) {

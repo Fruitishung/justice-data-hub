@@ -1,7 +1,7 @@
 
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
-export const requestMicrophonePermission = async (toast: ReturnType<typeof useToast>) => {
+export const requestMicrophonePermission = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(track => track.stop());
@@ -18,7 +18,7 @@ export const requestMicrophonePermission = async (toast: ReturnType<typeof useTo
   }
 };
 
-export const createSpeechRecognition = (toast: ReturnType<typeof useToast>) => {
+export const createSpeechRecognition = () => {
   if (typeof window === 'undefined') return null;
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

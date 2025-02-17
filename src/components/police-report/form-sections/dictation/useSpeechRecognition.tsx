@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../../types";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { sanitizeText } from "./utils/textProcessing";
 import { correctText } from "./services/textCorrection";
 import { createSpeechRecognition, requestMicrophonePermission } from "./utils/initializeSpeechRecognition";
@@ -14,7 +14,6 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   const transcriptBufferRef = useRef<string>('');
   const processingTimeoutRef = useRef<NodeJS.Timeout>();
   const maxTranscriptLength = 5000;
-  const toastHelper = useToast();
 
   const startRecognition = async (recognitionInstance: SpeechRecognition) => {
     try {
@@ -23,7 +22,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
     } catch (error) {
       console.error('Error starting recognition:', error);
       setIsRecording(false);
-      toastHelper.toast({
+      toast({
         title: "Error",
         description: "Failed to start speech recognition. Please try again.",
         variant: "destructive",
@@ -37,10 +36,10 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
     const initializeSpeechRecognition = async () => {
       try {
-        const hasMicPermission = await requestMicrophonePermission(toastHelper);
+        const hasMicPermission = await requestMicrophonePermission();
         if (!hasMicPermission) return;
 
-        const recognitionInstance = createSpeechRecognition(toastHelper);
+        const recognitionInstance = createSpeechRecognition();
         if (!recognitionInstance) return;
         
         recognitionInstance.onresult = async (event: SpeechRecognitionEvent) => {
@@ -67,7 +66,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
               const newTranscript = sanitizeText(finalTranscript, maxTranscriptLength);
               
               if ((currentDescription + newTranscript).length > maxTranscriptLength) {
-                toastHelper.toast({
+                toast({
                   title: "Warning",
                   description: "Maximum text length reached.",
                   variant: "destructive",
@@ -88,8 +87,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
                   setIsProcessing(true);
                   const correctedText = await correctText(
                     transcriptBufferRef.current,
-                    maxTranscriptLength,
-                    toastHelper
+                    maxTranscriptLength
                   );
                   console.log("Corrected text:", correctedText);
                   form.setValue('incidentDescription', 
@@ -103,7 +101,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           } catch (error) {
             console.error('Error processing speech result:', error);
             if (isMounted) {
-              toastHelper.toast({
+              toast({
                 title: "Error",
                 description: "Failed to process speech. Please try again.",
                 variant: "destructive",
@@ -122,7 +120,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           }
           
           if (event.error !== 'aborted') {
-            toastHelper.toast({
+            toast({
               title: "Error",
               description: "There was an error with the speech recognition. Please try again.",
               variant: "destructive",
@@ -154,7 +152,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
       } catch (error) {
         console.error('Error initializing speech recognition:', error);
         if (isMounted) {
-          toastHelper.toast({
+          toast({
             title: "Error",
             description: "Failed to initialize speech recognition.",
             variant: "destructive",
@@ -179,7 +177,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         clearTimeout(processingTimeoutRef.current);
       }
     };
-  }, [form, toastHelper, isRecording]);
+  }, [form, isRecording]);
 
   return { recognition, isRecording, setIsRecording, isProcessing };
 };
