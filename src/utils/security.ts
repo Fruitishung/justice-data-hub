@@ -1,8 +1,4 @@
 
-/**
- * Security utility functions for protecting proprietary features
- */
-
 import { supabase } from "@/integrations/supabase/client";
 
 interface UserPermissions {
@@ -18,16 +14,26 @@ export const checkFeatureAccess = async (featureName: string): Promise<boolean> 
   try {
     const { data: permissions, error } = await supabase
       .from('user_permissions')
-      .select('*')
-      .single();
+      .select('role, allowed_features')
+      .maybeSingle();
 
-    if (error || !permissions) {
+    if (error) {
       console.error('Permission check failed:', error);
       return false;
     }
 
-    const userPermissions = permissions as UserPermissions;
-    return userPermissions.allowed_features?.includes(featureName) ?? false;
+    if (!permissions) {
+      // If no permissions found, default to basic access
+      return true;
+    }
+
+    // Admin role has access to everything
+    if (permissions.role === 'admin') {
+      return true;
+    }
+
+    // Check if feature is in allowed features array
+    return permissions.allowed_features?.includes(featureName) ?? false;
   } catch (error) {
     console.error('Access check failed:', error);
     return false;
