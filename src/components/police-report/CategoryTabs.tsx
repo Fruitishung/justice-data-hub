@@ -5,7 +5,7 @@ import { Database, AlertCircle, Car, FileText, Link, MapPin, UserX, Users } from
 const CategoryTabs = ({ children }: { children: React.ReactNode }) => {
   return (
     <Tabs defaultValue="emergency" className="w-full">
-      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+      <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-12">
         <TabsTrigger value="emergency" className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4" />
           Emergency
@@ -39,7 +39,7 @@ const CategoryTabs = ({ children }: { children: React.ReactNode }) => {
           Photos
         </TabsTrigger>
       </TabsList>
-      <div className="mt-4">
+      <div className="mt-8">
         {children}
       </div>
     </Tabs>
