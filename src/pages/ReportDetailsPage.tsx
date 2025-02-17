@@ -15,10 +15,22 @@ import { EvidenceSection } from '@/components/report-details/EvidenceSection';
 const ReportDetailsPage = () => {
   const { id } = useParams();
 
+  // If we're creating a new report, show the form immediately
+  if (id === 'new') {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Create New Report</h1>
+        <Card className="p-6">
+          <ReportForm />
+        </Card>
+      </div>
+    );
+  }
+
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
-      if (!id || id === 'new') throw new Error('No ID provided');
+      if (!id) throw new Error('No ID provided');
       
       console.log('Fetching report details for ID:', id);
       
@@ -63,19 +75,8 @@ const ReportDetailsPage = () => {
       console.log('Fetched report:', parsedData);
       return parsedData;
     },
-    enabled: !!id && id !== 'new'
+    enabled: !!id
   });
-
-  if (id === 'new') {
-    return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Create New Report</h1>
-        <Card className="p-6">
-          <ReportForm />
-        </Card>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
