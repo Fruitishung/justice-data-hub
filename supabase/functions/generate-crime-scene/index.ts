@@ -25,6 +25,8 @@ serve(async (req) => {
       throw new Error('Penal code is required');
     }
 
+    console.log('Generating crime scene photo for:', { penal_code, incident_report_id });
+
     // Generate a realistic but safe prompt based on the penal code
     let prompt = '';
     if (penal_code === '187') {
@@ -51,11 +53,15 @@ serve(async (req) => {
     });
 
     if (!openAIResponse.ok) {
+      const errorData = await openAIResponse.json();
+      console.error('DALL-E API error:', errorData);
       throw new Error('Failed to generate image with DALL-E');
     }
 
     const aiResponse = await openAIResponse.json();
     const imageUrl = aiResponse.data[0].url;
+
+    console.log('Image generated successfully:', { imageUrl });
 
     // Download the image
     const imageResponse = await fetch(imageUrl);
@@ -71,10 +77,13 @@ serve(async (req) => {
       });
 
     if (uploadError) {
+      console.error('Storage upload error:', uploadError);
       throw uploadError;
     }
 
-    // Create a record in the ai_crime_scene_photos table
+    console.log('Image uploaded successfully:', { fileName });
+
+    // Update the existing record in the ai_crime_scene_photos table
     const { data: photoRecord, error: dbError } = await supabase
       .from('ai_crime_scene_photos')
       .update({ image_path: fileName })
@@ -83,8 +92,11 @@ serve(async (req) => {
       .single();
 
     if (dbError) {
+      console.error('Database update error:', dbError);
       throw dbError;
     }
+
+    console.log('Database record updated successfully:', photoRecord);
 
     return new Response(
       JSON.stringify({ 
