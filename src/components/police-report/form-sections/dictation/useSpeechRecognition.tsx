@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../../types";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
+import { sanitizeText } from "./utils/textProcessing";
+import { correctText } from "./services/textCorrection";
+import { createSpeechRecognition, requestMicrophonePermission } from "./utils/initializeSpeechRecognition";
 
 export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -13,41 +15,6 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   const processingTimeoutRef = useRef<NodeJS.Timeout>();
   const maxTranscriptLength = 5000;
   const { toast } = useToast();
-
-  const sanitizeText = (text: string): string => {
-    if (!text) return '';
-    const sanitized = text
-      .replace(/<[^>]*>?/gm, '')
-      .replace(/[^\w\s.,!?-]/g, '')
-      .trim();
-    return sanitized.slice(0, maxTranscriptLength);
-  };
-
-  const correctText = async (text: string) => {
-    try {
-      if (!text || text.length > maxTranscriptLength) {
-        throw new Error("Invalid text length");
-      }
-
-      setIsProcessing(true);
-      const { data, error } = await supabase.functions.invoke('correct-text', {
-        body: { text: sanitizeText(text) },
-      });
-
-      if (error) throw error;
-      return sanitizeText(data.correctedText);
-    } catch (error) {
-      console.error('Error correcting text:', error);
-      toast({
-        title: "Error",
-        description: "Failed to correct text. Using original transcription.",
-        variant: "destructive",
-      });
-      return sanitizeText(text);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const startRecognition = async (recognitionInstance: SpeechRecognition) => {
     try {
@@ -70,39 +37,11 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
 
     const initializeSpeechRecognition = async () => {
       try {
-        if (typeof window === 'undefined') return;
+        const hasMicPermission = await requestMicrophonePermission(toast);
+        if (!hasMicPermission) return;
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
-        if (!SpeechRecognition) {
-          console.error("Speech recognition not supported");
-          toast({
-            title: "Not Supported",
-            description: "Speech recognition is not supported in your browser.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const recognitionInstance = new SpeechRecognition();
-        recognitionInstance.continuous = true;
-        recognitionInstance.interimResults = true;
-        recognitionInstance.lang = 'en-US';
-
-        // Request microphone permission explicitly
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(track => track.stop());
-          console.log("Microphone permission granted");
-        } catch (error) {
-          console.error("Microphone permission denied:", error);
-          toast({
-            title: "Permission Denied",
-            description: "Please allow microphone access for voice dictation.",
-            variant: "destructive",
-          });
-          return;
-        }
+        const recognitionInstance = createSpeechRecognition(toast);
+        if (!recognitionInstance) return;
         
         recognitionInstance.onresult = async (event: SpeechRecognitionEvent) => {
           if (!isMounted) return;
@@ -125,7 +64,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
             
             if (finalTranscript) {
               const currentDescription = form.getValues('incidentDescription') || '';
-              const newTranscript = sanitizeText(finalTranscript);
+              const newTranscript = sanitizeText(finalTranscript, maxTranscriptLength);
               
               if ((currentDescription + newTranscript).length > maxTranscriptLength) {
                 toast({
@@ -146,12 +85,18 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
                 if (!isMounted) return;
                 
                 if (transcriptBufferRef.current) {
-                  const correctedText = await correctText(transcriptBufferRef.current);
+                  setIsProcessing(true);
+                  const correctedText = await correctText(
+                    transcriptBufferRef.current,
+                    maxTranscriptLength,
+                    toast
+                  );
                   console.log("Corrected text:", correctedText);
                   form.setValue('incidentDescription', 
                     ((currentDescription ? currentDescription + ' ' : '') + correctedText).trim()
                   );
                   transcriptBufferRef.current = '';
+                  setIsProcessing(false);
                 }
               }, 1000);
             }
@@ -190,7 +135,6 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           if (!isMounted) return;
           console.log("Speech recognition ended");
           
-          // Only restart if we're still supposed to be recording
           if (isRecording && currentRecognition) {
             console.log("Attempting to restart speech recognition");
             startRecognition(currentRecognition);
