@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import CategoryCard from "@/components/CategoryCard";
+import { CategoryCard } from "@/components/CategoryCard";
 import { 
   FileText, 
   Building2, 
@@ -8,7 +8,7 @@ import {
   AlertTriangle, 
   Users, 
   Briefcase,
-  Handcuffs,
+  Shield,
   FileWarning 
 } from "lucide-react";
 
@@ -63,7 +63,7 @@ const ReportCategories = () => {
           <CategoryCard
             title="Criminal Activity"
             description="General criminal incidents"
-            icon={Handcuffs}
+            icon={Shield}
           />
         </Link>
         <Link to="/report/new">
