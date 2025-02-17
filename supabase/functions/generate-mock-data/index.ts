@@ -211,9 +211,9 @@ serve(async (req) => {
       }
     }
 
-    // If suspect is in custody, create arrest tag
+    // If suspect is in custody, create arrest tag and generate mugshot
     if (suspect.inCustody) {
-      const { error: arrestError } = await supabase
+      const { data: arrestTag, error: arrestError } = await supabase
         .from('arrest_tags')
         .insert([
           {
@@ -223,9 +223,35 @@ serve(async (req) => {
             processing_status: 'pending'
           }
         ])
+        .select()
+        .single();
 
       if (arrestError) {
-        console.error('Error creating arrest tag:', arrestError)
+        console.error('Error creating arrest tag:', arrestError);
+      } else {
+        // Generate mugshot
+        try {
+          const response = await fetch(
+            `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-mugshot`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                suspect_name: `${suspect.firstName} ${suspect.lastName}`,
+                arrest_tag_id: arrestTag.id
+              })
+            }
+          );
+
+          if (!response.ok) {
+            console.error('Failed to generate mugshot:', await response.text());
+          }
+        } catch (error) {
+          console.error('Error generating mugshot:', error);
+        }
       }
     }
 
