@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 
 export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recognition, setRecognition] = useState<any>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const transcriptBufferRef = useRef<string>('');
   const processingTimeoutRef = useRef<NodeJS.Timeout>();
@@ -56,6 +56,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
       try {
         if (typeof window === 'undefined') return;
 
+        // Use the properly typed window object
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
@@ -88,14 +89,14 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           return;
         }
         
-        recognitionInstance.onresult = async (event: any) => {
+        recognitionInstance.onresult = async (event: SpeechRecognitionEvent) => {
           if (!isMounted) return;
           
           console.log("Speech recognition result received");
 
           try {
             const transcript = Array.from(event.results)
-              .map((result: any) => result[0].transcript)
+              .map((result) => result[0].transcript)
               .join(' ');
             
             console.log("Raw transcript:", transcript);
@@ -142,7 +143,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
           }
         };
 
-        recognitionInstance.onerror = (event: any) => {
+        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
           if (!isMounted) return;
           console.error("Speech recognition error:", event.error);
           
@@ -202,7 +203,7 @@ export const useSpeechRecognition = (form: UseFormReturn<ReportFormData>) => {
         clearTimeout(processingTimeoutRef.current);
       }
     };
-  }, [form, toast]);
+  }, [form, toast, isRecording]);
 
   return { recognition, isRecording, setIsRecording, isProcessing };
 };
