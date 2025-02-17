@@ -29,6 +29,8 @@ const ReportDetailsPage = () => {
     queryFn: async () => {
       if (!id) throw new Error('No ID provided');
       
+      console.log('Fetching report details for ID:', id);
+      
       const { data, error } = await supabase
         .from('incident_reports')
         .select(`
@@ -52,8 +54,16 @@ const ReportDetailsPage = () => {
         .eq('id', id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error('Report not found');
+      if (error) {
+        console.error('Error fetching report:', error);
+        throw error;
+      }
+      if (!data) {
+        console.error('No report found for ID:', id);
+        throw new Error('Report not found');
+      }
+
+      console.log('Fetched report:', data);
       return data as IncidentReport;
     },
     enabled: !!id && id !== 'new'
@@ -77,6 +87,10 @@ const ReportDetailsPage = () => {
       </div>
     );
   }
+
+  // Debug log for photos
+  console.log('AI Crime Scene Photos:', report.ai_crime_scene_photos);
+  console.log('Evidence Photos:', report.evidence_photos);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -110,15 +124,27 @@ const ReportDetailsPage = () => {
             <h2 className="text-xl font-semibold mb-4">Crime Scene Photos</h2>
             {report.ai_crime_scene_photos && report.ai_crime_scene_photos.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {report.ai_crime_scene_photos.map((photo) => (
-                  <div key={photo.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                    <img
-                      src={`${supabase.storage.from('ai_crime_scene_photos').getPublicUrl(photo.image_path).data.publicUrl}`}
-                      alt={`Crime scene photo for case ${report.case_number}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+                {report.ai_crime_scene_photos.map((photo) => {
+                  const imageUrl = supabase.storage
+                    .from('ai_crime_scene_photos')
+                    .getPublicUrl(photo.image_path).data.publicUrl;
+                  
+                  console.log('Crime Scene Photo URL:', imageUrl);
+                  
+                  return (
+                    <div key={photo.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <img
+                        src={imageUrl}
+                        alt={`Crime scene photo for case ${report.case_number}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Error loading crime scene image:', e);
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-muted-foreground">No crime scene photos available for this case.</p>
@@ -135,15 +161,27 @@ const ReportDetailsPage = () => {
             </div>
             {report.evidence_photos && report.evidence_photos.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {report.evidence_photos.map((photo) => (
-                  <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={`${supabase.storage.from('evidence_photos').getPublicUrl(photo.file_path).data.publicUrl}`}
-                      alt="Evidence"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+                {report.evidence_photos.map((photo) => {
+                  const imageUrl = supabase.storage
+                    .from('evidence_photos')
+                    .getPublicUrl(photo.file_path).data.publicUrl;
+                  
+                  console.log('Evidence Photo URL:', imageUrl);
+                  
+                  return (
+                    <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={imageUrl}
+                        alt="Evidence"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Error loading evidence image:', e);
+                          e.currentTarget.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-muted-foreground">No evidence photos available for this case.</p>
