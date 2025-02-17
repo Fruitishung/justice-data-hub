@@ -1,31 +1,80 @@
 
-import { motion } from "framer-motion";
-import TrainingActions from "./TrainingActions";
-import ReportForm from "../police-report/ReportForm";
+import { Link } from "react-router-dom";
+import CategoryCard from "@/components/CategoryCard";
+import { 
+  FileText, 
+  Building2, 
+  Car, 
+  AlertTriangle, 
+  Users, 
+  Briefcase,
+  Handcuffs,
+  FileWarning 
+} from "lucide-react";
 
 const ReportCategories = () => {
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="py-20 px-6 lg:px-8"
-      id="categories"
-    >
-      <div className="mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-            Police Report Categories
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Select a category to enter report details
-          </p>
-          <TrainingActions />
-        </div>
-        
-        <ReportForm />
+    <div className="mt-8">
+      <h2 className="text-2xl font-semibold mb-6">Report Categories</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link to="/report/new">
+          <CategoryCard
+            title="General Incident"
+            description="Basic incident report form"
+            icon={FileText}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Commercial Burglary"
+            description="Business break-ins and theft"
+            icon={Building2}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Vehicle Crime"
+            description="Auto theft and vandalism"
+            icon={Car}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Assault"
+            description="Physical altercations"
+            icon={AlertTriangle}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Missing Person"
+            description="Missing persons reports"
+            icon={Users}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Property Crime"
+            description="Theft and property damage"
+            icon={Briefcase}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Criminal Activity"
+            description="General criminal incidents"
+            icon={Handcuffs}
+          />
+        </Link>
+        <Link to="/report/new">
+          <CategoryCard
+            title="Special Incident"
+            description="Unique or unusual cases"
+            icon={FileWarning}
+          />
+        </Link>
       </div>
-    </motion.section>
+    </div>
   );
 };
 
