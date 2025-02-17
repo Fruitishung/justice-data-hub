@@ -26,9 +26,9 @@ interface AccessLog {
  */
 export const checkFeatureAccess = async (featureName: string): Promise<boolean> => {
   try {
+    // Use the security definer function instead of direct table access
     const { data: permissions, error } = await supabase
-      .from('user_permissions')
-      .select('role, allowed_features')
+      .rpc('check_user_permission', { userid: null })
       .maybeSingle();
 
     if (error) {
