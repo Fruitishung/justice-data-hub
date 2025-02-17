@@ -24,6 +24,21 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
   const { audioLevel, startVisualization, stopVisualization } = useAudioVisualization();
   const [showTemplate, setShowTemplate] = useState(false);
 
+  const handleFocus = () => {
+    setShowTemplate(true);
+    const currentValue = form.getValues("incidentDescription");
+    if (!currentValue) {
+      form.setValue("incidentDescription", 
+        "Source of Activity:\n\n" +
+        "Location:\n\n" +
+        "Time:\n\n" +
+        "Initial Observation:\n\n" +
+        "Probable Cause:\n\n" +
+        "Actions Taken:\n\n"
+      );
+    }
+  };
+
   const toggleRecording = async () => {
     if (!recognition) {
       toast({
@@ -45,6 +60,7 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
       await startVisualization();
       recognition.start();
       setShowTemplate(true);
+      handleFocus(); // Add template when starting dictation
       toast({
         title: "Recording Started",
         description: "Voice dictation is now active. Speak clearly into your microphone.",
@@ -54,27 +70,12 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
     setIsRecording(!isRecording);
   };
 
-  const handleDescriptionFocus = () => {
-    setShowTemplate(true);
-  };
-
   const caseNumber = form.watch("caseNumber");
 
   return (
     <ReportSection icon={Link} title="Incident Details">
       <div className="space-y-6">
         <CaseNumberDisplay caseNumber={caseNumber} />
-        
-        {showTemplate && (
-          <Alert className="bg-muted/50">
-            <AlertDescription className="text-xs text-muted-foreground">
-              Template Example:<br />
-              On [DATE] at approximately [TIME] hours while [ASSIGNMENT/PATROL STATUS], 
-              I observed [INITIAL OBSERVATION/SUSPICIOUS BEHAVIOR]. 
-              The incident occurred at [LOCATION]. [DESCRIBE PROBABLE CAUSE FOR CONTACT].
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Input
           type="datetime-local"
@@ -86,10 +87,10 @@ const IncidentSection = ({ form }: IncidentSectionProps) => {
           <div className="flex items-start gap-4">
             <div className="relative flex-1">
               <Textarea
-                placeholder="Incident Description"
-                className="flex-1 min-h-[200px]"
+                placeholder="Click or start dictation to show template"
+                className="flex-1 min-h-[300px] font-mono"
                 {...form.register("incidentDescription")}
-                onFocus={handleDescriptionFocus}
+                onFocus={handleFocus}
               />
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/5 flex items-center justify-center rounded-md">
