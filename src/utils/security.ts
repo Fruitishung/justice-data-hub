@@ -26,32 +26,20 @@ interface AccessLog {
  */
 export const checkFeatureAccess = async (featureName: string): Promise<boolean> => {
   try {
-    // Use the security definer function instead of direct table access
-    const { data: permissions, error } = await supabase
-      .rpc('check_user_permission', { userid: null })
-      .maybeSingle();
+    // Use the has_feature_access RPC function
+    const { data: hasAccess, error } = await supabase
+      .rpc('has_feature_access', { 
+        feature_name: featureName 
+      });
 
     if (error) {
       console.error('Permission check failed:', error);
       return false;
     }
 
-    // If no permissions found, default to basic access
-    if (!permissions) {
-      console.log('No permissions found, defaulting to basic access');
-      return true;
-    }
-
-    // Admin role has access to everything
-    if (permissions.role === 'admin') {
-      console.log('Admin access granted');
-      return true;
-    }
-
-    // Check if feature is in allowed features array
-    const hasAccess = permissions.allowed_features?.includes(featureName) ?? false;
     console.log(`Feature access check for ${featureName}: ${hasAccess}`);
-    return hasAccess;
+    return hasAccess || false;
+
   } catch (error) {
     console.error('Access check failed:', error);
     return false;
