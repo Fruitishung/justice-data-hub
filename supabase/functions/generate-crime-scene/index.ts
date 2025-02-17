@@ -19,7 +19,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { penal_code } = await req.json();
+    const { penal_code, incident_report_id } = await req.json();
 
     if (!penal_code) {
       throw new Error('Penal code is required');
@@ -77,13 +77,8 @@ serve(async (req) => {
     // Create a record in the ai_crime_scene_photos table
     const { data: photoRecord, error: dbError } = await supabase
       .from('ai_crime_scene_photos')
-      .insert([
-        {
-          image_path: fileName,
-          prompt_used: prompt,
-          penal_code: penal_code,
-        }
-      ])
+      .update({ image_path: fileName })
+      .eq('incident_report_id', incident_report_id)
       .select()
       .single();
 
