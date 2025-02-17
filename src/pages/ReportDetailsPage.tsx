@@ -18,7 +18,7 @@ const ReportDetailsPage = () => {
   const { data: report, isLoading } = useQuery<IncidentReport>({
     queryKey: ['report', id],
     queryFn: async () => {
-      if (!id) throw new Error('No ID provided');
+      if (!id || id === 'new') throw new Error('No ID provided');
       
       console.log('Fetching report details for ID:', id);
       
