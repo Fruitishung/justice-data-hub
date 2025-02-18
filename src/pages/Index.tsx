@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import Hero from "@/components/Hero";
+import { Hero } from "@/components/Hero";
 import ReportCategories from "@/components/index/ReportCategories";
 import TrainingActions from "@/components/index/TrainingActions";
 
