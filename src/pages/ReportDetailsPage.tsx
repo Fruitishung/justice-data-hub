@@ -21,7 +21,7 @@ const ReportDetailsPage = () => {
   const emptyReport: IncidentReport = {
     id: '',
     case_number: 'NEW',
-    incident_date: null,
+    incident_date: new Date().toISOString(), // Initialize with current date instead of null
     incident_description: '',
     report_status: 'Open',
     created_at: new Date().toISOString(),
