@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, FileImage } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Database } from '@/integrations/supabase/types';
@@ -18,7 +18,8 @@ type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'] & {
 
 const ArrestTag = () => {
   const { id } = useParams();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingMugshot, setIsGeneratingMugshot] = useState(false);
+  const [isGeneratingCrimeScene, setIsGeneratingCrimeScene] = useState(false);
 
   const { data: arrestTag, isLoading, error, refetch } = useQuery({
     queryKey: ["arrest-tag", id],
@@ -59,7 +60,7 @@ const ArrestTag = () => {
     
     console.log('Generating mugshot for arrest tag:', arrestTag.id);
     
-    setIsGenerating(true);
+    setIsGeneratingMugshot(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-mugshot", {
         body: {
@@ -80,7 +81,35 @@ const ArrestTag = () => {
       console.error("Error generating mugshot:", error);
       toast.error("Failed to generate mugshot");
     } finally {
-      setIsGenerating(false);
+      setIsGeneratingMugshot(false);
+    }
+  };
+
+  const generateCrimeScene = async () => {
+    if (!arrestTag?.incident_report_id) {
+      toast.error("No incident report associated with this arrest tag");
+      return;
+    }
+
+    setIsGeneratingCrimeScene(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-crime-scene", {
+        body: {
+          incident_report_id: arrestTag.incident_report_id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success("Crime scene photo generated successfully");
+        await refetch();
+      }
+    } catch (error) {
+      console.error("Error generating crime scene photo:", error);
+      toast.error("Failed to generate crime scene photo");
+    } finally {
+      setIsGeneratingCrimeScene(false);
     }
   };
 
@@ -114,14 +143,25 @@ const ArrestTag = () => {
       <Card className="max-w-3xl mx-auto p-8 bg-white print:shadow-none">
         <div className="flex justify-between items-start mb-8">
           <h1 className="text-3xl font-bold">Arrest Tag</h1>
-          <Button 
-            onClick={handlePrint}
-            className="print:hidden"
-            variant="outline"
-          >
-            <Printer className="mr-2 h-4 w-4" />
-            Print Tag
-          </Button>
+          <div className="space-x-2">
+            <Button
+              onClick={generateCrimeScene}
+              disabled={isGeneratingCrimeScene || !arrestTag.incident_report_id}
+              variant="outline"
+              className="print:hidden"
+            >
+              <FileImage className="mr-2 h-4 w-4" />
+              {isGeneratingCrimeScene ? "Generating..." : "Generate Crime Scene"}
+            </Button>
+            <Button 
+              onClick={handlePrint}
+              className="print:hidden"
+              variant="outline"
+            >
+              <Printer className="mr-2 h-4 w-4" />
+              Print Tag
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -135,7 +175,7 @@ const ArrestTag = () => {
             <ArrestTagDetails arrestTag={arrestTag} />
             <ArrestTagMugshot 
               arrestTag={arrestTag}
-              isGenerating={isGenerating}
+              isGenerating={isGeneratingMugshot}
               onGenerate={generateMugshot}
             />
           </div>
