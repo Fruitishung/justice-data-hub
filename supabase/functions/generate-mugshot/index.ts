@@ -20,6 +20,11 @@ serve(async (req) => {
       throw new Error('Suspect name and arrest tag ID are required');
     }
 
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -28,11 +33,12 @@ serve(async (req) => {
     // Generate mugshot using DALL-E
     const prompt = `A front-facing police mugshot photo of a person in front of a gray background with height measurements visible. The photo should be well-lit, clear, and realistic, capturing a neutral facial expression. Documentary style, professional lighting.`;
     
+    console.log('Making request to DALL-E API...');
     const openAIResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAIApiKey}`,
       },
       body: JSON.stringify({
         model: "dall-e-3",
@@ -45,33 +51,48 @@ serve(async (req) => {
     });
 
     if (!openAIResponse.ok) {
-      throw new Error('Failed to generate mugshot with DALL-E');
+      const errorData = await openAIResponse.json();
+      console.error('DALL-E API Error:', errorData);
+      throw new Error(`DALL-E API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const aiResponse = await openAIResponse.json();
+    if (!aiResponse.data?.[0]?.url) {
+      throw new Error('No image URL received from DALL-E');
+    }
+
     const imageUrl = aiResponse.data[0].url;
+    console.log('Successfully generated image:', imageUrl);
 
     // Download the image
+    console.log('Downloading generated image...');
     const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download generated image');
+    }
     const imageBlob = await imageResponse.blob();
 
     // Upload to Supabase Storage
+    console.log('Uploading to Supabase storage...');
     const fileName = `${arrest_tag_id}_${Date.now()}.png`;
     const { error: uploadError } = await supabase.storage
       .from('suspect_mugshots')
       .upload(fileName, imageBlob, {
         contentType: 'image/png',
-        upsert: false
+        upsert: true
       });
 
     if (uploadError) {
-      throw uploadError;
+      console.error('Storage upload error:', uploadError);
+      throw new Error(`Failed to upload image: ${uploadError.message}`);
     }
 
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('suspect_mugshots')
       .getPublicUrl(fileName);
+
+    console.log('Successfully uploaded image, public URL:', publicUrl);
 
     // Update the arrest tag with the mugshot URL
     const { error: updateError } = await supabase
@@ -80,7 +101,8 @@ serve(async (req) => {
       .eq('id', arrest_tag_id);
 
     if (updateError) {
-      throw updateError;
+      console.error('Database update error:', updateError);
+      throw new Error(`Failed to update arrest tag: ${updateError.message}`);
     }
 
     return new Response(
@@ -94,7 +116,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in generate-mugshot function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
