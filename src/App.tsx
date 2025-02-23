@@ -13,6 +13,7 @@ import ReportDetailsPage from "./pages/ReportDetailsPage";
 import ReportsListPage from "./pages/ReportsListPage";
 import StudentDataProtection from "./pages/StudentDataProtection";
 import AuthPage from "./pages/AuthPage";
+import TrainingPhotosPage from "./pages/TrainingPhotosPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/arrest-tags" element={<ArrestTagPage />} />
           <Route path="/mctetts" element={<MCTETTSPage />} />
           <Route path="/mock-data" element={<MockDataPage />} />
+          <Route path="/training-photos" element={<TrainingPhotosPage />} />
           <Route path="/report/new" element={<ReportDetailsPage />} />
           <Route path="/report/:id" element={<ReportDetailsPage />} />
           <Route path="/student-data-protection" element={<StudentDataProtection />} />
