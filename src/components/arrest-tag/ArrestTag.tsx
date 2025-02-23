@@ -8,6 +8,9 @@ import { Printer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Database } from '@/integrations/supabase/types';
+import { ArrestTagFeedback } from "./ArrestTagFeedback";
+import { ArrestTagMugshot } from "./ArrestTagMugshot";
+import { ArrestTagDetails } from "./ArrestTagDetails";
 
 type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'] & {
   incident_reports: Database['public']['Tables']['incident_reports']['Row'] | null;
@@ -82,49 +85,17 @@ const ArrestTag = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // Show feedback states if needed
+  const feedback = (
+    <ArrestTagFeedback 
+      isLoading={isLoading} 
+      error={!!error} 
+      id={id} 
+    />
+  );
+  if (feedback) return feedback;
 
-  if (!id) {
-    return (
-      <div className="min-h-screen bg-secondary p-8">
-        <Card className="max-w-3xl mx-auto p-8">
-          <h1 className="text-2xl font-bold text-red-600">No arrest tag ID provided</h1>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-secondary p-8">
-        <Card className="max-w-3xl mx-auto p-8">
-          <div>Loading arrest tag...</div>
-        </Card>
-      </div>
-    );
-  }
-
-  if (error || !arrestTag) {
-    return (
-      <div className="min-h-screen bg-secondary p-8">
-        <Card className="max-w-3xl mx-auto p-8">
-          <h1 className="text-2xl font-bold text-red-600">
-            Arrest tag not found for this incident report
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Please make sure the incident report has a suspect marked as in custody.
-          </p>
-        </Card>
-      </div>
-    );
-  }
+  if (!arrestTag) return null;
 
   return (
     <div className="min-h-screen bg-secondary p-8">
@@ -149,55 +120,12 @@ const ArrestTag = () => {
           </div>
 
           <div className="flex items-start gap-8">
-            <div className="flex-1 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold text-gray-600">Suspect Name</h3>
-                  <p className="text-xl">{arrestTag?.suspect_name}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-600">Booking Date</h3>
-                  <p className="text-xl">
-                    {formatDate(arrestTag?.booking_date)}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-600">Charges</h3>
-                <p className="text-xl">{arrestTag?.charges}</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-600">Arresting Officer</h3>
-                <p className="text-xl">{arrestTag?.arresting_officer}</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-600">Case Number</h3>
-                <p className="text-xl">{arrestTag?.incident_reports?.case_number}</p>
-              </div>
-            </div>
-
-            <div className="w-64 space-y-4">
-              {arrestTag?.mugshot_url ? (
-                <img 
-                  src={arrestTag.mugshot_url} 
-                  alt="Suspect Mugshot" 
-                  className="w-full rounded-lg shadow-md"
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-lg">
-                  <Button
-                    onClick={generateMugshot}
-                    disabled={isGenerating}
-                    variant="secondary"
-                  >
-                    {isGenerating ? "Generating..." : "Generate Mugshot"}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <ArrestTagDetails arrestTag={arrestTag} />
+            <ArrestTagMugshot 
+              arrestTag={arrestTag}
+              isGenerating={isGenerating}
+              onGenerate={generateMugshot}
+            />
           </div>
 
           <div className="mt-8">
