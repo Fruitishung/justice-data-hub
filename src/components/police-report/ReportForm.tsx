@@ -63,7 +63,7 @@ const ReportForm = () => {
           description: "An arrest tag has been generated and queued for analysis.",
         });
 
-        navigate(`/arrest-tag/${report.id}`);
+        navigate(`/arrest-tag/${arrestTag.id}`); // Use arrestTag.id instead of report.id
         return;
       }
 
