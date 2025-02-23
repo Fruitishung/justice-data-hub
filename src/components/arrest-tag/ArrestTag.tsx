@@ -51,16 +51,26 @@ const ArrestTag = () => {
   const generateMugshot = async () => {
     if (!arrestTag) return;
     
+    console.log('Generating mugshot for:', {
+      arrest_tag_id: arrestTag.id,
+      suspect_name: arrestTag.suspect_name
+    });
+    
     setIsGenerating(true);
     try {
-      const { error } = await supabase.functions.invoke("generate-mugshot", {
+      const { data, error } = await supabase.functions.invoke("generate-mugshot", {
         body: {
           suspect_name: arrestTag.suspect_name,
           arrest_tag_id: arrestTag.id,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Mugshot generation error:', error);
+        throw error;
+      }
+      
+      console.log('Mugshot generation response:', data);
       
       await refetch();
       toast.success("Mugshot generated successfully");
@@ -202,4 +212,3 @@ const ArrestTag = () => {
 };
 
 export default ArrestTag;
-
