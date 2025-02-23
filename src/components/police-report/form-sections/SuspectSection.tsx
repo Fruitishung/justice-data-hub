@@ -26,6 +26,11 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
           {...form.register("suspectLastName")}
         />
         <Input
+          placeholder="Also Known As (AKA)"
+          className="md:col-span-2"
+          {...form.register("suspectAKA")}
+        />
+        <Input
           type="date"
           placeholder="Date of Birth"
           {...form.register("suspectDOB")}

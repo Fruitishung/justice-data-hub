@@ -47,9 +47,9 @@ export const createIncidentReport = async (data: ReportFormData) => {
         suspect_details: {
           first_name: data.suspectFirstName,
           last_name: data.suspectLastName,
+          aka: data.suspectAKA,  // Add this new field
           dob: data.suspectDOB,
           address: data.suspectAddress,
-          age: data.suspectAge,
           gender: data.suspectGender,
           height: data.suspectHeight,
           weight: data.suspectWeight,

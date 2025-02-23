@@ -1,9 +1,9 @@
-
 import { Database } from '@/integrations/supabase/types';
 
 export type SuspectDetails = {
   first_name?: string;
   last_name?: string;
+  aka?: string;
   dob?: string;
   address?: string;
   gender?: string;

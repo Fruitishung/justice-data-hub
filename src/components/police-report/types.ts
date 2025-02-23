@@ -1,4 +1,3 @@
-
 export interface ReportFormData {
   caseNumber?: string;
   incidentDate: string | null;
@@ -50,10 +49,11 @@ export interface ReportFormData {
   victimWorkPhone: string;
   suspectFirstName: string;
   suspectLastName: string;
+  suspectAKA: string;
   suspectDOB: string;
   suspectAddress: string;
-  suspectAge: string;
   suspectGender: string;
+  suspectAge: string;
   suspectHeight: string;
   suspectWeight: string;
   suspectHair: string;
