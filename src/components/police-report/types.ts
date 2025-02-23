@@ -28,6 +28,9 @@ export interface ReportFormData {
   evidencePropertyType: string;
   evidenceAdditionalDetails: string;
   evidenceBookedAtHQ: boolean;
+  evidenceHold: boolean;
+  evidenceLost: boolean;
+  evidenceSafeKeeping: boolean;
   emergencyResponse: string;
   emergencyUnits: string;
   victimFirstName: string;

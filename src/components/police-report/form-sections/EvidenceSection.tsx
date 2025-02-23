@@ -25,14 +25,49 @@ const EvidenceSection = ({ form }: EvidenceSectionProps) => {
           {...form.register("evidenceLocation")}
         />
         
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="evidenceBooked"
-            {...form.register("evidenceBookedAtHQ")}
-          />
-          <Label htmlFor="evidenceBooked">
-            Evidence has been booked at HQ evidence locker
-          </Label>
+        <div className="space-y-2 border p-4 rounded-lg">
+          <h4 className="font-semibold mb-2">Evidence Status</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="evidenceBooked"
+                {...form.register("evidenceBookedAtHQ")}
+              />
+              <Label htmlFor="evidenceBooked">
+                Booked at HQ evidence locker
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="evidenceHold"
+                {...form.register("evidenceHold")}
+              />
+              <Label htmlFor="evidenceHold">
+                Hold as Evidence
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="evidenceLost"
+                {...form.register("evidenceLost")}
+              />
+              <Label htmlFor="evidenceLost">
+                Lost Property
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="evidenceSafeKeeping"
+                {...form.register("evidenceSafeKeeping")}
+              />
+              <Label htmlFor="evidenceSafeKeeping">
+                Safe Keeping
+              </Label>
+            </div>
+          </div>
         </div>
         
         <div className="border p-4 rounded-lg space-y-4">
