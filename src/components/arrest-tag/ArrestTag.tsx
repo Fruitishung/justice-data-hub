@@ -28,7 +28,7 @@ const ArrestTag = () => {
       const { data, error } = await supabase
         .from("arrest_tags")
         .select("*, incident_reports(*)")
-        .eq("incident_report_id", id)
+        .eq("id", id) // Changed from incident_report_id to id
         .maybeSingle();
 
       if (error) {
@@ -37,7 +37,7 @@ const ArrestTag = () => {
       }
       
       if (!data) {
-        console.log("No arrest tag found for incident report:", id);
+        console.log("No arrest tag found with ID:", id);
         throw new Error("Arrest tag not found");
       }
       
