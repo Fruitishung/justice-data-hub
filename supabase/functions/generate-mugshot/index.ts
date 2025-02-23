@@ -26,7 +26,7 @@ serve(async (req) => {
     );
 
     // Generate mugshot using DALL-E
-    const prompt = `A police mugshot of a person, front view, neutral expression, gray background, realistic style. Do not include text or watermarks.`;
+    const prompt = `A front-facing police mugshot photo of a person in front of a gray background with height measurements visible. The photo should be well-lit, clear, and realistic, capturing a neutral facial expression. Documentary style, professional lighting.`;
     
     const openAIResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
