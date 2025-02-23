@@ -28,8 +28,13 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Initialize HuggingFace
-    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
+    // Initialize HuggingFace with API token
+    const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
+    if (!hfToken) {
+      throw new Error('Missing Hugging Face access token')
+    }
+    
+    const hf = new HfInference(hfToken)
     
     console.log('Generating image with AI...')
     
@@ -39,10 +44,11 @@ serve(async (req) => {
     
     const image = await hf.textToImage({
       inputs: prompt,
-      model: "black-forest-labs/FLUX.1-schnell", // Fast, high-quality model
+      model: "stabilityai/stable-diffusion-xl-base-1.0",
       parameters: {
-        sampling_method: "DPM++ Karras SDE",
-        num_inference_steps: 8
+        negative_prompt: "deformed, distorted, disfigured, cartoon, anime, unrealistic",
+        num_inference_steps: 30,
+        guidance_scale: 7.5
       }
     })
 
@@ -56,7 +62,10 @@ serve(async (req) => {
     // Update the arrest tag with the new mugshot URL
     const { error: updateError } = await supabase
       .from('arrest_tags')
-      .update({ mugshot_url: imageUrl })
+      .update({ 
+        mugshot_url: imageUrl,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', arrest_tag_id)
 
     if (updateError) {
@@ -72,7 +81,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-mugshot function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: error.toString()
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
