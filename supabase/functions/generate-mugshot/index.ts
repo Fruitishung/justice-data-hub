@@ -33,11 +33,34 @@ serve(async (req) => {
       apiKey: openaiKey.trim()
     })
 
-    // Generate image with a more detailed prompt for realistic mugshots
-    console.log('Generating image with DALL-E...')
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // First verify the arrest tag exists
+    console.log('Verifying arrest tag exists...')
+    const { data: existingTag, error: fetchError } = await supabase
+      .from('arrest_tags')
+      .select('id, suspect_name')
+      .eq('id', arrest_tag_id)
+      .single()
+
+    if (fetchError || !existingTag) {
+      throw new Error(`Failed to verify arrest tag: ${fetchError?.message || 'Tag not found'}`)
+    }
+
+    console.log('Found arrest tag, generating mugshot...')
+
+    // Generate image with improved prompt
     const imageResponse = await openai.images.generate({
       model: "dall-e-3",
-      prompt: "A hyperrealistic police booking photograph. Front-facing portrait of a person against a plain light gray background with height measurement lines visible. The subject has a neutral expression, wearing civilian clothes, and is well-lit with standard police booking photo lighting. The image should be clear, professional, and appear as a genuine police booking photo without any text overlays or artistic effects. Ensure the image follows standard police photography guidelines with proper framing from shoulders up.",
+      prompt: `A realistic police booking photograph (mugshot). Front-facing portrait of a person with a neutral expression against a light gray background. Standard police height measurement lines are visible on the wall behind. The subject is well-lit with professional police photography lighting, wearing casual civilian clothing. Image should be clear, centered, and follow standard police booking photo protocols. The photo should be framed from just below the shoulders to above the head. No text overlays or timestamps.`,
       n: 1,
       size: "1024x1024",
       quality: "hd",
@@ -51,28 +74,8 @@ serve(async (req) => {
     const imageUrl = imageResponse.data[0].url
     console.log('Successfully generated image URL:', imageUrl)
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration')
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // First verify the arrest tag exists
-    const { data: existingTag, error: fetchError } = await supabase
-      .from('arrest_tags')
-      .select('id')
-      .eq('id', arrest_tag_id)
-      .single()
-
-    if (fetchError || !existingTag) {
-      throw new Error(`Failed to verify arrest tag: ${fetchError?.message || 'Tag not found'}`)
-    }
-
-    // Update the arrest tag
+    // Update the arrest tag with the new mugshot
+    console.log('Updating arrest tag with new mugshot URL...')
     const { data: updateData, error: updateError } = await supabase
       .from('arrest_tags')
       .update({
@@ -85,6 +88,8 @@ serve(async (req) => {
     if (updateError) {
       throw new Error(`Failed to update arrest tag: ${updateError.message}`)
     }
+
+    console.log('Successfully updated arrest tag with new mugshot')
 
     return new Response(
       JSON.stringify({
@@ -101,11 +106,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Function error:', error)
     
+    // Improved error response with more details
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
-        details: error.toString()
+        details: error.toString(),
+        timestamp: new Date().toISOString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
