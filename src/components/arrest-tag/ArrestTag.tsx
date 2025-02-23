@@ -17,7 +17,7 @@ const ArrestTag = () => {
   const { id } = useParams();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: arrestTag, isLoading, refetch } = useQuery<ArrestTag>({
+  const { data: arrestTag, isLoading, error, refetch } = useQuery({
     queryKey: ["arrest-tag", id],
     queryFn: async () => {
       if (!id) throw new Error("No ID provided");
@@ -25,14 +25,23 @@ const ArrestTag = () => {
       const { data, error } = await supabase
         .from("arrest_tags")
         .select("*, incident_reports(*)")
-        .eq("id", id)
+        .eq("incident_report_id", id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error("Arrest tag not found");
+      if (error) {
+        console.error("Error fetching arrest tag:", error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.log("No arrest tag found for incident report:", id);
+        throw new Error("Arrest tag not found");
+      }
+      
       return data as ArrestTag;
     },
     enabled: !!id,
+    retry: 1
   });
 
   const handlePrint = () => {
@@ -92,11 +101,16 @@ const ArrestTag = () => {
     );
   }
 
-  if (!arrestTag) {
+  if (error || !arrestTag) {
     return (
       <div className="min-h-screen bg-secondary p-8">
         <Card className="max-w-3xl mx-auto p-8">
-          <h1 className="text-2xl font-bold text-red-600">Arrest tag not found</h1>
+          <h1 className="text-2xl font-bold text-red-600">
+            Arrest tag not found for this incident report
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Please make sure the incident report has a suspect marked as in custody.
+          </p>
         </Card>
       </div>
     );
@@ -188,3 +202,4 @@ const ArrestTag = () => {
 };
 
 export default ArrestTag;
+
