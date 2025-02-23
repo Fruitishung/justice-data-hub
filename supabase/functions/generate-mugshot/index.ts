@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
+import OpenAI from "https://esm.sh/openai@4.28.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,36 +28,37 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Initialize HuggingFace with API token
-    const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
-    if (!hfToken) {
-      throw new Error('Missing Hugging Face access token')
+    // Initialize OpenAI with API key
+    const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openaiKey) {
+      throw new Error('Missing OpenAI API key')
     }
     
-    const hf = new HfInference(hfToken)
+    const openai = new OpenAI({ apiKey: openaiKey })
     
-    console.log('Generating image with AI...')
+    console.log('Generating image with DALL-E...')
     
-    // Generate the mugshot using AI
-    const prompt = `Ultra realistic police mugshot photograph of a criminal suspect named ${suspect_name}, 
-      front view, neutral expression, harsh lighting, police backdrop, 4k, highly detailed`
+    // Generate the mugshot using DALL-E
+    const prompt = `Ultra realistic police mugshot photograph of a criminal suspect, 
+      front view against light blue background, harsh lighting, neutral expression, 
+      wearing civilian clothes, photorealistic, 4k, highly detailed. The photo should look 
+      like a real police mugshot, not artistic or stylized.`
     
-    const image = await hf.textToImage({
-      inputs: prompt,
-      model: "stabilityai/stable-diffusion-xl-base-1.0",
-      parameters: {
-        negative_prompt: "deformed, distorted, disfigured, cartoon, anime, unrealistic",
-        num_inference_steps: 30,
-        guidance_scale: 7.5
-      }
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+      style: "natural"
     })
 
-    // Convert the blob to base64
-    const arrayBuffer = await image.arrayBuffer()
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-    const imageUrl = `data:image/jpeg;base64,${base64}`
+    if (!response.data?.[0]?.url) {
+      throw new Error('No image URL received from OpenAI')
+    }
 
-    console.log('Generated image, updating arrest tag...')
+    const imageUrl = response.data[0].url
+    console.log('Generated image URL:', imageUrl)
 
     // Update the arrest tag with the new mugshot URL
     const { error: updateError } = await supabase
