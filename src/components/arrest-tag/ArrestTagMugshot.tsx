@@ -15,11 +15,12 @@ interface ArrestTagMugshotProps {
 }
 
 export const ArrestTagMugshot = ({ 
-  arrestTag, 
+  arrestTag: initialArrestTag, 
   isGenerating, 
   onGenerate 
 }: ArrestTagMugshotProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [arrestTag, setArrestTag] = useState(initialArrestTag);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,8 +52,9 @@ export const ArrestTagMugshot = ({
 
       if (updateError) throw updateError;
 
+      // Update local state with new mugshot URL
+      setArrestTag(prev => ({ ...prev, mugshot_url: publicUrl }));
       toast.success("Mugshot uploaded successfully");
-      window.location.reload(); // Refresh to show new image
     } catch (error) {
       console.error('Error uploading mugshot:', error);
       toast.error("Failed to upload mugshot");
