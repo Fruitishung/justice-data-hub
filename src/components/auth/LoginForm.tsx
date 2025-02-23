@@ -35,7 +35,7 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
         title: "Success",
         description: "You have been logged in successfully",
       });
-      navigate("/");
+      navigate("/"); // This will redirect to the home page after successful login
     } catch (error: any) {
       setError(error.message);
       toast({
