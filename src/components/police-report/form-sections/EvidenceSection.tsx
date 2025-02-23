@@ -6,6 +6,7 @@ import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface EvidenceSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -23,6 +24,16 @@ const EvidenceSection = ({ form }: EvidenceSectionProps) => {
           placeholder="Evidence Location"
           {...form.register("evidenceLocation")}
         />
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="evidenceBooked"
+            {...form.register("evidenceBookedAtHQ")}
+          />
+          <Label htmlFor="evidenceBooked">
+            Evidence has been booked at HQ evidence locker
+          </Label>
+        </div>
         
         <div className="border p-4 rounded-lg space-y-4">
           <h4 className="font-semibold">Property Details</h4>

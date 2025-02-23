@@ -27,6 +27,7 @@ export interface ReportFormData {
   evidenceColor: string;
   evidencePropertyType: string;
   evidenceAdditionalDetails: string;
+  evidenceBookedAtHQ: boolean;
   emergencyResponse: string;
   emergencyUnits: string;
   victimFirstName: string;
@@ -73,4 +74,3 @@ export interface ReportFormData {
     timestamp: string;
   }[];
 }
-
