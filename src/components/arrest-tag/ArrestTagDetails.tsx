@@ -19,6 +19,8 @@ export const ArrestTagDetails = ({ arrestTag }: ArrestTagDetailsProps) => {
     });
   };
 
+  const suspectDetails = arrestTag?.incident_reports?.suspect_details as { aka?: string } | null;
+
   return (
     <div className="flex-1 space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -33,6 +35,13 @@ export const ArrestTagDetails = ({ arrestTag }: ArrestTagDetailsProps) => {
           </p>
         </div>
       </div>
+
+      {suspectDetails?.aka && (
+        <div>
+          <h3 className="font-semibold text-gray-600">Also Known As (AKA)</h3>
+          <p className="text-xl">{suspectDetails.aka}</p>
+        </div>
+      )}
 
       <div>
         <h3 className="font-semibold text-gray-600">Charges</h3>
