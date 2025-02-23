@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UseFormReturn } from "react-hook-form"
@@ -7,7 +7,6 @@ import { ReportFormData } from "../types"
 import { useToast } from "@/components/ui/use-toast"
 import { Fingerprint } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
-import { checkFeatureAccess } from "@/utils/security"
 import { scannerUtils } from "@/utils/fingerprintScanner"
 import { useParams } from "react-router-dom"
 
@@ -17,28 +16,10 @@ interface FingerprintScannerProps {
 
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [isScanning, setIsScanning] = useState(false)
-  const [hasAccess, setHasAccess] = useState(false)
   const { toast } = useToast()
-  const { id } = useParams() // Get route params
-
-  useEffect(() => {
-    const checkAccess = async () => {
-      const hasFeatureAccess = await checkFeatureAccess('fingerprint_scanning')
-      setHasAccess(hasFeatureAccess)
-    }
-    checkAccess()
-  }, [])
+  const { id } = useParams()
 
   const handleScan = async () => {
-    if (!hasAccess) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have access to the fingerprint scanning feature.",
-        variant: "destructive",
-      })
-      return
-    }
-
     try {
       setIsScanning(true)
       
@@ -97,17 +78,6 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     } finally {
       setIsScanning(false)
     }
-  }
-
-  if (!hasAccess) {
-    return (
-      <Card className="p-4 bg-yellow-50 border-yellow-200">
-        <p className="text-yellow-800 text-sm">
-          Fingerprint scanning requires additional permissions.
-          Please contact your administrator to enable this feature.
-        </p>
-      </Card>
-    )
   }
 
   return (
