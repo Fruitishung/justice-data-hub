@@ -14,19 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    const { arrest_tag_id, suspect_name } = await req.json()
-    console.log('Generating mugshot for:', { arrest_tag_id, suspect_name })
+    const { arrest_tag_id } = await req.json()
+    console.log('Generating mugshot for arrest tag:', arrest_tag_id)
 
-    if (!arrest_tag_id || !suspect_name) {
-      throw new Error('Missing required fields: arrest_tag_id and suspect_name are required')
+    if (!arrest_tag_id) {
+      throw new Error('Missing required field: arrest_tag_id')
     }
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    if (!supabaseUrl || !supabaseKey) throw new Error('Missing Supabase credentials')
-    
-    const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Initialize OpenAI with API key
     const openaiKey = Deno.env.get('OPENAI_API_KEY')
@@ -38,15 +31,10 @@ serve(async (req) => {
     
     console.log('Generating image with DALL-E...')
     
-    // Generate the mugshot using DALL-E
-    const prompt = `Ultra realistic police mugshot photograph of a criminal suspect, 
-      front view against light blue background, harsh lighting, neutral expression, 
-      wearing civilian clothes, photorealistic, 4k, highly detailed. The photo should look 
-      like a real police mugshot, not artistic or stylized.`
-    
+    // Generate mugshot using DALL-E
     const response = await openai.images.generate({
       model: "dall-e-3",
-      prompt: prompt,
+      prompt: "Professional police mugshot photo against a light blue background, frontal view, harsh lighting, neutral expression, wearing civilian clothes. Photorealistic, law enforcement style documentation photo.",
       n: 1,
       size: "1024x1024",
       quality: "hd",
@@ -60,7 +48,14 @@ serve(async (req) => {
     const imageUrl = response.data[0].url
     console.log('Generated image URL:', imageUrl)
 
-    // Update the arrest tag with the new mugshot URL
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !supabaseKey) throw new Error('Missing Supabase credentials')
+    
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Save the mugshot URL
     const { error: updateError } = await supabase
       .from('arrest_tags')
       .update({ 
@@ -82,10 +77,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-mugshot function:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred',
-        details: error.toString()
-      }),
+      JSON.stringify({ error: error.message || 'An unexpected error occurred' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
