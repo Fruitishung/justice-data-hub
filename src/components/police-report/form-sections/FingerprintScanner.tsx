@@ -1,7 +1,6 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
 import { useToast } from "@/components/ui/use-toast"
@@ -16,10 +15,56 @@ interface FingerprintScannerProps {
 
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [isScanning, setIsScanning] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
   const { toast } = useToast()
   const { id } = useParams()
 
+  useEffect(() => {
+    const connectScanner = async () => {
+      try {
+        const connected = await scannerUtils.connect()
+        setIsConnected(connected)
+        
+        if (connected) {
+          toast({
+            title: "Scanner Connected",
+            description: "Digital Persona scanner is ready to use",
+          })
+        } else {
+          toast({
+            title: "Scanner Not Connected",
+            description: "Please check if the scanner is properly connected",
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        console.error('Scanner connection error:', error)
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to the scanner. Please try again.",
+          variant: "destructive",
+        })
+      }
+    }
+
+    connectScanner()
+
+    // Cleanup on unmount
+    return () => {
+      scannerUtils.disconnect()
+    }
+  }, [toast])
+
   const handleScan = async () => {
+    if (!isConnected) {
+      toast({
+        title: "Scanner Not Connected",
+        description: "Please ensure the scanner is connected before scanning",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       setIsScanning(true)
       
@@ -83,15 +128,23 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Fingerprint Scanner</h3>
-      <Button
-        type="button"
-        onClick={handleScan}
-        disabled={isScanning}
-        className="w-full"
-      >
-        <Fingerprint className="mr-2 h-4 w-4" />
-        {isScanning ? "Scanning..." : "Start Scan"}
-      </Button>
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center space-x-2">
+          <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className="text-sm text-gray-600">
+            {isConnected ? 'Scanner Connected' : 'Scanner Not Connected'}
+          </span>
+        </div>
+        <Button
+          type="button"
+          onClick={handleScan}
+          disabled={isScanning || !isConnected}
+          className="w-full"
+        >
+          <Fingerprint className="mr-2 h-4 w-4" />
+          {isScanning ? "Scanning..." : "Start Scan"}
+        </Button>
+      </div>
     </div>
   )
 }
