@@ -57,17 +57,13 @@ const ArrestTag = () => {
   const generateMugshot = async () => {
     if (!arrestTag) return;
     
-    console.log('Generating mugshot for:', {
-      arrest_tag_id: arrestTag.id,
-      suspect_name: arrestTag.suspect_name
-    });
+    console.log('Generating mugshot for arrest tag:', arrestTag.id);
     
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-mugshot", {
         body: {
           arrest_tag_id: arrestTag.id,
-          suspect_name: arrestTag.suspect_name,
         },
       });
 
