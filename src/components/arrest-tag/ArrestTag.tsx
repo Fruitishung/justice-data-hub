@@ -27,8 +27,11 @@ const ArrestTag = () => {
       
       const { data, error } = await supabase
         .from("arrest_tags")
-        .select("*, incident_reports(*)")
-        .eq("id", id) // Changed from incident_report_id to id
+        .select(`
+          *,
+          incident_reports:incident_report_id (*)
+        `)
+        .eq("id", id)
         .maybeSingle();
 
       if (error) {
@@ -85,17 +88,30 @@ const ArrestTag = () => {
     }
   };
 
-  // Show feedback states if needed
-  const feedback = (
-    <ArrestTagFeedback 
-      isLoading={isLoading} 
-      error={!!error} 
-      id={id} 
-    />
-  );
-  if (feedback) return feedback;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-secondary p-8">
+        <Card className="max-w-3xl mx-auto p-8">
+          <div>Loading arrest tag...</div>
+        </Card>
+      </div>
+    );
+  }
 
-  if (!arrestTag) return null;
+  if (error || !arrestTag) {
+    return (
+      <div className="min-h-screen bg-secondary p-8">
+        <Card className="max-w-3xl mx-auto p-8">
+          <h1 className="text-2xl font-bold text-red-600">
+            Arrest tag not found
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Please make sure the arrest tag ID is correct.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary p-8">
