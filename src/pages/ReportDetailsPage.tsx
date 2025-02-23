@@ -6,10 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReportForm from '@/components/police-report/ReportForm';
 import { type IncidentReport } from '@/types/reports';
+import { useToast } from '@/components/ui/use-toast';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     if (!id) {
@@ -21,7 +23,7 @@ const ReportDetailsPage = () => {
   const emptyReport: IncidentReport = {
     id: '',
     case_number: 'NEW',
-    incident_date: new Date().toISOString(), // Initialize with current date instead of null
+    incident_date: new Date().toISOString(),
     incident_description: '',
     report_status: 'Open',
     created_at: new Date().toISOString(),
@@ -62,7 +64,7 @@ const ReportDetailsPage = () => {
     report_resolution: null
   };
 
-  const { data: report, isLoading } = useQuery<IncidentReport>({
+  const { data: report, isLoading, error } = useQuery({
     queryKey: ['report', id],
     queryFn: async () => {
       if (!id) {
@@ -124,15 +126,36 @@ const ReportDetailsPage = () => {
 
       console.log('Fetched report:', parsedData);
       return parsedData;
-    }
+    },
+    retry: 1,
+    staleTime: 30000, // Cache data for 30 seconds
+    refetchOnWindowFocus: false
   });
 
-  // If we're still loading, show the loading state
+  // Show error toast when there's an error
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading report",
+        description: error.message || "Failed to load report details",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+
+  // If we're still loading, show an improved loading state
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Loading Report...</h1>
-        <Skeleton className="h-96" />
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-12 w-3/4" />
+          <Skeleton className="h-12 w-1/2" />
+        </div>
       </div>
     );
   }
@@ -142,6 +165,7 @@ const ReportDetailsPage = () => {
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold text-red-600">Report not found</h1>
+        <p className="mt-2 text-gray-600">The requested report could not be found.</p>
       </div>
     );
   }
