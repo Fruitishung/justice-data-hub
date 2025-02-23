@@ -33,11 +33,11 @@ serve(async (req) => {
       apiKey: openaiKey.trim()
     })
 
-    // Generate image
+    // Generate image with a more detailed prompt for realistic mugshots
     console.log('Generating image with DALL-E...')
     const imageResponse = await openai.images.generate({
       model: "dall-e-3",
-      prompt: "A professional police mugshot photo, front view of a person against a light gray background. Clinical lighting, neutral expression. Standard booking photo composition. No text overlays.",
+      prompt: "A hyperrealistic police booking photograph. Front-facing portrait of a person against a plain light gray background with height measurement lines visible. The subject has a neutral expression, wearing civilian clothes, and is well-lit with standard police booking photo lighting. The image should be clear, professional, and appear as a genuine police booking photo without any text overlays or artistic effects. Ensure the image follows standard police photography guidelines with proper framing from shoulders up.",
       n: 1,
       size: "1024x1024",
       quality: "hd",
@@ -49,7 +49,7 @@ serve(async (req) => {
     }
 
     const imageUrl = imageResponse.data[0].url
-    console.log('Successfully generated image URL')
+    console.log('Successfully generated image URL:', imageUrl)
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
