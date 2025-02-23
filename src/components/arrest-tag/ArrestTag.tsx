@@ -63,8 +63,8 @@ const ArrestTag = () => {
     try {
       const { data, error } = await supabase.functions.invoke("generate-mugshot", {
         body: {
-          suspect_name: arrestTag.suspect_name,
           arrest_tag_id: arrestTag.id,
+          suspect_name: arrestTag.suspect_name,
         },
       });
 
