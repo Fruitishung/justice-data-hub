@@ -9,6 +9,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -21,93 +22,92 @@ serve(async (req) => {
       throw new Error('Missing required field: arrest_tag_id')
     }
 
-    // Explicitly check for OpenAI API key
+    // Verify OpenAI API key
     const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    console.log('OpenAI API key status:', openaiKey ? 'Found' : 'Not found')
-    
     if (!openaiKey) {
-      throw new Error('OpenAI API key not found in environment variables. Please ensure it is set in the Supabase dashboard.')
+      throw new Error('OpenAI API key not configured in environment variables')
     }
 
-    // Initialize OpenAI client
-    const openai = new OpenAI({ 
-      apiKey: openaiKey.trim() // Ensure no whitespace
+    // Initialize OpenAI
+    const openai = new OpenAI({
+      apiKey: openaiKey.trim()
     })
-    
-    console.log('OpenAI client initialized, generating image...')
-    
-    try {
-      const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: "A professional frontal view police mugshot against a light gray background. Subject looking directly at camera with neutral expression. Standard police booking photo style, minimal shadows, clear facial features. No text overlays or watermarks.",
-        n: 1,
-        size: "1024x1024",
-        quality: "hd",
-        style: "natural"
-      })
 
-      console.log('OpenAI API response received')
+    // Generate image
+    console.log('Generating image with DALL-E...')
+    const imageResponse = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: "A professional police mugshot photo, front view of a person against a light gray background. Clinical lighting, neutral expression. Standard booking photo composition. No text overlays.",
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+      style: "natural"
+    })
 
-      if (!response.data?.[0]?.url) {
-        console.error('Invalid response from OpenAI:', response)
-        throw new Error('No image URL in OpenAI response')
-      }
-
-      const imageUrl = response.data[0].url
-      console.log('Image URL generated successfully')
-
-      // Initialize Supabase client
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Supabase credentials not found')
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      
-      // Update the arrest tag with the new mugshot URL
-      const { error: updateError } = await supabase
-        .from('arrest_tags')
-        .update({ 
-          mugshot_url: imageUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', arrest_tag_id)
-
-      if (updateError) {
-        console.error('Database update error:', updateError)
-        throw updateError
-      }
-
-      console.log('Mugshot URL saved successfully')
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          mugshot_url: imageUrl 
-        }),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          } 
-        }
-      )
-
-    } catch (openaiError) {
-      console.error('OpenAI API error:', openaiError)
-      throw new Error(`OpenAI API error: ${openaiError.message}`)
+    if (!imageResponse.data?.[0]?.url) {
+      throw new Error('Failed to generate image with DALL-E')
     }
+
+    const imageUrl = imageResponse.data[0].url
+    console.log('Successfully generated image URL')
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // First verify the arrest tag exists
+    const { data: existingTag, error: fetchError } = await supabase
+      .from('arrest_tags')
+      .select('id')
+      .eq('id', arrest_tag_id)
+      .single()
+
+    if (fetchError || !existingTag) {
+      throw new Error(`Failed to verify arrest tag: ${fetchError?.message || 'Tag not found'}`)
+    }
+
+    // Update the arrest tag
+    const { data: updateData, error: updateError } = await supabase
+      .from('arrest_tags')
+      .update({
+        mugshot_url: imageUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', arrest_tag_id)
+      .select()
+
+    if (updateError) {
+      throw new Error(`Failed to update arrest tag: ${updateError.message}`)
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Mugshot generated and saved successfully',
+        mugshot_url: imageUrl
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    )
 
   } catch (error) {
-    console.error('Function error:', error.message)
+    console.error('Function error:', error)
+    
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
+        success: false,
         error: error.message,
         details: error.toString()
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       }
