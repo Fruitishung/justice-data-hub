@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Database, Eye } from "lucide-react";
 import GenerateMockDataButton from "@/components/GenerateMockDataButton";
-import type { Database } from "@/types/reports";
+import type { Database } from "@/integrations/supabase/types";
 
-type IncidentReportWithArrestTags = Database['public']['Tables']['incident_reports']['Row'] & {
-  arrest_tags: Array<Database['public']['Tables']['arrest_tags']['Row']>;
+type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'];
+type IncidentReport = Database['public']['Tables']['incident_reports']['Row'];
+
+type IncidentReportWithArrestTags = IncidentReport & {
+  arrest_tags: ArrestTag[];
 };
 
 const MockDataPage = () => {
@@ -25,7 +28,7 @@ const MockDataPage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as IncidentReportWithArrestTags[];
+      return data as unknown as IncidentReportWithArrestTags[];
     },
   });
 

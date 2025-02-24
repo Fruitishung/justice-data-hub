@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
+import { useQueryClient } from "@tanstack/react-query"
 
 const GenerateMockDataButton = () => {
   const [isGenerating, setIsGenerating] = useState(false)
   const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const generateMockData = async () => {
     setIsGenerating(true)
@@ -89,6 +91,9 @@ const GenerateMockDataButton = () => {
 
         if (photoError) throw photoError;
       }
+
+      // Invalidate and refetch the reports query
+      await queryClient.invalidateQueries({ queryKey: ["mock-data-reports"] });
 
       toast({
         title: "Mock Data Generated",
