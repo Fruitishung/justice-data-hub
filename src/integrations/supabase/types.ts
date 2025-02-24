@@ -1028,6 +1028,8 @@ export type Database = {
           warrant_type: string
           issue_date: string
           status: string
+          case_number: string
+          correlation_score: number
         }[]
       }
     }
