@@ -24,20 +24,22 @@ export type SuspectDetails = {
   weapon?: string;
   strong_hand?: string;
   parole_officer?: string;
+  fingerprint_classification?: string;
+  hand_dominance?: string;
 };
 
 export type ArrestTag = {
   id: string;
   created_at: string;
   tag_number: string | null;
-  incident_report_id: string;
+  incident_report_id: string | null;
   suspect_name: string | null;
   charges: string | null;
   arresting_officer: string | null;
   booking_date: string;
   mugshot_url: string | null;
   processing_status: string;
-  incident_reports?: Database['public']['Tables']['incident_reports']['Row'];
+  incident_reports?: IncidentReport | null;
 };
 
 export type IncidentReport = {
@@ -46,8 +48,12 @@ export type IncidentReport = {
   incident_date: string;
   incident_description: string | null;
   report_status: string;
+  report_priority?: string | null;
+  report_category?: string | null;
   created_at: string;
   officer_name: string | null;
+  officer_rank?: string | null;
+  officer_badge_number?: string | null;
   location_address: string | null;
   location_details: string | null;
   evidence_description: string | null;
@@ -64,6 +70,7 @@ export type IncidentReport = {
   vehicle_plate: string | null;
   vehicle_vin: string | null;
   penal_code: string | null;
+  conclusion_details?: Record<string, any> | null;
   evidence_photos: { id: string; file_path: string; }[];
   ai_crime_scene_photos: { id: string; image_path: string; }[];
   suspect_fingerprints: {
@@ -106,6 +113,34 @@ export type AICrimeScenePhoto = {
   generated_at: string;
 };
 
+// For MCTETTS Page
+export type Warrant = {
+  id: string;
+  suspect_name: string;
+  warrant_type: string;
+  issue_date: string;
+  status: string;
+};
+
+export type Vehicle = {
+  id: string;
+  make: string;
+  model: string;
+  year: string;
+  vin: string;
+  plate: string;
+  owner: string;
+};
+
+export type PropertyRecord = {
+  id: string;
+  type: string;
+  description: string;
+  serial_number: string;
+  owner: string;
+  status: string;
+};
+
 declare global {
   type Database = {
     public: {
@@ -139,6 +174,20 @@ declare global {
           Row: AICrimeScenePhoto;
           Insert: Omit<AICrimeScenePhoto, 'id' | 'generated_at'>;
           Update: Partial<AICrimeScenePhoto>;
+        };
+      };
+      Functions: {
+        search_warrants: {
+          Args: { query: string };
+          Returns: Warrant[];
+        };
+        search_vehicles: {
+          Args: { query: string };
+          Returns: Vehicle[];
+        };
+        search_property: {
+          Args: { query: string };
+          Returns: PropertyRecord[];
         };
       };
     };
