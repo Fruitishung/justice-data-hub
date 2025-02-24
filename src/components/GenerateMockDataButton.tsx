@@ -18,9 +18,7 @@ const GenerateMockDataButton = () => {
           incident_date: new Date().toISOString(),
           incident_description: "Suspect forcibly entered premises through rear window. Multiple items reported missing. Fingerprints recovered from point of entry.",
           report_status: "Open",
-          officer_name: "Officer Sarah Johnson",
-          officer_rank: "Detective",
-          officer_badge_number: "B-452",
+          officer_name: "Detective Sarah Johnson",
           location_address: "742 Evergreen Terrace",
           location_details: "Single-story residential home, point of entry through kitchen window",
           evidence_description: "Fingerprints on window frame, muddy footprints on kitchen floor",
@@ -61,12 +59,6 @@ const GenerateMockDataButton = () => {
             phone: "555-0145",
             statement: "Returned home from work at approximately 18:30 to find back window broken"
           },
-          vehicle_make: null,
-          vehicle_model: null,
-          vehicle_year: null,
-          vehicle_color: null,
-          vehicle_plate: null,
-          vehicle_vin: null,
           penal_code: "459" // California Penal Code for Burglary
         }])
         .select()
@@ -76,18 +68,26 @@ const GenerateMockDataButton = () => {
       
       // Generate fingerprint scan data
       if (report) {
-        await supabase.from('fingerprint_scans').insert([{
-          incident_report_id: report.id,
-          finger_position: "right_thumb",
-          scan_quality: 85,
-          scan_data: "MockFingerprint_" + Date.now(),
-          scan_date: new Date().toISOString()
-        }]);
+        const { error: fingerprintError } = await supabase
+          .from('fingerprint_scans')
+          .insert([{
+            incident_report_id: report.id,
+            finger_position: "right_thumb",
+            scan_quality: 85,
+            scan_data: "MockFingerprint_" + Date.now(),
+            scan_date: new Date().toISOString()
+          }]);
 
-        await supabase.from('evidence_photos').insert([{
-          incident_report_id: report.id,
-          file_path: "/mock/evidence/window_entry.jpg",
-        }]);
+        if (fingerprintError) throw fingerprintError;
+
+        const { error: photoError } = await supabase
+          .from('evidence_photos')
+          .insert([{
+            incident_report_id: report.id,
+            file_path: "/mock/evidence/window_entry.jpg",
+          }]);
+
+        if (photoError) throw photoError;
       }
 
       toast({
