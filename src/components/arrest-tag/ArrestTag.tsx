@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Printer, FileImage } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Database } from '@/integrations/supabase/types';
 import { ArrestTagFeedback } from "./ArrestTagFeedback";
 import { ArrestTagMugshot } from "./ArrestTagMugshot";
 import { ArrestTagDetails } from "./ArrestTagDetails";
+import { type IncidentReport, type ArrestTag as ArrestTagType } from "@/types/reports";
 
-type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'] & {
+type ArrestTagResponse = Database['public']['Tables']['arrest_tags']['Row'] & {
   incident_reports: Database['public']['Tables']['incident_reports']['Row'] | null;
 };
 
@@ -45,7 +45,7 @@ const ArrestTag = () => {
         throw new Error("Arrest tag not found");
       }
       
-      return data as ArrestTag;
+      return data as ArrestTagResponse;
     },
     enabled: !!id,
     retry: 1

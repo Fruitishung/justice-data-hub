@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Database, Eye } from "lucide-react";
 import GenerateMockDataButton from "@/components/GenerateMockDataButton";
+import type { Database } from "@/integrations/supabase/types";
+
+type ReportWithArrestTags = Database['public']['Tables']['incident_reports']['Row'] & {
+  arrest_tags: Database['public']['Tables']['arrest_tags']['Row'][];
+};
 
 const MockDataPage = () => {
   const { data: reports, isLoading } = useQuery({
@@ -20,7 +25,7 @@ const MockDataPage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as ReportWithArrestTags[];
     },
   });
 
@@ -68,7 +73,7 @@ const MockDataPage = () => {
                       {report.penal_code === "187" ? "Homicide" : "Armed Robbery"}
                     </TableCell>
                     <TableCell>
-                      {new Date(report.incident_date).toLocaleDateString()}
+                      {new Date(report.incident_date || '').toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-sm ${
@@ -82,7 +87,7 @@ const MockDataPage = () => {
                     <TableCell>
                       {report.arrest_tags?.[0]?.tag_number ? (
                         <Link 
-                          to={`/arrest-tag/${report.id}`}
+                          to={`/arrest-tag/${report.arrest_tags[0].id}`}
                           className="text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Database className="h-4 w-4" />

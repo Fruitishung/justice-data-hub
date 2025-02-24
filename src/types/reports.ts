@@ -1,5 +1,7 @@
 import { Database } from '@/integrations/supabase/types';
 
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
 export type SuspectDetails = {
   first_name?: string;
   last_name?: string;
@@ -27,18 +29,8 @@ export type SuspectDetails = {
   hand_dominance?: string;
 };
 
-export type ArrestTag = {
-  id: string;
-  created_at: string;
-  tag_number: string | null;
-  incident_report_id: string | null;
-  suspect_name: string | null;
-  charges: string | null;
-  arresting_officer: string | null;
-  booking_date: string;
-  mugshot_url: string | null;
-  processing_status: string;
-  incident_reports?: IncidentReport | null;
+export type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'] & {
+  incident_reports?: Database['public']['Tables']['incident_reports']['Row'] | null;
 };
 
 export type IncidentReport = {

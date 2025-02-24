@@ -2,16 +2,16 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { SuspectDetails } from '@/types/reports';
 
 export const useFingerprint = () => {
   const fetchBiometricData = useCallback(async (fingerprintData: string) => {
     try {
-      // Query the fingerprint_scans table instead of non-existent suspect_biometrics
       const { data, error } = await supabase
         .from('fingerprint_scans')
         .select('*, incident_reports(*)')
         .eq('scan_data', fingerprintData)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -19,13 +19,12 @@ export const useFingerprint = () => {
         return null;
       }
 
-      // Access the biometric data from the incident report's suspect details
-      const suspectDetails = data.incident_reports?.suspect_details || {};
+      const suspectDetails = data.incident_reports?.suspect_details as SuspectDetails | null;
       
       return {
         fingerprintClass: suspectDetails?.fingerprint_classification || 'Unknown',
         handDominance: suspectDetails?.hand_dominance || 'Unknown',
-        matchScore: calculateMatchScore(fingerprintData, data.scan_data)
+        matchScore: calculateMatchScore(fingerprintData, data.scan_data || '')
       };
     } catch (error) {
       console.error('Error fetching biometric data:', error);
@@ -35,7 +34,6 @@ export const useFingerprint = () => {
   }, []);
 
   const calculateMatchScore = (sample1: string, sample2: string) => {
-    // Simple matching algorithm - can be enhanced
     return sample1 === sample2 ? 100 : 0;
   };
 
