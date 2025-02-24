@@ -39,6 +39,74 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_crime_scene_photos: {
+        Row: {
+          generated_at: string | null
+          id: string
+          image_path: string | null
+          incident_report_id: string | null
+        }
+        Insert: {
+          generated_at?: string | null
+          id?: string
+          image_path?: string | null
+          incident_report_id?: string | null
+        }
+        Update: {
+          generated_at?: string | null
+          id?: string
+          image_path?: string | null
+          incident_report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_crime_scene_photos_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      arrest_tags: {
+        Row: {
+          arresting_officer: string | null
+          booking_date: string | null
+          charges: string | null
+          created_at: string | null
+          id: string
+          incident_report_id: string | null
+          mugshot_url: string | null
+          processing_status: string | null
+          suspect_name: string | null
+          tag_number: string | null
+        }
+        Insert: {
+          arresting_officer?: string | null
+          booking_date?: string | null
+          charges?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          mugshot_url?: string | null
+          processing_status?: string | null
+          suspect_name?: string | null
+          tag_number?: string | null
+        }
+        Update: {
+          arresting_officer?: string | null
+          booking_date?: string | null
+          charges?: string | null
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          mugshot_url?: string | null
+          processing_status?: string | null
+          suspect_name?: string | null
+          tag_number?: string | null
+        }
+        Relationships: []
+      }
       data_analysis_training: {
         Row: {
           analysis_metrics: Json | null
@@ -149,6 +217,148 @@ export type Database = {
           },
         ]
       }
+      evidence_photos: {
+        Row: {
+          file_path: string | null
+          id: string
+          incident_report_id: string | null
+          uploaded_at: string | null
+        }
+        Insert: {
+          file_path?: string | null
+          id?: string
+          incident_report_id?: string | null
+          uploaded_at?: string | null
+        }
+        Update: {
+          file_path?: string | null
+          id?: string
+          incident_report_id?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_photos_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fingerprint_scans: {
+        Row: {
+          finger_position: string | null
+          id: string
+          incident_report_id: string | null
+          scan_data: string | null
+          scan_date: string | null
+          scan_quality: number | null
+        }
+        Insert: {
+          finger_position?: string | null
+          id?: string
+          incident_report_id?: string | null
+          scan_data?: string | null
+          scan_date?: string | null
+          scan_quality?: number | null
+        }
+        Update: {
+          finger_position?: string | null
+          id?: string
+          incident_report_id?: string | null
+          scan_data?: string | null
+          scan_date?: string | null
+          scan_quality?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fingerprint_scans_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_reports: {
+        Row: {
+          case_number: string | null
+          created_at: string | null
+          emergency_response: string | null
+          emergency_units: string | null
+          evidence_description: string | null
+          evidence_location: string | null
+          evidence_property: Json | null
+          id: string
+          incident_date: string | null
+          incident_description: string | null
+          location_address: string | null
+          location_details: string | null
+          officer_name: string | null
+          penal_code: string | null
+          report_status: string | null
+          suspect_details: Json | null
+          vehicle_color: string | null
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_vin: string | null
+          vehicle_year: string | null
+          victim_details: Json | null
+        }
+        Insert: {
+          case_number?: string | null
+          created_at?: string | null
+          emergency_response?: string | null
+          emergency_units?: string | null
+          evidence_description?: string | null
+          evidence_location?: string | null
+          evidence_property?: Json | null
+          id?: string
+          incident_date?: string | null
+          incident_description?: string | null
+          location_address?: string | null
+          location_details?: string | null
+          officer_name?: string | null
+          penal_code?: string | null
+          report_status?: string | null
+          suspect_details?: Json | null
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_vin?: string | null
+          vehicle_year?: string | null
+          victim_details?: Json | null
+        }
+        Update: {
+          case_number?: string | null
+          created_at?: string | null
+          emergency_response?: string | null
+          emergency_units?: string | null
+          evidence_description?: string | null
+          evidence_location?: string | null
+          evidence_property?: Json | null
+          id?: string
+          incident_date?: string | null
+          incident_description?: string | null
+          location_address?: string | null
+          location_details?: string | null
+          officer_name?: string | null
+          penal_code?: string | null
+          report_status?: string | null
+          suspect_details?: Json | null
+          vehicle_color?: string | null
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_vin?: string | null
+          vehicle_year?: string | null
+          victim_details?: Json | null
+        }
+        Relationships: []
+      }
       learning_strategies: {
         Row: {
           created_at: string
@@ -220,6 +430,38 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      narrative_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          incident_report_id: string | null
+          narrative_text: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          narrative_text?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          incident_report_id?: string | null
+          narrative_text?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "narrative_reports_incident_report_id_fkey"
+            columns: ["incident_report_id"]
+            isOneToOne: false
+            referencedRelation: "incident_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {

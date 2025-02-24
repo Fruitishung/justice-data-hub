@@ -1,3 +1,4 @@
+
 import { Database } from '@/integrations/supabase/types';
 
 export type SuspectDetails = {
@@ -25,7 +26,44 @@ export type SuspectDetails = {
   parole_officer?: string;
 };
 
-export type IncidentReport = Database['public']['Tables']['incident_reports']['Row'] & {
+export type ArrestTag = {
+  id: string;
+  created_at: string;
+  tag_number: string | null;
+  incident_report_id: string;
+  suspect_name: string | null;
+  charges: string | null;
+  arresting_officer: string | null;
+  booking_date: string;
+  mugshot_url: string | null;
+  processing_status: string;
+  incident_reports?: Database['public']['Tables']['incident_reports']['Row'];
+};
+
+export type IncidentReport = {
+  id: string;
+  case_number: string | null;
+  incident_date: string;
+  incident_description: string | null;
+  report_status: string;
+  created_at: string;
+  officer_name: string | null;
+  location_address: string | null;
+  location_details: string | null;
+  evidence_description: string | null;
+  evidence_location: string | null;
+  emergency_response: string | null;
+  emergency_units: string | null;
+  evidence_property: Record<string, any> | null;
+  suspect_details: SuspectDetails;
+  victim_details: Record<string, any> | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | null;
+  vehicle_color: string | null;
+  vehicle_plate: string | null;
+  vehicle_vin: string | null;
+  penal_code: string | null;
   evidence_photos: { id: string; file_path: string; }[];
   ai_crime_scene_photos: { id: string; image_path: string; }[];
   suspect_fingerprints: {
@@ -35,5 +73,74 @@ export type IncidentReport = Database['public']['Tables']['incident_reports']['R
     scan_quality: number | null;
     scan_date: string | null;
   }[];
-  suspect_details: SuspectDetails;
 };
+
+export type FingerprintScan = {
+  id: string;
+  incident_report_id: string;
+  scan_data: string;
+  finger_position: string;
+  scan_quality: number | null;
+  scan_date: string | null;
+};
+
+export type NarrativeReport = {
+  id: string;
+  incident_report_id: string;
+  narrative_text: string | null;
+  status: string;
+  created_at: string;
+};
+
+export type EvidencePhoto = {
+  id: string;
+  incident_report_id: string;
+  file_path: string;
+  uploaded_at: string;
+};
+
+export type AICrimeScenePhoto = {
+  id: string;
+  incident_report_id: string;
+  image_path: string;
+  generated_at: string;
+};
+
+declare global {
+  type Database = {
+    public: {
+      Tables: {
+        arrest_tags: {
+          Row: ArrestTag;
+          Insert: Omit<ArrestTag, 'id' | 'created_at'>;
+          Update: Partial<ArrestTag>;
+        };
+        incident_reports: {
+          Row: IncidentReport;
+          Insert: Omit<IncidentReport, 'id' | 'created_at'>;
+          Update: Partial<IncidentReport>;
+        };
+        fingerprint_scans: {
+          Row: FingerprintScan;
+          Insert: Omit<FingerprintScan, 'id'>;
+          Update: Partial<FingerprintScan>;
+        };
+        narrative_reports: {
+          Row: NarrativeReport;
+          Insert: Omit<NarrativeReport, 'id' | 'created_at'>;
+          Update: Partial<NarrativeReport>;
+        };
+        evidence_photos: {
+          Row: EvidencePhoto;
+          Insert: Omit<EvidencePhoto, 'id' | 'uploaded_at'>;
+          Update: Partial<EvidencePhoto>;
+        };
+        ai_crime_scene_photos: {
+          Row: AICrimeScenePhoto;
+          Insert: Omit<AICrimeScenePhoto, 'id' | 'generated_at'>;
+          Update: Partial<AICrimeScenePhoto>;
+        };
+      };
+    };
+  };
+}
