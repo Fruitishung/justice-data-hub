@@ -1,4 +1,3 @@
-
 import { Database } from '@/integrations/supabase/types';
 
 export type SuspectDetails = {
@@ -120,6 +119,8 @@ export type Warrant = {
   warrant_type: string;
   issue_date: string;
   status: string;
+  case_number: string;
+  correlation_score: number;
 };
 
 export type Vehicle = {
