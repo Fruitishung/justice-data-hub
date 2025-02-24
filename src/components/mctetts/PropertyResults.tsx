@@ -3,19 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface PropertyRecord {
   id: string;
-  serial_number: string;
-  property_type: string;
-  make: string;
-  model: string;
+  type: string;
   description: string;
-  owner_name: string;
-  stolen_status: boolean;
-  recovered_date: string | null;
-  recovery_location: string | null;
+  serial_number: string;
+  owner: string;
+  status: string;
 }
 
 interface PropertyResultsProps {
-  property: PropertyRecord[] | undefined;
+  property: PropertyRecord[];
   isLoading: boolean;
   searchTerm: string;
 }
@@ -36,18 +32,11 @@ export const PropertyResults = ({ property, isLoading, searchTerm }: PropertyRes
                 key={item.id}
                 className="p-4 border rounded-lg shadow-sm"
               >
-                <p><strong>Serial Number:</strong> {item.serial_number}</p>
-                <p><strong>Type:</strong> {item.property_type}</p>
-                <p><strong>Make/Model:</strong> {item.make} {item.model}</p>
+                <p><strong>Type:</strong> {item.type}</p>
                 <p><strong>Description:</strong> {item.description}</p>
-                <p><strong>Owner:</strong> {item.owner_name}</p>
-                <p><strong>Status:</strong> {item.stolen_status ? "⚠️ STOLEN" : "Clear"}</p>
-                {item.recovered_date && (
-                  <>
-                    <p><strong>Recovered:</strong> {new Date(item.recovered_date).toLocaleDateString()}</p>
-                    <p><strong>Recovery Location:</strong> {item.recovery_location}</p>
-                  </>
-                )}
+                <p><strong>Serial Number:</strong> {item.serial_number}</p>
+                <p><strong>Owner:</strong> {item.owner}</p>
+                <p><strong>Status:</strong> {item.status}</p>
               </div>
             ))}
           </div>

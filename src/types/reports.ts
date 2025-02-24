@@ -178,15 +178,15 @@ declare global {
       };
       Functions: {
         search_warrants: {
-          Args: { query: string };
+          Args: { search_term: string };
           Returns: Warrant[];
         };
         search_vehicles: {
-          Args: { query: string };
+          Args: { search_term: string };
           Returns: Vehicle[];
         };
         search_property: {
-          Args: { query: string };
+          Args: { search_term: string };
           Returns: PropertyRecord[];
         };
       };

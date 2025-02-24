@@ -3,15 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Warrant {
   id: string;
-  warrant_number: string;
-  subject_name: string;
-  status: string;
+  suspect_name: string;
   warrant_type: string;
-  date_issued: string;
+  issue_date: string;
+  status: string;
 }
 
 interface WarrantResultsProps {
-  warrants: Warrant[] | undefined;
+  warrants: Warrant[];
   isLoading: boolean;
   searchTerm: string;
 }
@@ -32,11 +31,10 @@ export const WarrantResults = ({ warrants, isLoading, searchTerm }: WarrantResul
                 key={warrant.id}
                 className="p-4 border rounded-lg shadow-sm"
               >
-                <p><strong>Warrant #:</strong> {warrant.warrant_number}</p>
-                <p><strong>Subject:</strong> {warrant.subject_name}</p>
-                <p><strong>Status:</strong> {warrant.status}</p>
+                <p><strong>Subject:</strong> {warrant.suspect_name}</p>
                 <p><strong>Type:</strong> {warrant.warrant_type}</p>
-                <p><strong>Issued:</strong> {new Date(warrant.date_issued).toLocaleDateString()}</p>
+                <p><strong>Status:</strong> {warrant.status}</p>
+                <p><strong>Issued:</strong> {new Date(warrant.issue_date).toLocaleDateString()}</p>
               </div>
             ))}
           </div>

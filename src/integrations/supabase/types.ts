@@ -991,6 +991,45 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_property: {
+        Args: {
+          search_term: string
+        }
+        Returns: {
+          id: string
+          type: string
+          description: string
+          serial_number: string
+          owner: string
+          status: string
+        }[]
+      }
+      search_vehicles: {
+        Args: {
+          search_term: string
+        }
+        Returns: {
+          id: string
+          make: string
+          model: string
+          year: string
+          vin: string
+          plate: string
+          owner: string
+        }[]
+      }
+      search_warrants: {
+        Args: {
+          search_term: string
+        }
+        Returns: {
+          id: string
+          suspect_name: string
+          warrant_type: string
+          issue_date: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       equipment_operation_state: "running" | "idle" | "off"

@@ -3,18 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Vehicle {
   id: string;
-  plate_number: string;
-  vin: string;
   make: string;
   model: string;
-  year: number;
-  color: string;
-  owner_name: string;
-  stolen_status: boolean;
+  year: string;
+  vin: string;
+  plate: string;
+  owner: string;
 }
 
 interface VehicleResultsProps {
-  vehicles: Vehicle[] | undefined;
+  vehicles: Vehicle[];
   isLoading: boolean;
   searchTerm: string;
 }
@@ -35,13 +33,11 @@ export const VehicleResults = ({ vehicles, isLoading, searchTerm }: VehicleResul
                 key={vehicle.id}
                 className="p-4 border rounded-lg shadow-sm"
               >
-                <p><strong>Plate:</strong> {vehicle.plate_number}</p>
-                <p><strong>VIN:</strong> {vehicle.vin}</p>
                 <p><strong>Make/Model:</strong> {vehicle.make} {vehicle.model}</p>
                 <p><strong>Year:</strong> {vehicle.year}</p>
-                <p><strong>Color:</strong> {vehicle.color}</p>
-                <p><strong>Owner:</strong> {vehicle.owner_name}</p>
-                <p><strong>Status:</strong> {vehicle.stolen_status ? "⚠️ STOLEN" : "Clear"}</p>
+                <p><strong>VIN:</strong> {vehicle.vin}</p>
+                <p><strong>Plate:</strong> {vehicle.plate}</p>
+                <p><strong>Owner:</strong> {vehicle.owner}</p>
               </div>
             ))}
           </div>
