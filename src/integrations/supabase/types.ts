@@ -39,126 +39,6 @@ export type Database = {
         }
         Relationships: []
       }
-      ai_crime_scene_photos: {
-        Row: {
-          created_at: string
-          id: string
-          image_path: string
-          incident_report_id: string | null
-          penal_code: Database["public"]["Enums"]["penal_code_type"]
-          prompt_used: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          image_path: string
-          incident_report_id?: string | null
-          penal_code: Database["public"]["Enums"]["penal_code_type"]
-          prompt_used: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          image_path?: string
-          incident_report_id?: string | null
-          penal_code?: Database["public"]["Enums"]["penal_code_type"]
-          prompt_used?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_crime_scene_photos_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      arrest_tags: {
-        Row: {
-          arresting_officer: string | null
-          booking_date: string | null
-          charges: string | null
-          created_at: string | null
-          id: string
-          incident_report_id: string | null
-          mugshot_url: string | null
-          processing_status: string | null
-          suspect_name: string | null
-          tag_number: string
-          updated_at: string | null
-        }
-        Insert: {
-          arresting_officer?: string | null
-          booking_date?: string | null
-          charges?: string | null
-          created_at?: string | null
-          id?: string
-          incident_report_id?: string | null
-          mugshot_url?: string | null
-          processing_status?: string | null
-          suspect_name?: string | null
-          tag_number: string
-          updated_at?: string | null
-        }
-        Update: {
-          arresting_officer?: string | null
-          booking_date?: string | null
-          charges?: string | null
-          created_at?: string | null
-          id?: string
-          incident_report_id?: string | null
-          mugshot_url?: string | null
-          processing_status?: string | null
-          suspect_name?: string | null
-          tag_number?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "arrest_tags_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crime_scene_photos: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          file_path: string
-          id: string
-          incident_report_id: string
-          taken_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          file_path: string
-          id?: string
-          incident_report_id: string
-          taken_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          file_path?: string
-          id?: string
-          incident_report_id?: string
-          taken_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crime_scene_photos_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       data_analysis_training: {
         Row: {
           analysis_metrics: Json | null
@@ -193,284 +73,118 @@ export type Database = {
           training_module?: string
           training_notes?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "data_analysis_training_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      evidence_photos: {
+      equipment: {
         Row: {
           created_at: string | null
-          description: string | null
-          file_path: string
+          equipment_number: string
           id: string
-          incident_report_id: string | null
+          last_inspection: string | null
+          status: Database["public"]["Enums"]["equipment_status"] | null
+          type: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          description?: string | null
-          file_path: string
+          equipment_number: string
           id?: string
-          incident_report_id?: string | null
+          last_inspection?: string | null
+          status?: Database["public"]["Enums"]["equipment_status"] | null
+          type: string
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
-          description?: string | null
-          file_path?: string
+          equipment_number?: string
           id?: string
-          incident_report_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "evidence_photos_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      fingerprint_matches: {
-        Row: {
-          id: string
-          matched_at: string | null
-          matched_scan_id: string | null
-          scan_id: string | null
-          similarity_score: number
-        }
-        Insert: {
-          id?: string
-          matched_at?: string | null
-          matched_scan_id?: string | null
-          scan_id?: string | null
-          similarity_score: number
-        }
-        Update: {
-          id?: string
-          matched_at?: string | null
-          matched_scan_id?: string | null
-          scan_id?: string | null
-          similarity_score?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fingerprint_matches_matched_scan_id_fkey"
-            columns: ["matched_scan_id"]
-            isOneToOne: false
-            referencedRelation: "fingerprint_scans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fingerprint_matches_scan_id_fkey"
-            columns: ["scan_id"]
-            isOneToOne: false
-            referencedRelation: "fingerprint_scans"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      fingerprint_patterns: {
-        Row: {
-          base_template: string
-          created_at: string | null
-          id: string
-          pattern_name: string
-        }
-        Insert: {
-          base_template: string
-          created_at?: string | null
-          id?: string
-          pattern_name: string
-        }
-        Update: {
-          base_template?: string
-          created_at?: string | null
-          id?: string
-          pattern_name?: string
+          last_inspection?: string | null
+          status?: Database["public"]["Enums"]["equipment_status"] | null
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
-      fingerprint_scans: {
+      equipment_tracking: {
         Row: {
-          created_at: string | null
-          finger_position: string
+          engine_hours: number | null
+          equipment_id: string
+          fuel_level_percent: number | null
           id: string
-          image_path: string | null
-          incident_report_id: string | null
-          minutiae_points: Json | null
-          pattern_type: string | null
-          ridge_count: number | null
-          scan_data: string
-          scan_date: string | null
-          scan_quality: number | null
-          whorl_pattern: string | null
+          latitude: number
+          longitude: number
+          operation_state: Database["public"]["Enums"]["equipment_operation_state"]
+          speed_mph: number | null
+          timestamp: string
         }
         Insert: {
-          created_at?: string | null
-          finger_position: string
+          engine_hours?: number | null
+          equipment_id: string
+          fuel_level_percent?: number | null
           id?: string
-          image_path?: string | null
-          incident_report_id?: string | null
-          minutiae_points?: Json | null
-          pattern_type?: string | null
-          ridge_count?: number | null
-          scan_data: string
-          scan_date?: string | null
-          scan_quality?: number | null
-          whorl_pattern?: string | null
+          latitude: number
+          longitude: number
+          operation_state: Database["public"]["Enums"]["equipment_operation_state"]
+          speed_mph?: number | null
+          timestamp?: string
         }
         Update: {
-          created_at?: string | null
-          finger_position?: string
+          engine_hours?: number | null
+          equipment_id?: string
+          fuel_level_percent?: number | null
           id?: string
-          image_path?: string | null
-          incident_report_id?: string | null
-          minutiae_points?: Json | null
-          pattern_type?: string | null
-          ridge_count?: number | null
-          scan_data?: string
-          scan_date?: string | null
-          scan_quality?: number | null
-          whorl_pattern?: string | null
+          latitude?: number
+          longitude?: number
+          operation_state?: Database["public"]["Enums"]["equipment_operation_state"]
+          speed_mph?: number | null
+          timestamp?: string
         }
         Relationships: [
           {
-            foreignKeyName: "fingerprint_scans_incident_report_id_fkey"
-            columns: ["incident_report_id"]
+            foreignKeyName: "equipment_tracking_equipment_id_fkey"
+            columns: ["equipment_id"]
             isOneToOne: false
-            referencedRelation: "incident_reports"
+            referencedRelation: "equipment"
             referencedColumns: ["id"]
           },
         ]
       }
-      incident_reports: {
+      learning_strategies: {
         Row: {
-          case_number: string | null
-          conclusion_details: Json | null
-          created_at: string | null
-          disposition_details: Json | null
-          emergency_response: string | null
-          emergency_units: string | null
-          evidence_description: string | null
-          evidence_location: string | null
-          evidence_photos: Json | null
-          evidence_property: Json | null
+          created_at: string
+          created_by: string | null
+          description: string
           id: string
-          incident_date: string | null
-          incident_description: string | null
-          investigation_details: Json | null
-          location_address: string | null
-          location_details: string | null
-          officer_badge_number: string | null
-          officer_name: string | null
-          officer_rank: string | null
-          penal_code: Database["public"]["Enums"]["penal_code_type"] | null
-          person_description: string | null
-          person_name: string | null
-          report_category: string | null
-          report_priority: string | null
-          report_resolution: string | null
-          report_status: string | null
-          report_type: string | null
-          resolution_date: string | null
-          source_details: Json | null
-          suspect_details: Json | null
-          vehicle_color: string | null
-          vehicle_crime_involvement: Json | null
-          vehicle_make: string | null
-          vehicle_model: string | null
-          vehicle_plate: string | null
-          vehicle_towing_authority: Json | null
-          vehicle_vin: string | null
-          vehicle_year: string | null
-          victim_details: Json | null
+          implementation_steps: Json
+          is_premium: boolean | null
+          subjects: string[]
+          title: string
+          type: string
+          updated_at: string
         }
         Insert: {
-          case_number?: string | null
-          conclusion_details?: Json | null
-          created_at?: string | null
-          disposition_details?: Json | null
-          emergency_response?: string | null
-          emergency_units?: string | null
-          evidence_description?: string | null
-          evidence_location?: string | null
-          evidence_photos?: Json | null
-          evidence_property?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description: string
           id?: string
-          incident_date?: string | null
-          incident_description?: string | null
-          investigation_details?: Json | null
-          location_address?: string | null
-          location_details?: string | null
-          officer_badge_number?: string | null
-          officer_name?: string | null
-          officer_rank?: string | null
-          penal_code?: Database["public"]["Enums"]["penal_code_type"] | null
-          person_description?: string | null
-          person_name?: string | null
-          report_category?: string | null
-          report_priority?: string | null
-          report_resolution?: string | null
-          report_status?: string | null
-          report_type?: string | null
-          resolution_date?: string | null
-          source_details?: Json | null
-          suspect_details?: Json | null
-          vehicle_color?: string | null
-          vehicle_crime_involvement?: Json | null
-          vehicle_make?: string | null
-          vehicle_model?: string | null
-          vehicle_plate?: string | null
-          vehicle_towing_authority?: Json | null
-          vehicle_vin?: string | null
-          vehicle_year?: string | null
-          victim_details?: Json | null
+          implementation_steps: Json
+          is_premium?: boolean | null
+          subjects: string[]
+          title: string
+          type: string
+          updated_at?: string
         }
         Update: {
-          case_number?: string | null
-          conclusion_details?: Json | null
-          created_at?: string | null
-          disposition_details?: Json | null
-          emergency_response?: string | null
-          emergency_units?: string | null
-          evidence_description?: string | null
-          evidence_location?: string | null
-          evidence_photos?: Json | null
-          evidence_property?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
           id?: string
-          incident_date?: string | null
-          incident_description?: string | null
-          investigation_details?: Json | null
-          location_address?: string | null
-          location_details?: string | null
-          officer_badge_number?: string | null
-          officer_name?: string | null
-          officer_rank?: string | null
-          penal_code?: Database["public"]["Enums"]["penal_code_type"] | null
-          person_description?: string | null
-          person_name?: string | null
-          report_category?: string | null
-          report_priority?: string | null
-          report_resolution?: string | null
-          report_status?: string | null
-          report_type?: string | null
-          resolution_date?: string | null
-          source_details?: Json | null
-          suspect_details?: Json | null
-          vehicle_color?: string | null
-          vehicle_crime_involvement?: Json | null
-          vehicle_make?: string | null
-          vehicle_model?: string | null
-          vehicle_plate?: string | null
-          vehicle_towing_authority?: Json | null
-          vehicle_vin?: string | null
-          vehicle_year?: string | null
-          victim_details?: Json | null
+          implementation_steps?: Json
+          is_premium?: boolean | null
+          subjects?: string[]
+          title?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -507,38 +221,6 @@ export type Database = {
         }
         Relationships: []
       }
-      narrative_reports: {
-        Row: {
-          created_at: string | null
-          id: string
-          incident_report_id: string | null
-          narrative_text: string | null
-          status: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          incident_report_id?: string | null
-          narrative_text?: string | null
-          status?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          incident_report_id?: string | null
-          narrative_text?: string | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "narrative_reports_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       payments: {
         Row: {
           amount: number
@@ -569,78 +251,6 @@ export type Database = {
           status?: string
           stripe_payment_id?: string | null
           user_id?: string
-        }
-        Relationships: []
-      }
-      penal_codes: {
-        Row: {
-          code: Database["public"]["Enums"]["penal_code_type"]
-          created_at: string
-          description: string
-          id: string
-        }
-        Insert: {
-          code: Database["public"]["Enums"]["penal_code_type"]
-          created_at?: string
-          description: string
-          id?: string
-        }
-        Update: {
-          code?: Database["public"]["Enums"]["penal_code_type"]
-          created_at?: string
-          description?: string
-          id?: string
-        }
-        Relationships: []
-      }
-      property_records: {
-        Row: {
-          created_at: string | null
-          date_reported: string | null
-          description: string | null
-          id: string
-          last_updated: string | null
-          make: string | null
-          model: string | null
-          owner_address: string | null
-          owner_name: string | null
-          property_type: string
-          recovered_date: string | null
-          recovery_location: string | null
-          serial_number: string | null
-          stolen_status: boolean | null
-        }
-        Insert: {
-          created_at?: string | null
-          date_reported?: string | null
-          description?: string | null
-          id?: string
-          last_updated?: string | null
-          make?: string | null
-          model?: string | null
-          owner_address?: string | null
-          owner_name?: string | null
-          property_type: string
-          recovered_date?: string | null
-          recovery_location?: string | null
-          serial_number?: string | null
-          stolen_status?: boolean | null
-        }
-        Update: {
-          created_at?: string | null
-          date_reported?: string | null
-          description?: string | null
-          id?: string
-          last_updated?: string | null
-          make?: string | null
-          model?: string | null
-          owner_address?: string | null
-          owner_name?: string | null
-          property_type?: string
-          recovered_date?: string | null
-          recovery_location?: string | null
-          serial_number?: string | null
-          stolen_status?: boolean | null
         }
         Relationships: []
       }
@@ -697,6 +307,120 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      safety_check_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_name: string
+          notes: string | null
+          photo_url: string | null
+          safety_check_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_name: string
+          notes?: string | null
+          photo_url?: string | null
+          safety_check_id?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_name?: string
+          notes?: string | null
+          photo_url?: string | null
+          safety_check_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_check_items_safety_check_id_fkey"
+            columns: ["safety_check_id"]
+            isOneToOne: false
+            referencedRelation: "safety_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_checks: {
+        Row: {
+          check_type: string
+          completed_at: string | null
+          created_at: string | null
+          equipment_id: string | null
+          id: string
+          notes: string | null
+          operator_id: string | null
+          status: string
+        }
+        Insert: {
+          check_type: string
+          completed_at?: string | null
+          created_at?: string | null
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          operator_id?: string | null
+          status: string
+        }
+        Update: {
+          check_type?: string
+          completed_at?: string | null
+          created_at?: string | null
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          operator_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_checks_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategy_usage: {
+        Row: {
+          id: string
+          notes: string | null
+          rating: number | null
+          strategy_id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          strategy_id: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          strategy_id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_usage_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "learning_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_data_protection: {
         Row: {
@@ -776,6 +500,30 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          features: Json
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          features: Json
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          features?: Json
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
@@ -812,43 +560,35 @@ export type Database = {
         }
         Relationships: []
       }
-      suspect_biometrics: {
+      teacher_profiles: {
         Row: {
-          created_at: string | null
-          fingerprint_classification: string | null
-          hand_dominance: string | null
+          created_at: string
+          full_name: string | null
+          grade_level: string | null
           id: string
-          incident_report_id: string | null
-          palm_print_data: Json | null
-          suspect_name: string
+          school_name: string | null
+          subject_area: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          fingerprint_classification?: string | null
-          hand_dominance?: string | null
-          id?: string
-          incident_report_id?: string | null
-          palm_print_data?: Json | null
-          suspect_name: string
+          created_at?: string
+          full_name?: string | null
+          grade_level?: string | null
+          id: string
+          school_name?: string | null
+          subject_area?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
-          fingerprint_classification?: string | null
-          hand_dominance?: string | null
+          created_at?: string
+          full_name?: string | null
+          grade_level?: string | null
           id?: string
-          incident_report_id?: string | null
-          palm_print_data?: Json | null
-          suspect_name?: string
+          school_name?: string | null
+          subject_area?: string | null
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "suspect_biometrics_incident_report_id_fkey"
-            columns: ["incident_report_id"]
-            isOneToOne: false
-            referencedRelation: "incident_reports"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       template_sections: {
         Row: {
@@ -924,120 +664,12 @@ export type Database = {
         }
         Relationships: []
       }
-      vehicle_records: {
-        Row: {
-          color: string | null
-          created_at: string | null
-          id: string
-          insurance_status: string | null
-          last_updated: string | null
-          make: string | null
-          model: string | null
-          owner_address: string | null
-          owner_name: string | null
-          plate_number: string | null
-          registration_status: string | null
-          state: string | null
-          stolen_status: boolean | null
-          vin: string | null
-          year: number | null
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string | null
-          id?: string
-          insurance_status?: string | null
-          last_updated?: string | null
-          make?: string | null
-          model?: string | null
-          owner_address?: string | null
-          owner_name?: string | null
-          plate_number?: string | null
-          registration_status?: string | null
-          state?: string | null
-          stolen_status?: boolean | null
-          vin?: string | null
-          year?: number | null
-        }
-        Update: {
-          color?: string | null
-          created_at?: string | null
-          id?: string
-          insurance_status?: string | null
-          last_updated?: string | null
-          make?: string | null
-          model?: string | null
-          owner_address?: string | null
-          owner_name?: string | null
-          plate_number?: string | null
-          registration_status?: string | null
-          state?: string | null
-          stolen_status?: boolean | null
-          vin?: string | null
-          year?: number | null
-        }
-        Relationships: []
-      }
-      warrants: {
-        Row: {
-          created_at: string | null
-          date_issued: string | null
-          details: Json | null
-          expiration_date: string | null
-          id: string
-          issuing_agency: string
-          status: Database["public"]["Enums"]["warrant_status"] | null
-          subject_name: string
-          updated_at: string | null
-          warrant_number: string
-          warrant_type: string
-        }
-        Insert: {
-          created_at?: string | null
-          date_issued?: string | null
-          details?: Json | null
-          expiration_date?: string | null
-          id?: string
-          issuing_agency: string
-          status?: Database["public"]["Enums"]["warrant_status"] | null
-          subject_name: string
-          updated_at?: string | null
-          warrant_number: string
-          warrant_type: string
-        }
-        Update: {
-          created_at?: string | null
-          date_issued?: string | null
-          details?: Json | null
-          expiration_date?: string | null
-          id?: string
-          issuing_agency?: string
-          status?: Database["public"]["Enums"]["warrant_status"] | null
-          subject_name?: string
-          updated_at?: string | null
-          warrant_number?: string
-          warrant_type?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
-      report_analytics: {
-        Row: {
-          month: number | null
-          report_category: string | null
-          report_count: number | null
-          report_priority: string | null
-          report_status: string | null
-          report_type: string | null
-          year: number | null
-        }
-        Relationships: []
-      }
       subscription_tiers: {
         Row: {
           ai_features: boolean | null
-          description: string | null
+          gps_tracking_enabled: boolean | null
           monthly_price: number | null
           photo_upload: boolean | null
           reports_per_month: number | null
@@ -1068,6 +700,7 @@ export type Database = {
           max_reports_per_month: number
           can_upload_photos: boolean
           can_use_ai_features: boolean
+          can_use_gps_tracking: boolean
           remaining_credits: number
         }[]
       }
@@ -1116,72 +749,14 @@ export type Database = {
         }
         Returns: undefined
       }
-      search_property: {
-        Args: {
-          search_term: string
-          include_stolen_only?: boolean
-        }
-        Returns: {
-          created_at: string | null
-          date_reported: string | null
-          description: string | null
-          id: string
-          last_updated: string | null
-          make: string | null
-          model: string | null
-          owner_address: string | null
-          owner_name: string | null
-          property_type: string
-          recovered_date: string | null
-          recovery_location: string | null
-          serial_number: string | null
-          stolen_status: boolean | null
-        }[]
-      }
-      search_vehicles: {
-        Args: {
-          search_term: string
-          include_stolen_only?: boolean
-        }
-        Returns: {
-          color: string | null
-          created_at: string | null
-          id: string
-          insurance_status: string | null
-          last_updated: string | null
-          make: string | null
-          model: string | null
-          owner_address: string | null
-          owner_name: string | null
-          plate_number: string | null
-          registration_status: string | null
-          state: string | null
-          stolen_status: boolean | null
-          vin: string | null
-          year: number | null
-        }[]
-      }
-      search_warrants: {
-        Args: {
-          search_term: string
-          warrant_status?: Database["public"]["Enums"]["warrant_status"]
-        }
-        Returns: {
-          created_at: string | null
-          date_issued: string | null
-          details: Json | null
-          expiration_date: string | null
-          id: string
-          issuing_agency: string
-          status: Database["public"]["Enums"]["warrant_status"] | null
-          subject_name: string
-          updated_at: string | null
-          warrant_number: string
-          warrant_type: string
-        }[]
-      }
     }
     Enums: {
+      equipment_operation_state: "running" | "idle" | "off"
+      equipment_status:
+        | "available"
+        | "in_use"
+        | "maintenance_needed"
+        | "out_of_service"
       finger_position:
         | "right_thumb"
         | "right_index"
@@ -1196,7 +771,12 @@ export type Database = {
       penal_code_type: "211" | "187"
       school_system: "google_edu" | "microsoft_edu" | "other"
       school_system_type: "google_edu" | "microsoft_edu" | "other"
-      subscription_tier: "free" | "basic" | "professional" | "enterprise"
+      subscription_tier:
+        | "free"
+        | "basic"
+        | "professional"
+        | "premium"
+        | "enterprise"
       template_section_type:
         | "incident"
         | "vehicle"
