@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -71,24 +72,7 @@ const ReportDetailsPage = () => {
       
       const { data, error } = await supabase
         .from('incident_reports')
-        .select(`
-          *,
-          evidence_photos (
-            id,
-            file_path
-          ),
-          ai_crime_scene_photos (
-            id,
-            image_path
-          ),
-          suspect_fingerprints:fingerprint_scans (
-            id,
-            finger_position,
-            scan_data,
-            scan_quality,
-            scan_date
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .maybeSingle();
 
@@ -97,24 +81,38 @@ const ReportDetailsPage = () => {
         throw error;
       }
 
-      if (!data && id !== 'new') {
+      if (!data) {
         console.error('No report found for ID:', id);
         throw new Error('Report not found');
       }
 
-      // If we get here and it's a new report, return the empty report
-      if (!data && id === 'new') {
-        return emptyReport;
-      }
+      // Fetch related data separately to avoid type issues
+      const { data: evidencePhotos } = await supabase
+        .from('evidence_photos')
+        .select('id, file_path')
+        .eq('incident_report_id', id);
 
-      // Parse the JSON fields
-      const parsedData = {
+      const { data: aiPhotos } = await supabase
+        .from('ai_crime_scene_photos')
+        .select('id, image_path')
+        .eq('incident_report_id', id);
+
+      const { data: fingerprints } = await supabase
+        .from('fingerprint_scans')
+        .select('id, finger_position, scan_data, scan_quality, scan_date')
+        .eq('incident_report_id', id);
+
+      // Combine all the data
+      const fullReport: IncidentReport = {
         ...data,
-        suspect_details: data.suspect_details as IncidentReport['suspect_details']
+        evidence_photos: evidencePhotos || [],
+        ai_crime_scene_photos: aiPhotos || [],
+        suspect_fingerprints: fingerprints || [],
+        suspect_details: data.suspect_details || {}
       };
 
-      console.log('Fetched report:', parsedData);
-      return parsedData;
+      console.log('Fetched full report:', fullReport);
+      return fullReport;
     },
     retry: 1,
     staleTime: 30000, // Cache data for 30 seconds
@@ -124,6 +122,7 @@ const ReportDetailsPage = () => {
   // Show error toast when there's an error
   React.useEffect(() => {
     if (error) {
+      console.error('Report fetch error:', error);
       toast({
         title: "Error loading report",
         description: error.message || "Failed to load report details",
@@ -164,7 +163,7 @@ const ReportDetailsPage = () => {
       <h1 className="text-3xl font-bold mb-6">
         {id === 'new' ? 'Create New Report' : `Edit Report - ${report?.case_number}`}
       </h1>
-      <ReportForm />
+      <ReportForm initialData={report} />
     </div>
   );
 };
