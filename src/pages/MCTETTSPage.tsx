@@ -9,6 +9,7 @@ import { ExitButton } from "@/components/mctetts/ExitButton";
 import { WarrantResults } from "@/components/mctetts/WarrantResults";
 import { VehicleResults } from "@/components/mctetts/VehicleResults";
 import { PropertyResults } from "@/components/mctetts/PropertyResults";
+import type { Warrant, Vehicle, PropertyRecord } from "@/types/reports";
 
 const MCTETTSPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,11 +18,10 @@ const MCTETTSPage = () => {
   const { data: warrants, isLoading: warrantsLoading } = useQuery({
     queryKey: ["warrants", searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("search_warrants", {
-        search_term: searchTerm,
-      });
+      const { data, error } = await supabase
+        .rpc('search_warrants', { search_term: searchTerm });
       if (error) throw error;
-      return data;
+      return data as Warrant[];
     },
     enabled: activeTab === "warrants" && searchTerm.length > 0,
   });
@@ -29,11 +29,10 @@ const MCTETTSPage = () => {
   const { data: vehicles, isLoading: vehiclesLoading } = useQuery({
     queryKey: ["vehicles", searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("search_vehicles", {
-        search_term: searchTerm,
-      });
+      const { data, error } = await supabase
+        .rpc('search_vehicles', { search_term: searchTerm });
       if (error) throw error;
-      return data;
+      return data as Vehicle[];
     },
     enabled: activeTab === "vehicles" && searchTerm.length > 0,
   });
@@ -41,11 +40,10 @@ const MCTETTSPage = () => {
   const { data: property, isLoading: propertyLoading } = useQuery({
     queryKey: ["property", searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("search_property", {
-        search_term: searchTerm,
-      });
+      const { data, error } = await supabase
+        .rpc('search_property', { search_term: searchTerm });
       if (error) throw error;
-      return data;
+      return data as PropertyRecord[];
     },
     enabled: activeTab === "property" && searchTerm.length > 0,
   });
@@ -80,7 +78,7 @@ const MCTETTSPage = () => {
 
           <TabsContent value="warrants">
             <WarrantResults 
-              warrants={warrants}
+              warrants={warrants || []}
               isLoading={warrantsLoading}
               searchTerm={searchTerm}
             />
@@ -88,7 +86,7 @@ const MCTETTSPage = () => {
 
           <TabsContent value="vehicles">
             <VehicleResults 
-              vehicles={vehicles}
+              vehicles={vehicles || []}
               isLoading={vehiclesLoading}
               searchTerm={searchTerm}
             />
@@ -96,7 +94,7 @@ const MCTETTSPage = () => {
 
           <TabsContent value="property">
             <PropertyResults 
-              property={property}
+              property={property || []}
               isLoading={propertyLoading}
               searchTerm={searchTerm}
             />
