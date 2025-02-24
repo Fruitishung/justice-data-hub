@@ -16,9 +16,10 @@ type IncidentReportWithArrestTags = IncidentReport & {
 };
 
 const MockDataPage = () => {
-  const { data: reports, isLoading } = useQuery({
+  const { data: reports, isLoading, error } = useQuery({
     queryKey: ["mock-data-reports"],
     queryFn: async () => {
+      console.log("Fetching reports...");
       const { data, error } = await supabase
         .from("incident_reports")
         .select(`
@@ -27,10 +28,20 @@ const MockDataPage = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as IncidentReportWithArrestTags[];
+      if (error) {
+        console.error("Error fetching reports:", error);
+        throw error;
+      }
+
+      console.log("Fetched reports:", data);
+      return data as IncidentReportWithArrestTags[];
     },
+    refetchInterval: 5000, // Refetch every 5 seconds to ensure we get updates
   });
+
+  console.log("Current reports:", reports);
+  console.log("Loading state:", isLoading);
+  console.log("Error state:", error);
 
   return (
     <div className="min-h-screen bg-secondary p-8">
@@ -54,6 +65,14 @@ const MockDataPage = () => {
         <div className="bg-white rounded-lg shadow">
           {isLoading ? (
             <div className="p-8 text-center">Loading reports...</div>
+          ) : error ? (
+            <div className="p-8 text-center text-red-600">
+              Error loading reports: {error.message}
+            </div>
+          ) : !reports || reports.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              No reports available. Generate some training data to get started.
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -67,10 +86,10 @@ const MockDataPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reports?.map((report) => (
+                {reports.map((report) => (
                   <TableRow key={report.id}>
                     <TableCell className="font-medium">
-                      {report.case_number}
+                      {report.case_number || 'N/A'}
                     </TableCell>
                     <TableCell>
                       {report.penal_code === "187" ? "Homicide" : "Armed Robbery"}
