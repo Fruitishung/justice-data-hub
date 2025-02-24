@@ -6,12 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Database, Eye } from "lucide-react";
 import GenerateMockDataButton from "@/components/GenerateMockDataButton";
-import type { Database } from "@/integrations/supabase/types";
+import type { ArrestTag, IncidentReport } from "@/types/reports";
 
-type ArrestTag = Database['public']['Tables']['arrest_tags']['Row'];
-type IncidentReport = Database['public']['Tables']['incident_reports']['Row'];
-
-type IncidentReportWithArrestTags = IncidentReport & {
+type IncidentReportWithArrestTags = Omit<IncidentReport, 'evidence_photos' | 'ai_crime_scene_photos' | 'suspect_fingerprints'> & {
   arrest_tags: ArrestTag[];
 };
 
@@ -34,7 +31,7 @@ const MockDataPage = () => {
       }
 
       console.log("Fetched reports:", data);
-      return data as IncidentReportWithArrestTags[];
+      return (data || []) as unknown as IncidentReportWithArrestTags[];
     },
     refetchInterval: 5000, // Refetch every 5 seconds to ensure we get updates
   });
