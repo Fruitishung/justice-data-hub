@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 
@@ -11,30 +11,101 @@ const GenerateMockDataButton = () => {
   const generateMockData = async () => {
     setIsGenerating(true)
     try {
-      const { data, error } = await supabase.functions.invoke('generate-mock-data', {
-        body: {} // Empty body since our function doesn't require any parameters
-      })
+      // Create a mock incident report
+      const { data: report, error: reportError } = await supabase
+        .from('incident_reports')
+        .insert([{
+          incident_date: new Date().toISOString(),
+          incident_description: "Suspect forcibly entered premises through rear window. Multiple items reported missing. Fingerprints recovered from point of entry.",
+          report_status: "Open",
+          officer_name: "Officer Sarah Johnson",
+          officer_rank: "Detective",
+          officer_badge_number: "B-452",
+          location_address: "742 Evergreen Terrace",
+          location_details: "Single-story residential home, point of entry through kitchen window",
+          evidence_description: "Fingerprints on window frame, muddy footprints on kitchen floor",
+          evidence_location: "Kitchen window and surrounding area",
+          emergency_response: "First responder units dispatched",
+          emergency_units: "Unit 14, K-9 Unit 3",
+          evidence_property: {
+            type: "Electronics",
+            description: "MacBook Pro laptop",
+            serial_number: "C02E23RFHV2N",
+            make: "Apple",
+            color: "Space Gray",
+            additional_details: "15-inch model, slight scratch on lid"
+          },
+          suspect_details: {
+            first_name: "John",
+            last_name: "Doe",
+            aka: "Shadow",
+            height: "6'2\"",
+            weight: "185 lbs",
+            hair: "Brown",
+            eyes: "Blue",
+            clothing: "Dark hoodie, jeans, black sneakers",
+            identifying_marks: "Tattoo on right forearm - dragon design",
+            direction: "Last seen heading north on foot",
+            arrest_history: "Prior arrests for burglary in neighboring counties",
+            charges: "Burglary, Criminal Trespassing",
+            in_custody: false,
+            cell_phone: "555-0123",
+            weapon: "None observed",
+            strong_hand: "Right"
+          },
+          victim_details: {
+            first_name: "Alice",
+            last_name: "Smith",
+            dob: "1985-06-15",
+            address: "742 Evergreen Terrace",
+            phone: "555-0145",
+            statement: "Returned home from work at approximately 18:30 to find back window broken"
+          },
+          vehicle_make: null,
+          vehicle_model: null,
+          vehicle_year: null,
+          vehicle_color: null,
+          vehicle_plate: null,
+          vehicle_vin: null,
+          penal_code: "459" // California Penal Code for Burglary
+        }])
+        .select()
+        .single();
 
-      if (error) {
-        throw error
-      }
+      if (reportError) throw reportError;
       
+      // Generate fingerprint scan data
+      if (report) {
+        await supabase.from('fingerprint_scans').insert([{
+          incident_report_id: report.id,
+          finger_position: "right_thumb",
+          scan_quality: 85,
+          scan_data: "MockFingerprint_" + Date.now(),
+          scan_date: new Date().toISOString()
+        }]);
+
+        await supabase.from('evidence_photos').insert([{
+          incident_report_id: report.id,
+          file_path: "/mock/evidence/window_entry.jpg",
+        }]);
+      }
+
       toast({
         title: "Mock Data Generated",
-        description: `Created incident report with case number: ${data.data.case_number}`,
-      })
+        description: `Created incident report with ID: ${report.id}`,
+      });
 
     } catch (error) {
-      console.error('Error generating mock data:', error)
+      console.error('Error generating mock data:', error);
       toast({
         title: "Error",
         description: "Failed to generate mock data. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <Button 
@@ -45,7 +116,7 @@ const GenerateMockDataButton = () => {
     >
       {isGenerating ? "Generating..." : "Generate Training Data"}
     </Button>
-  )
-}
+  );
+};
 
-export default GenerateMockDataButton
+export default GenerateMockDataButton;
