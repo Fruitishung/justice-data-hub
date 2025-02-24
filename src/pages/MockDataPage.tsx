@@ -19,10 +19,7 @@ const MockDataPage = () => {
       console.log("Fetching reports...");
       const { data, error } = await supabase
         .from("incident_reports")
-        .select(`
-          *,
-          arrest_tags(*)
-        `)
+        .select()
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -31,7 +28,7 @@ const MockDataPage = () => {
       }
 
       console.log("Fetched reports:", data);
-      return (data || []) as unknown as IncidentReportWithArrestTags[];
+      return (data || []) as IncidentReportWithArrestTags[];
     },
     refetchInterval: 5000, // Refetch every 5 seconds to ensure we get updates
   });
@@ -104,17 +101,7 @@ const MockDataPage = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {report.arrest_tags?.[0]?.tag_number ? (
-                        <Link 
-                          to={`/arrest-tag/${report.arrest_tags[0].id}`}
-                          className="text-blue-600 hover:underline flex items-center gap-1"
-                        >
-                          <Database className="h-4 w-4" />
-                          View Tag
-                        </Link>
-                      ) : (
-                        <span className="text-gray-400">No arrest</span>
-                      )}
+                      <span className="text-gray-400">No arrest</span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" asChild>
