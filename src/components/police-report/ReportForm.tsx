@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -20,8 +19,13 @@ import EmergencySection from "./form-sections/EmergencySection";
 import VictimSection from "./form-sections/VictimSection";
 import SuspectSection from "./form-sections/SuspectSection";
 import PhotosSection from "./form-sections/PhotosSection";
+import { type IncidentReport } from '@/types/reports';
 
-const ReportForm = () => {
+interface ReportFormProps {
+  data?: IncidentReport;
+}
+
+const ReportForm = ({ data }: ReportFormProps) => {
   const form = useForm<ReportFormData>();
   const { toast } = useToast();
   const navigate = useNavigate();

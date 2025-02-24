@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReportForm from '@/components/police-report/ReportForm';
-import { type IncidentReport } from '@/types/reports';
+import { type IncidentReport, type SuspectDetails } from '@/types/reports';
 import { useToast } from '@/components/ui/use-toast';
 
 const ReportDetailsPage = () => {
@@ -30,7 +30,29 @@ const ReportDetailsPage = () => {
     evidence_photos: [],
     ai_crime_scene_photos: [],
     suspect_fingerprints: [],
-    suspect_details: {},
+    suspect_details: {
+      first_name: '',
+      last_name: '',
+      dob: '',
+      address: '',
+      gender: '',
+      height: '',
+      weight: '',
+      hair: '',
+      eyes: '',
+      clothing: '',
+      identifying_marks: '',
+      direction: '',
+      arrest_history: '',
+      charges: '',
+      in_custody: false,
+      cell_phone: '',
+      home_phone: '',
+      work_phone: '',
+      weapon: '',
+      strong_hand: '',
+      parole_officer: '',
+    },
     location_address: '',
     location_details: '',
     evidence_description: '',
@@ -102,13 +124,39 @@ const ReportDetailsPage = () => {
         .select('id, finger_position, scan_data, scan_quality, scan_date')
         .eq('incident_report_id', id);
 
+      // Ensure suspect_details is properly typed
+      const parsedSuspectDetails: SuspectDetails = {
+        first_name: '',
+        last_name: '',
+        dob: '',
+        address: '',
+        gender: '',
+        height: '',
+        weight: '',
+        hair: '',
+        eyes: '',
+        clothing: '',
+        identifying_marks: '',
+        direction: '',
+        arrest_history: '',
+        charges: '',
+        in_custody: false,
+        cell_phone: '',
+        home_phone: '',
+        work_phone: '',
+        weapon: '',
+        strong_hand: '',
+        parole_officer: '',
+        ...data.suspect_details as Partial<SuspectDetails>
+      };
+
       // Combine all the data
       const fullReport: IncidentReport = {
         ...data,
         evidence_photos: evidencePhotos || [],
         ai_crime_scene_photos: aiPhotos || [],
         suspect_fingerprints: fingerprints || [],
-        suspect_details: data.suspect_details || {}
+        suspect_details: parsedSuspectDetails
       };
 
       console.log('Fetched full report:', fullReport);
@@ -163,7 +211,7 @@ const ReportDetailsPage = () => {
       <h1 className="text-3xl font-bold mb-6">
         {id === 'new' ? 'Create New Report' : `Edit Report - ${report?.case_number}`}
       </h1>
-      <ReportForm initialData={report} />
+      <ReportForm data={report} />
     </div>
   );
 };
