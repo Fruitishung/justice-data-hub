@@ -8,8 +8,8 @@ import { ChevronLeft, Database, Eye } from "lucide-react";
 import GenerateMockDataButton from "@/components/GenerateMockDataButton";
 import type { Database } from "@/integrations/supabase/types";
 
-type ReportWithArrestTags = Database['public']['Tables']['incident_reports']['Row'] & {
-  arrest_tags: Database['public']['Tables']['arrest_tags']['Row'][];
+type IncidentReportWithArrestTags = Database['public']['Tables']['incident_reports']['Row'] & {
+  arrest_tags: Array<Database['public']['Tables']['arrest_tags']['Row']>;
 };
 
 const MockDataPage = () => {
@@ -25,7 +25,7 @@ const MockDataPage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as ReportWithArrestTags[];
+      return data as unknown as IncidentReportWithArrestTags[];
     },
   });
 

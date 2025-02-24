@@ -10,9 +10,19 @@ import { toast } from "sonner";
 import { ArrestTagFeedback } from "./ArrestTagFeedback";
 import { ArrestTagMugshot } from "./ArrestTagMugshot";
 import { ArrestTagDetails } from "./ArrestTagDetails";
-import { type IncidentReport, type ArrestTag as ArrestTagType } from "@/types/reports";
+import type { Database } from "@/integrations/supabase/types";
 
-type ArrestTagResponse = Database['public']['Tables']['arrest_tags']['Row'] & {
+type ArrestTagResponse = {
+  id: string;
+  created_at: string | null;
+  tag_number: string | null;
+  incident_report_id: string | null;
+  suspect_name: string | null;
+  charges: string | null;
+  arresting_officer: string | null;
+  booking_date: string | null;
+  mugshot_url: string | null;
+  processing_status: string | null;
   incident_reports: Database['public']['Tables']['incident_reports']['Row'] | null;
 };
 
@@ -45,7 +55,7 @@ const ArrestTag = () => {
         throw new Error("Arrest tag not found");
       }
       
-      return data as ArrestTagResponse;
+      return data as unknown as ArrestTagResponse;
     },
     enabled: !!id,
     retry: 1
