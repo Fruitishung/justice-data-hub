@@ -150,13 +150,30 @@ const ReportDetailsPage = () => {
         ...data.suspect_details as Partial<SuspectDetails>
       };
 
-      // Combine all the data
+      // Ensure proper type conversion for evidence_property and victim_details
+      // to satisfy the IncidentReport type requirements
+      const evidence_property = typeof data.evidence_property === 'object' 
+        ? data.evidence_property as Record<string, any> 
+        : null;
+        
+      const victim_details = typeof data.victim_details === 'object' 
+        ? data.victim_details as Record<string, any> 
+        : null;
+      
+      const conclusion_details = typeof data.conclusion_details === 'object'
+        ? data.conclusion_details as Record<string, any>
+        : null;
+
+      // Combine all the data with explicit type conversions
       const fullReport: IncidentReport = {
         ...data,
         evidence_photos: evidencePhotos || [],
         ai_crime_scene_photos: aiPhotos || [],
         suspect_fingerprints: fingerprints || [],
-        suspect_details: parsedSuspectDetails
+        suspect_details: parsedSuspectDetails,
+        evidence_property: evidence_property,
+        victim_details: victim_details,
+        conclusion_details: conclusion_details
       };
 
       console.log('Fetched full report:', fullReport);

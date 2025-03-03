@@ -463,6 +463,36 @@ export type Database = {
           },
         ]
       }
+      operators: {
+        Row: {
+          created_at: string | null
+          double_time_rate: number | null
+          full_name: string
+          id: string
+          overtime_rate: number | null
+          regular_rate: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          double_time_rate?: number | null
+          full_name: string
+          id?: string
+          overtime_rate?: number | null
+          regular_rate?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          double_time_rate?: number | null
+          full_name?: string
+          id?: string
+          overtime_rate?: number | null
+          regular_rate?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -906,8 +936,133 @@ export type Database = {
         }
         Relationships: []
       }
+      work_shifts: {
+        Row: {
+          break_duration_minutes: number | null
+          break_end_time: string | null
+          break_start_time: string | null
+          created_at: string | null
+          end_time: string | null
+          equipment_id: string
+          hours_worked: number | null
+          id: string
+          notes: string | null
+          operator_id: string
+          shift_type: string | null
+          start_time: string
+          status: string | null
+        }
+        Insert: {
+          break_duration_minutes?: number | null
+          break_end_time?: string | null
+          break_start_time?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          equipment_id: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          operator_id: string
+          shift_type?: string | null
+          start_time: string
+          status?: string | null
+        }
+        Update: {
+          break_duration_minutes?: number | null
+          break_end_time?: string | null
+          break_start_time?: string | null
+          created_at?: string | null
+          end_time?: string | null
+          equipment_id?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          operator_id?: string
+          shift_type?: string | null
+          start_time?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_shifts_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_shifts_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
+      payroll_summary: {
+        Row: {
+          daily_hours: number | null
+          daily_pay: number | null
+          equipment_id: string | null
+          full_name: string | null
+          operator_id: string | null
+          regular_rate: number | null
+          work_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_shifts_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_shifts_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_analytics: {
+        Row: {
+          break_duration_minutes: number | null
+          double_time_hours: number | null
+          end_time: string | null
+          equipment_id: string | null
+          equipment_type: string | null
+          full_name: string | null
+          hours_worked: number | null
+          id: string | null
+          notes: string | null
+          operator_id: string | null
+          overtime_hours: number | null
+          regular_hours: number | null
+          shift_type: string | null
+          start_time: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_shifts_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_shifts_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_tiers: {
         Row: {
           ai_features: boolean | null
@@ -969,6 +1124,23 @@ export type Database = {
           completed_entries: number
           completion_rate: number
           avg_completion_time_hours: number
+        }[]
+      }
+      get_weekly_payroll: {
+        Args: {
+          start_date: string
+          end_date?: string
+        }
+        Returns: {
+          operator_id: string
+          full_name: string
+          total_hours: number
+          regular_hours: number
+          overtime_hours: number
+          double_time_hours: number
+          total_pay: number
+          week_start: string
+          week_end: string
         }[]
       }
       has_feature_access: {
