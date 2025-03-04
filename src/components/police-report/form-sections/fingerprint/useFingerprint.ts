@@ -1,43 +1,41 @@
 
-import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import type { SuspectDetails } from '@/types/reports';
+import { useState, useCallback } from 'react';
+import { connectScanner, captureFingerprint } from '@/utils/fingerprintScanner';
 
 export const useFingerprint = () => {
-  const fetchBiometricData = useCallback(async (fingerprintData: string) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [currentPrint, setCurrentPrint] = useState<string | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<string>('');
+
+  const startScan = useCallback(async (position: string) => {
+    setIsScanning(true);
+    setCurrentPosition(position);
+    
     try {
-      const { data, error } = await supabase
-        .from('fingerprint_scans')
-        .select('*, incident_reports(*)')
-        .eq('scan_data', fingerprintData)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!data) {
-        return null;
-      }
-
-      const suspectDetails = data.incident_reports?.suspect_details as SuspectDetails | null;
+      const scanner = await connectScanner();
+      const printData = await captureFingerprint(scanner);
+      
+      // Immediately set the print data when received
+      setCurrentPrint(printData);
       
       return {
-        fingerprintClass: suspectDetails?.fingerprint_classification || 'Unknown',
-        handDominance: suspectDetails?.hand_dominance || 'Unknown',
-        matchScore: calculateMatchScore(fingerprintData, data.scan_data || '')
+        scanData: printData,
+        position,
+        quality: 'good',
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error fetching biometric data:', error);
-      toast.error('Failed to fetch biometric data');
-      return null;
+      console.error('Scan error:', error);
+      throw error;
+    } finally {
+      setIsScanning(false);
     }
   }, []);
 
-  const calculateMatchScore = (sample1: string, sample2: string) => {
-    return sample1 === sample2 ? 100 : 0;
-  };
-
   return {
-    fetchBiometricData
+    isScanning,
+    currentPrint,
+    currentPosition,
+    startScan,
   };
 };

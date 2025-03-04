@@ -16,7 +16,7 @@ const ReportDetailsPage = () => {
     }
   }, [id, navigate]);
 
-  const { report, isLoading, error } = useReportData(id);
+  const { data: report, isLoading, error } = useReportData(id);
 
   // If we're still loading, show an improved loading state
   if (isLoading) {
