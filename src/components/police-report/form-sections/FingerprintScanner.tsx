@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useFingerprint } from './fingerprint/useFingerprint';
 import FingerprintDisplay from './fingerprint/FingerprintDisplay';
@@ -21,15 +21,32 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
   const [rightIndexPrint, setRightIndexPrint] = useState<string | undefined>(undefined);
   const [leftIndexPrint, setLeftIndexPrint] = useState<string | undefined>(undefined);
 
+  // Load existing fingerprints from form data on component mount
+  useEffect(() => {
+    const existingPrints = form.getValues('suspectFingerprints') || [];
+    
+    existingPrints.forEach(print => {
+      if (print.position === 'Right Index') {
+        setRightIndexPrint(print.scanData);
+      } else if (print.position === 'Left Index') {
+        setLeftIndexPrint(print.scanData);
+      }
+    });
+  }, [form]);
+
   const handleScan = async (position: string) => {
     try {
+      console.log(`Starting scan for ${position}`);
       // Start the scan and get the result
       const scanResult = await startScan(position);
+      console.log('Scan result:', scanResult);
       
       // Update the specific finger's print based on position
       if (position === 'Right Index') {
+        console.log('Setting right index print');
         setRightIndexPrint(scanResult.scanData);
       } else if (position === 'Left Index') {
+        console.log('Setting left index print');
         setLeftIndexPrint(scanResult.scanData);
       }
       
@@ -53,6 +70,8 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
       console.error('Scan failed:', error);
     }
   };
+
+  console.log('Current fingerprint states:', { rightIndexPrint, leftIndexPrint });
 
   return (
     <div className="space-y-4">

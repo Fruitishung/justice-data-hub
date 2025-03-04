@@ -52,6 +52,7 @@ export const useFingerprint = () => {
       // Set the current print to immediately show in the UI
       setCurrentPrint(dataUrl);
       
+      // Return the scan result for further processing
       return {
         scanData: dataUrl,
         position,

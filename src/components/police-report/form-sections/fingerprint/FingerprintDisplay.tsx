@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
@@ -16,6 +16,13 @@ const FingerprintDisplay = ({
   isScanning, 
   scanProgress = 0 
 }: FingerprintDisplayProps) => {
+  // Log when image data is received
+  useEffect(() => {
+    if (imageData) {
+      console.log(`FingerprintDisplay: Image data received for ${position}`);
+    }
+  }, [imageData, position]);
+
   return (
     <Card className="p-4 relative">
       <div className="text-sm font-medium mb-2">{position}</div>
@@ -24,7 +31,7 @@ const FingerprintDisplay = ({
           <img 
             src={imageData} 
             alt={`Fingerprint ${position}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
