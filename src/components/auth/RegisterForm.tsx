@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ interface RegisterFormProps {
 }
 
 export const RegisterForm = ({ setError }: RegisterFormProps) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -38,7 +40,7 @@ export const RegisterForm = ({ setError }: RegisterFormProps) => {
     }
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -52,10 +54,19 @@ export const RegisterForm = ({ setError }: RegisterFormProps) => {
 
       if (signUpError) throw signUpError;
 
-      toast({
-        title: "Success",
-        description: "Registration successful! Please check your email to verify your account.",
-      });
+      // If auto-confirm is enabled, user is signed in immediately
+      if (data.session) {
+        toast({
+          title: "Success",
+          description: "Registration successful! You're now logged in.",
+        });
+        navigate("/");
+      } else {
+        toast({
+          title: "Success",
+          description: "Registration successful! Please check your email to verify your account.",
+        });
+      }
     } catch (error: any) {
       setError(error.message);
       toast({

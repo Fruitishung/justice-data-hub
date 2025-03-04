@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -13,8 +13,18 @@ import {
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
+
 const AuthPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const from = state?.from?.pathname || "/";
+  
   const [error, setError] = useState<string | null>(null);
 
   // Check if user is already logged in
@@ -22,11 +32,11 @@ const AuthPage = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate(from);
       }
     };
     checkUser();
-  }, [navigate]);
+  }, [navigate, from]);
 
   return (
     <div className="container mx-auto p-8 max-w-md">

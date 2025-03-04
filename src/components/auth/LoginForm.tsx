@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,18 @@ interface LoginFormProps {
   setError: (error: string | null) => void;
 }
 
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
+
 export const LoginForm = ({ setError }: LoginFormProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const from = state?.from?.pathname || "/";
+  
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
@@ -35,7 +45,7 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
         title: "Success",
         description: "You have been logged in successfully",
       });
-      navigate("/"); // This will redirect to the home page after successful login
+      navigate(from); // Redirect to the page they tried to visit or home
     } catch (error: any) {
       setError(error.message);
       toast({

@@ -2,7 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { IncidentReport, SuspectDetails } from '@/types/reports';
-import { Json } from '@/types/reports';
 
 /**
  * Custom hook for fetching incident report data
