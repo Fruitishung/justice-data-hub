@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -14,6 +13,18 @@ interface SuspectSectionProps {
 }
 
 const SuspectSection = ({ form }: SuspectSectionProps) => {
+  // Handle fingerprint scan completion
+  const handleScanComplete = (scanData: {
+    scanData: string;
+    position: string;
+    quality: string;
+    timestamp: string;
+  }) => {
+    // This function is now optional in FingerprintScanner props,
+    // but we can use it here to perform additional actions if needed
+    console.log('Fingerprint scan completed:', scanData);
+  };
+
   return (
     <ReportSection icon={UserX} title="Suspect Information">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -119,7 +130,10 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
         </div>
 
         <div className="mt-6">
-          <FingerprintScanner form={form} />
+          <FingerprintScanner 
+            form={form}
+            onScanComplete={handleScanComplete}
+          />
         </div>
       </div>
     </ReportSection>
