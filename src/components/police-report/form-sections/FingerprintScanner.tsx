@@ -17,12 +17,13 @@ interface FingerprintScannerProps {
 }
 
 const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) => {
-  const { isScanning, currentPrint, currentPosition, startScan } = useFingerprint();
+  const { isScanning, currentPrint, currentPosition, scanProgress, startScan } = useFingerprint();
   const [rightIndexPrint, setRightIndexPrint] = useState<string | undefined>(undefined);
   const [leftIndexPrint, setLeftIndexPrint] = useState<string | undefined>(undefined);
 
   const handleScan = async (position: string) => {
     try {
+      // Start the scan and get the result
       const scanResult = await startScan(position);
       
       // Update the specific finger's print based on position
@@ -57,14 +58,16 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <FingerprintDisplay
-          imageData={rightIndexPrint || (currentPosition === 'Right Index' ? currentPrint || undefined : undefined)}
+          imageData={rightIndexPrint}
           position="Right Index"
           isScanning={isScanning && currentPosition === 'Right Index'}
+          scanProgress={scanProgress}
         />
         <FingerprintDisplay
-          imageData={leftIndexPrint || (currentPosition === 'Left Index' ? currentPrint || undefined : undefined)}
+          imageData={leftIndexPrint}
           position="Left Index"
           isScanning={isScanning && currentPosition === 'Left Index'}
+          scanProgress={scanProgress}
         />
       </div>
       

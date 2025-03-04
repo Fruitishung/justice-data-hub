@@ -63,7 +63,6 @@ export const useFingerprint = () => {
       throw error;
     } finally {
       setIsScanning(false);
-      setScanProgress(0);
       
       // Disconnect from scanner
       try {

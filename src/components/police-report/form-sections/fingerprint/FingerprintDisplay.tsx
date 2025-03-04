@@ -24,7 +24,7 @@ const FingerprintDisplay = ({
           <img 
             src={imageData} 
             alt={`Fingerprint ${position}`}
-            className={`w-full h-full object-cover transition-opacity ${isScanning ? 'opacity-70' : 'opacity-100'}`}
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
