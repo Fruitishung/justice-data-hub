@@ -28,9 +28,14 @@ const dpSdk: DPScannerSDK = {
   openDevice: async () => true,
   closeDevice: async () => {},
   startCapture: async () => {
-    // For development, return a mock fingerprint data
-    const mockData = new Uint8Array(1024).fill(1);
-    return mockData.buffer;
+    // For development, simulate a real scan with a delay
+    // This helps visualize the scanning progress in the UI
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const mockData = new Uint8Array(1024).fill(1);
+        resolve(mockData.buffer);
+      }, 3000); // 3 second delay to simulate scanning
+    });
   },
   getImageQuality: async () => 85
 };

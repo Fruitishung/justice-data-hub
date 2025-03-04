@@ -8,6 +8,7 @@ import { Fingerprint } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { scannerUtils } from "@/utils/fingerprintScanner"
 import { useParams } from "react-router-dom"
+import { Progress } from "@/components/ui/progress"
 
 interface FingerprintScannerProps {
   form: UseFormReturn<ReportFormData>
@@ -16,6 +17,7 @@ interface FingerprintScannerProps {
 const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   const [isScanning, setIsScanning] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [scanProgress, setScanProgress] = useState(0)
   const { toast } = useToast()
   const { id } = useParams()
 
@@ -55,6 +57,25 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
     }
   }, [toast])
 
+  // Effect to simulate scan progress
+  useEffect(() => {
+    let interval: number | undefined;
+    
+    if (isScanning && scanProgress < 100) {
+      interval = window.setInterval(() => {
+        setScanProgress((prev) => {
+          // Random increments to simulate real scanning
+          const increment = Math.floor(Math.random() * 15) + 5;
+          return Math.min(prev + increment, 100);
+        });
+      }, 500);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isScanning, scanProgress]);
+
   const handleScan = async () => {
     if (!isConnected) {
       toast({
@@ -67,12 +88,16 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
 
     try {
       setIsScanning(true)
+      setScanProgress(0)
       
       // Capture fingerprint
       const scanResult = await scannerUtils.captureFingerprint()
       if (!scanResult) {
         throw new Error("Failed to capture fingerprint")
       }
+
+      // Set progress to complete
+      setScanProgress(100)
 
       // Convert ArrayBuffer to base64
       const base64String = btoa(
@@ -128,20 +153,31 @@ const FingerprintScanner = ({ form }: FingerprintScannerProps) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Fingerprint Scanner</h3>
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col space-y-4">
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
           <span className="text-sm text-gray-600">
             {isConnected ? 'Scanner Connected' : 'Scanner Not Connected'}
           </span>
         </div>
+        
+        {isScanning && (
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm font-medium">Scanning in progress...</span>
+              <span className="text-sm font-medium">{scanProgress}%</span>
+            </div>
+            <Progress value={scanProgress} className="h-2" />
+          </div>
+        )}
+        
         <Button
           type="button"
           onClick={handleScan}
           disabled={isScanning || !isConnected}
           className="w-full"
         >
-          <Fingerprint className="mr-2 h-4 w-4" />
+          <Fingerprint className={`mr-2 h-4 w-4 ${isScanning ? 'animate-pulse' : ''}`} />
           {isScanning ? "Scanning..." : "Start Scan"}
         </Button>
       </div>
