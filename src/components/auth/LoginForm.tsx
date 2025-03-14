@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface LoginFormProps {
   setError: (error: string | null) => void;
@@ -82,6 +83,15 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
           onChange={(e) => setLoginPassword(e.target.value)}
           required
         />
+      </div>
+
+      <div className="text-right">
+        <Link 
+          to="/auth/reset-password" 
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Forgot your password?
+        </Link>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

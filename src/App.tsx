@@ -32,8 +32,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public route for authentication */}
-          <Route path="/auth" element={<AuthPage />} />
+          {/* Auth routes with nested paths */}
+          <Route path="/auth/*" element={<AuthPage />} />
           
           {/* Protected routes */}
           <Route path="/" element={
