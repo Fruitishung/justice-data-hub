@@ -16,11 +16,9 @@ const FingerprintDisplay = ({
   isScanning, 
   scanProgress = 0 
 }: FingerprintDisplayProps) => {
-  // Log when image data is received
+  // Debug when image data is received or changes
   useEffect(() => {
-    if (imageData) {
-      console.log(`FingerprintDisplay: Image data received for ${position}`);
-    }
+    console.log(`FingerprintDisplay (${position}): imageData:`, imageData ? `${imageData.substring(0, 30)}...` : 'null');
   }, [imageData, position]);
 
   return (
@@ -32,6 +30,8 @@ const FingerprintDisplay = ({
             src={imageData} 
             alt={`Fingerprint ${position}`}
             className="w-full h-full object-contain"
+            onError={(e) => console.error(`Image load error for ${position}:`, e)}
+            onLoad={() => console.log(`Image loaded successfully for ${position}`)}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">

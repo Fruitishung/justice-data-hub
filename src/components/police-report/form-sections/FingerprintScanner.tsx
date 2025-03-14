@@ -5,6 +5,7 @@ import { useFingerprint } from './fingerprint/useFingerprint';
 import FingerprintDisplay from './fingerprint/FingerprintDisplay';
 import { ReportFormData } from "../types";
 import { UseFormReturn } from "react-hook-form";
+import { toast } from "@/components/ui/use-toast";
 
 interface FingerprintScannerProps {
   onScanComplete?: (scanData: {
@@ -21,14 +22,27 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
   const [rightIndexPrint, setRightIndexPrint] = useState<string | undefined>(undefined);
   const [leftIndexPrint, setLeftIndexPrint] = useState<string | undefined>(undefined);
 
+  // Debug current state
+  useEffect(() => {
+    console.log('FingerprintScanner state:', { 
+      rightIndexPrint: rightIndexPrint ? 'Has data' : 'No data', 
+      leftIndexPrint: leftIndexPrint ? 'Has data' : 'No data',
+      isScanning,
+      currentPosition
+    });
+  }, [rightIndexPrint, leftIndexPrint, isScanning, currentPosition]);
+
   // Load existing fingerprints from form data on component mount
   useEffect(() => {
     const existingPrints = form.getValues('suspectFingerprints') || [];
+    console.log('Loading existing fingerprints:', existingPrints);
     
     existingPrints.forEach(print => {
       if (print.position === 'Right Index') {
+        console.log('Setting initial right index print');
         setRightIndexPrint(print.scanData);
       } else if (print.position === 'Left Index') {
+        console.log('Setting initial left index print');
         setLeftIndexPrint(print.scanData);
       }
     });
@@ -37,22 +51,23 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
   const handleScan = async (position: string) => {
     try {
       console.log(`Starting scan for ${position}`);
+      
       // Start the scan and get the result
       const scanResult = await startScan(position);
-      console.log('Scan result:', scanResult);
+      console.log('Scan completed with result:', scanResult);
       
       // Update the specific finger's print based on position
       if (position === 'Right Index') {
-        console.log('Setting right index print');
+        console.log('Setting right index print:', scanResult.scanData.substring(0, 30) + '...');
         setRightIndexPrint(scanResult.scanData);
       } else if (position === 'Left Index') {
-        console.log('Setting left index print');
+        console.log('Setting left index print:', scanResult.scanData.substring(0, 30) + '...');
         setLeftIndexPrint(scanResult.scanData);
       }
       
       // Store in form data if needed
       const suspectFingerprints = form.getValues('suspectFingerprints') || [];
-      form.setValue('suspectFingerprints', [
+      const updatedFingerprints = [
         ...suspectFingerprints.filter(p => p.position !== position),
         {
           position: scanResult.position,
@@ -60,18 +75,29 @@ const FingerprintScanner = ({ onScanComplete, form }: FingerprintScannerProps) =
           quality: Number(scanResult.quality) || 0,
           timestamp: scanResult.timestamp
         }
-      ]);
+      ];
+      
+      console.log('Updating form with fingerprints, count:', updatedFingerprints.length);
+      form.setValue('suspectFingerprints', updatedFingerprints, { shouldDirty: true });
       
       // Call the onScanComplete callback if provided
       if (onScanComplete) {
         onScanComplete(scanResult);
       }
+      
+      toast({
+        title: "Fingerprint Saved",
+        description: `${position} fingerprint has been added to the report`,
+      });
     } catch (error) {
       console.error('Scan failed:', error);
+      toast({
+        title: "Scan Failed",
+        description: error.message || "Failed to capture fingerprint",
+        variant: "destructive",
+      });
     }
   };
-
-  console.log('Current fingerprint states:', { rightIndexPrint, leftIndexPrint });
 
   return (
     <div className="space-y-4">
