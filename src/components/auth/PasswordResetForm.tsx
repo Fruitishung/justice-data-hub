@@ -23,9 +23,12 @@ export const PasswordResetForm = () => {
     setSuccess(false);
 
     try {
-      // Supabase will send a password reset email
+      // Get the current origin for proper redirect
+      const origin = window.location.origin;
+      
+      // Supabase will send a password reset email with the configured redirect
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${origin}/auth`,
       });
 
       if (resetError) throw resetError;

@@ -75,10 +75,20 @@ const AuthTabs = () => {
 };
 
 const AuthPage = () => {
+  const location = useLocation();
+  // Check if we have parameters from a password reset email
+  const params = new URLSearchParams(location.search);
+  const hasResetParams = params.has('type') && params.get('type') === 'recovery';
+
   return (
     <div className="container mx-auto p-8 max-w-md">
       <Routes>
-        <Route path="/" element={<AuthTabs />} />
+        <Route path="/" element={hasResetParams ? 
+          <Card className="p-6">
+            <UpdatePasswordForm />
+          </Card> : 
+          <AuthTabs />
+        } />
         <Route path="/reset-password" element={
           <Card className="p-6">
             <PasswordResetForm />

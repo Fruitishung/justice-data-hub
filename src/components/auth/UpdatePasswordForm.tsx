@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,28 +11,49 @@ import { AlertCircle } from "lucide-react";
 export const UpdatePasswordForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   // Check if we have a valid session from the reset link
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      
-      if (!data.session) {
-        toast({
-          variant: "destructive",
-          title: "Invalid or expired link",
-          description: "Please request a new password reset link.",
-        });
+      setCheckingSession(true);
+      try {
+        // First, check if we're coming from an email link with recovery token
+        const params = new URLSearchParams(location.search);
+        const hasResetParams = params.has('type') && params.get('type') === 'recovery';
+        
+        if (hasResetParams) {
+          // We'll let the updatePassword handle the token validation
+          setCheckingSession(false);
+          return;
+        }
+
+        // Otherwise, check if we have a valid session
+        const { data } = await supabase.auth.getSession();
+        
+        if (!data.session) {
+          toast({
+            variant: "destructive",
+            title: "Invalid or expired link",
+            description: "Please request a new password reset link.",
+          });
+          navigate("/auth/reset-password");
+        }
+        setCheckingSession(false);
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setCheckingSession(false);
         navigate("/auth/reset-password");
       }
     };
 
     checkSession();
-  }, [navigate, toast]);
+  }, [navigate, toast, location.search]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +94,14 @@ export const UpdatePasswordForm = () => {
       setIsLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <p>Verifying your reset link...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
