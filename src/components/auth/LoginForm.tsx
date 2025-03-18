@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface LoginFormProps {
   setError: (error: string | null) => void;
@@ -28,11 +30,13 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setFormError(null);
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -48,11 +52,13 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
       });
       navigate(from); // Redirect to the page they tried to visit or home
     } catch (error: any) {
-      setError(error.message);
+      const errorMessage = error.message || "An error occurred during login";
+      setError(errorMessage);
+      setFormError(errorMessage);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -84,6 +90,14 @@ export const LoginForm = ({ setError }: LoginFormProps) => {
           required
         />
       </div>
+
+      {formError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="text-right">
         <Link 

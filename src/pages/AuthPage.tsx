@@ -27,6 +27,13 @@ const AuthTabs = () => {
   const from = state?.from?.pathname || "/";
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("login");
+
+  // Clear error when switching tabs
+  const handleTabChange = (value: string) => {
+    setError(null);
+    setActiveTab(value);
+  };
 
   // Check if user is already logged in
   useEffect(() => {
@@ -41,7 +48,7 @@ const AuthTabs = () => {
 
   return (
     <Card className="p-6">
-      <Tabs defaultValue="login" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="register">Register</TabsTrigger>
