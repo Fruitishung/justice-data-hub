@@ -1,50 +1,52 @@
-
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Hero } from "@/components/Hero";
+import { Button } from "@/components/ui/button";
 import ReportCategories from "@/components/index/ReportCategories";
-import TrainingActions from "@/components/index/TrainingActions";
+import { supabase } from "@/integrations/supabase/client";
+
+// Add this import
+import { JurisdictionDisplay } from "@/components/JurisdictionDisplay";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <Hero />
-      
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Report Generator</h2>
-          <p className="text-gray-600 mb-4">
-            Create detailed police reports with our advanced report generator. 
-            Includes sections for incident details, vehicle information, suspects, and more.
-          </p>
-          <Button 
-            onClick={() => navigate("/report/new")}
-            className="w-full"
-          >
-            Create New Report
-          </Button>
-        </Card>
+    <div className="min-h-screen bg-background">
+      <header className="bg-accent text-accent-foreground py-4 px-6 shadow-md">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-bold">Police Report Management System</h1>
+          
+          {/* Add Jurisdiction Display here */}
+          <div className="flex items-center space-x-4">
+            <JurisdictionDisplay />
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          </div>
+        </div>
+      </header>
 
-        <Card className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Recent Reports</h2>
-          <p className="text-gray-600 mb-4">
-            View and manage your existing reports. Track progress, update details, and generate narratives.
-          </p>
-          <Button 
-            variant="outline"
-            onClick={() => navigate("/reports")}
-            className="w-full"
-          >
-            View All Reports
-          </Button>
-        </Card>
-      </div>
+      <main className="container mx-auto py-8 px-6">
+        <h2 className="text-3xl font-semibold mb-4">Welcome to the System</h2>
+        <p className="text-gray-600 mb-8">
+          Select a category to start a new report or manage existing records.
+        </p>
 
-      <ReportCategories />
-      <TrainingActions />
+        <ReportCategories />
+      </main>
     </div>
   );
 };
