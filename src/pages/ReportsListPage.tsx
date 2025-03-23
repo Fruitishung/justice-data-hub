@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MapPin, Shield } from "lucide-react";
+import { JurisdictionDisplay } from "@/components/JurisdictionDisplay";
 
 const ReportsListPage = () => {
   const navigate = useNavigate();
@@ -41,7 +43,10 @@ const ReportsListPage = () => {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Incident Reports</h1>
-        <Button onClick={() => navigate("/report/new")}>Create New Report</Button>
+        <div className="flex items-center gap-4">
+          <JurisdictionDisplay />
+          <Button onClick={() => navigate("/report/new")}>Create New Report</Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -63,6 +68,12 @@ const ReportsListPage = () => {
                   {report.incident_description?.slice(0, 100)}
                   {report.incident_description?.length > 100 ? "..." : ""}
                 </p>
+                {report.jurisdiction && (
+                  <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                    <Shield className="h-3 w-3 mr-1" />
+                    {report.jurisdiction}
+                  </div>
+                )}
               </div>
               <span
                 className={`px-2 py-1 rounded-full text-xs ${

@@ -14,6 +14,7 @@ export const createIncidentReport = async (data: ReportFormData) => {
         vehicle_model: data.vehicleModel,
         location_address: data.locationAddress,
         location_details: data.locationDetails,
+        jurisdiction: data.jurisdiction, // Add jurisdiction field
         evidence_description: data.evidenceDescription,
         evidence_location: data.evidenceLocation,
         evidence_photos: data.evidencePhotos,
@@ -47,7 +48,7 @@ export const createIncidentReport = async (data: ReportFormData) => {
         suspect_details: {
           first_name: data.suspectFirstName,
           last_name: data.suspectLastName,
-          aka: data.suspectAKA,  // Add this new field
+          aka: data.suspectAKA,
           dob: data.suspectDOB,
           address: data.suspectAddress,
           gender: data.suspectGender,
