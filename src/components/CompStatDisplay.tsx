@@ -1,4 +1,3 @@
-
 import { CompStatData } from "@/types/compstat";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +54,7 @@ export const CompStatDisplay = ({ compStatData, isLoading, error }: CompStatDisp
             <BarChart4 className="h-5 w-5" />
             Crime Statistics
           </CardTitle>
-          <Badge variant={compStatData.overallPercentChange < 0 ? "success" : "destructive"}>
+          <Badge variant={compStatData.overallPercentChange < 0 ? "outline" : "destructive"}>
             {compStatData.overallPercentChange > 0 ? "+" : ""}
             {compStatData.overallPercentChange}%
             {compStatData.overallPercentChange < 0 ? 

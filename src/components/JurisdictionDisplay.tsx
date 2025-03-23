@@ -1,6 +1,6 @@
 
 import { Shield, MapPin, BarChart4 } from "lucide-react";
-import { useJurisdiction } from "@/hooks/useJurisdiction";
+import { useJurisdiction, type Jurisdiction } from "@/hooks/useJurisdiction";
 import { useCompStatData } from "@/hooks/useCompStatData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";

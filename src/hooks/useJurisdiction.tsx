@@ -2,10 +2,18 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
-interface Jurisdiction {
+export interface PoliceDistrict {
+  name: string;
+  area?: string;
+  zone?: string;
+  precinct?: string;
+}
+
+export interface Jurisdiction {
   state: string;
   county: string;
   city: string;
+  policeDistrict: PoliceDistrict | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -16,6 +24,7 @@ export const useJurisdiction = () => {
     state: "",
     county: "",
     city: "",
+    policeDistrict: null,
     isLoading: true,
     error: null,
   });

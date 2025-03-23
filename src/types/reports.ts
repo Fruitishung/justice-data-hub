@@ -62,6 +62,7 @@ export type IncidentReport = {
   vehicle_vin: string | null;
   penal_code: string | null;
   conclusion_details?: Record<string, any> | null;
+  jurisdiction?: string | null;
   evidence_photos: { id: string; file_path: string; }[];
   ai_crime_scene_photos: { id: string; image_path: string; }[];
   suspect_fingerprints: {
