@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,8 @@ import { ExitButton } from "@/components/mctetts/ExitButton";
 import { WarrantResults } from "@/components/mctetts/WarrantResults";
 import { VehicleResults } from "@/components/mctetts/VehicleResults";
 import { PropertyResults } from "@/components/mctetts/PropertyResults";
+import { MissingPersonsResults } from "@/components/mctetts/MissingPersonsResults";
+import { PremisesResults } from "@/components/mctetts/PremisesResults";
 import type { Warrant, Vehicle, PropertyRecord } from "@/types/reports";
 
 const MCTETTSPage = () => {
@@ -37,15 +38,26 @@ const MCTETTSPage = () => {
     enabled: activeTab === "vehicles" && searchTerm.length > 0,
   });
 
-  const { data: property, isLoading: propertyLoading } = useQuery({
-    queryKey: ["property", searchTerm],
+  const { data: missingPersons, isLoading: missingPersonsLoading } = useQuery({
+    queryKey: ["missing_persons", searchTerm],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('search_property', { search_term: searchTerm });
+        .rpc('search_missing_persons', { search_term: searchTerm });
       if (error) throw error;
-      return data as PropertyRecord[];
+      return data;
     },
-    enabled: activeTab === "property" && searchTerm.length > 0,
+    enabled: activeTab === "missing_persons" && searchTerm.length > 0,
+  });
+
+  const { data: premises, isLoading: premisesLoading } = useQuery({
+    queryKey: ["premises", searchTerm],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('search_premises', { search_term: searchTerm });
+      if (error) throw error;
+      return data;
+    },
+    enabled: activeTab === "premises" && searchTerm.length > 0,
   });
 
   return (
@@ -70,9 +82,11 @@ const MCTETTSPage = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="warrants">Warrants</TabsTrigger>
             <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+            <TabsTrigger value="missing_persons">Missing Persons</TabsTrigger>
+            <TabsTrigger value="premises">Premises</TabsTrigger>
             <TabsTrigger value="property">Property</TabsTrigger>
           </TabsList>
 
@@ -88,6 +102,22 @@ const MCTETTSPage = () => {
             <VehicleResults 
               vehicles={vehicles || []}
               isLoading={vehiclesLoading}
+              searchTerm={searchTerm}
+            />
+          </TabsContent>
+
+          <TabsContent value="missing_persons">
+            <MissingPersonsResults 
+              missingPersons={missingPersons || []}
+              isLoading={missingPersonsLoading}
+              searchTerm={searchTerm}
+            />
+          </TabsContent>
+
+          <TabsContent value="premises">
+            <PremisesResults 
+              premises={premises || []}
+              isLoading={premisesLoading}
               searchTerm={searchTerm}
             />
           </TabsContent>

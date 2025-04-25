@@ -1148,6 +1148,29 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_missing_persons: {
+        Args: { search_term: string }
+        Returns: {
+          id: string
+          name: string
+          last_seen_date: string
+          description: string
+          status: string
+          case_number: string
+          correlation_score: number
+        }[]
+      }
+      search_premises: {
+        Args: { search_term: string }
+        Returns: {
+          id: string
+          address: string
+          last_incident_date: string
+          incident_count: number
+          recent_incidents: string[]
+          correlation_score: number
+        }[]
+      }
       search_property: {
         Args: { search_term: string }
         Returns: {
