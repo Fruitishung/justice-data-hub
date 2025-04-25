@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -7,7 +6,6 @@ import ReportSection from "../ReportSection"
 import { UseFormReturn } from "react-hook-form"
 import { ReportFormData } from "../types"
 import { Label } from "@/components/ui/label"
-import FingerprintScanner from "./FingerprintScanner"
 import {
   Select,
   SelectContent,
@@ -16,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FormField, FormItem, FormControl } from "@/components/ui/form"
+import { FingerprintScanner } from "@/components/fingerprint/FingerprintScanner";
 
 interface SuspectSectionProps {
   form: UseFormReturn<ReportFormData>
@@ -318,14 +317,11 @@ const SuspectSection = ({ form }: SuspectSectionProps) => {
         </div>
 
         <div className="mt-6">
-          <FingerprintScanner 
-            form={form}
-            onScanComplete={handleScanComplete}
-          />
+          <FingerprintScanner form={form} />
         </div>
       </div>
     </ReportSection>
-  )
-}
+  );
+};
 
-export default SuspectSection
+export default SuspectSection;
