@@ -19,7 +19,10 @@ export const JurisdictionDisplay = () => {
   
   if (isLoading) {
     return (
-      <div className="flex items-center space-x-2 text-sm">
+      <div 
+        data-testid="jurisdiction-loading"
+        className="flex items-center space-x-2 text-sm"
+      >
         <Shield className="h-4 w-4 text-muted-foreground" />
         <Skeleton className="h-4 w-40" />
       </div>
