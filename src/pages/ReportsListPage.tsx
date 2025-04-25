@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   ColumnDef,
@@ -16,10 +17,12 @@ import {
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const ReportsListPage = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -42,39 +45,70 @@ export const ReportsListPage = () => {
     fetchReports();
   }, []);
 
-  const columns: ColumnDef<any>[] = [
-    {
-      accessorKey: "id",
-      header: "ID",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Created At",
-      cell: ({ row }) => {
-        return new Date(row.original.created_at).toLocaleDateString();
+  // Responsive columns configuration
+  const getColumns = (): ColumnDef<any>[] => {
+    // Base columns for all devices
+    const baseColumns: ColumnDef<any>[] = [
+      {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => (
+          <div className="font-medium">{row.getValue("id")}</div>
+        ),
       },
-    },
-    {
-      accessorKey: "locationJurisdiction",
-      header: "Jurisdiction",
-      cell: ({ row }) => {
-        return row.original.location_jurisdiction || "N/A";
+      {
+        accessorKey: "created_at",
+        header: "Date",
+        cell: ({ row }) => {
+          return new Date(row.original.created_at).toLocaleDateString();
+        },
+      }
+    ];
+
+    // Additional columns for desktop
+    const desktopColumns: ColumnDef<any>[] = [
+      {
+        accessorKey: "locationJurisdiction",
+        header: "Jurisdiction",
+        cell: ({ row }) => {
+          return (
+            <div className="max-w-[200px] truncate">
+              {row.original.location_jurisdiction || "N/A"}
+            </div>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "incidentType",
-      header: "Incident Type",
-    },
-    {
+      {
+        accessorKey: "incidentType",
+        header: "Incident Type",
+        cell: ({ row }) => (
+          <div className="max-w-[150px] truncate">
+            {row.getValue("incidentType") || "N/A"}
+          </div>
+        ),
+      }
+    ];
+
+    // Action column for all devices
+    const actionColumn: ColumnDef<any> = {
       accessorKey: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => (
         <Link to={`/reports/${row.original.id}`}>
-          <Button size="sm">View</Button>
+          <Button size="sm" className="whitespace-nowrap">
+            {isMobile ? "View" : "View Report"}
+          </Button>
         </Link>
       ),
-    },
-  ];
+    };
+
+    // Return appropriate columns based on screen size
+    return isMobile 
+      ? [...baseColumns, actionColumn] 
+      : [...baseColumns, ...desktopColumns, actionColumn];
+  };
+
+  const columns = getColumns();
 
   const table = useReactTable({
     data: reports,
@@ -84,20 +118,20 @@ export const ReportsListPage = () => {
 
   return (
     <div>
-      <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-4">Incident Reports</h1>
+      <div className="container py-6 md:py-10 px-2 md:px-6">
+        <h1 className="text-xl md:text-3xl font-bold mb-4">Incident Reports</h1>
 
         {isLoading ? (
           <p>Loading reports...</p>
         ) : (
-          <div className="rounded-md border">
+          <div className="w-full overflow-x-auto rounded-md border">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id}>
+                        <TableHead key={header.id} className="whitespace-nowrap">
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -111,18 +145,29 @@ export const ReportsListPage = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                {table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="py-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      No results found
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
