@@ -60,6 +60,17 @@ const MCTETTSPage = () => {
     enabled: activeTab === "premises" && searchTerm.length > 0,
   });
 
+  const { data: propertyData, isLoading: propertyLoading } = useQuery({
+    queryKey: ["property", searchTerm],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('search_property', { search_term: searchTerm });
+      if (error) throw error;
+      return data as PropertyRecord[];
+    },
+    enabled: activeTab === "property" && searchTerm.length > 0,
+  });
+
   return (
     <div className="container mx-auto py-8 relative">
       <div className="absolute top-0 right-0">
@@ -124,7 +135,7 @@ const MCTETTSPage = () => {
 
           <TabsContent value="property">
             <PropertyResults 
-              property={property || []}
+              property={propertyData || []}
               isLoading={propertyLoading}
               searchTerm={searchTerm}
             />
