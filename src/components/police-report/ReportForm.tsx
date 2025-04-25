@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -30,8 +31,8 @@ const ReportForm = ({ data }: ReportFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const onSubmit = async (data: ReportFormData) => {
-    console.log('Form data being submitted:', data);
+  const onSubmit = async (formData: ReportFormData) => {
+    console.log('Form data being submitted:', formData);
     
     try {
       // First, test the Supabase connection
@@ -48,12 +49,20 @@ const ReportForm = ({ data }: ReportFormProps) => {
       }
 
       // Create incident report
-      const report = await createIncidentReport(data);
+      const report = await createIncidentReport(formData);
+
+      if (!report) {
+        throw new Error('Failed to create incident report');
+      }
 
       // Create arrest tag if suspect is in custody
-      if (data.suspectInCustody) {
-        const arrestTag = await createArrestTag(report.id, data, report.officer_name);
+      if (formData.suspectInCustody) {
+        const arrestTag = await createArrestTag(report.id, formData, report.officer_name);
         
+        if (!arrestTag) {
+          throw new Error('Failed to create arrest tag');
+        }
+
         // Create data analysis entry for the arrest
         await createAnalysisEntry(
           report.id, 
@@ -67,12 +76,16 @@ const ReportForm = ({ data }: ReportFormProps) => {
           description: "An arrest tag has been generated and queued for analysis.",
         });
 
-        navigate(`/arrest-tag/${arrestTag.id}`); // Use arrestTag.id instead of report.id
+        navigate(`/arrest-tag/${arrestTag.id}`);
         return;
       }
 
       // Create narrative report if no arrest
-      await createNarrativeReport(report.id);
+      const narrativeReport = await createNarrativeReport(report.id);
+
+      if (!narrativeReport) {
+        throw new Error('Failed to create narrative report');
+      }
 
       toast({
         title: "Report Submitted",
@@ -84,7 +97,7 @@ const ReportForm = ({ data }: ReportFormProps) => {
       console.error('Error in form submission:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to submit report. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit report. Please try again.",
         variant: "destructive",
       });
     }
