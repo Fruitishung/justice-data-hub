@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   ColumnDef,
@@ -18,7 +17,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-const ReportsListPage = () => {
+export const ReportsListPage = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
