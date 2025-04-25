@@ -26,24 +26,34 @@ export const useFingerprint = ({ form }: UseFingerprintProps) => {
       
       // Mock successful scan data
       const mockScanData = {
-        scanTime: new Date().toISOString(),
-        quality: "Good",
-        fingerprintId: `FP${Math.random().toString(36).substr(2, 9)}`,
+        scanData: `data:image/png;base64,${Math.random().toString(36).substring(2)}`, // Mock base64 data
+        position: "Right Index", // Default position
+        quality: 85, // Mock quality score
+        timestamp: new Date().toISOString(),
       };
       
-      form.setValue('suspectFingerprints', mockScanData);
+      // Get current fingerprints array or initialize it if empty
+      const currentFingerprints = form.getValues('suspectFingerprints') || [];
+      
+      // Add new fingerprint scan to the array
+      form.setValue('suspectFingerprints', [...currentFingerprints, mockScanData]);
       
       toast({
         title: "Scan Complete",
         description: "Fingerprint scan completed successfully",
       });
+      
+      return mockScanData; // Return the scan data for further processing if needed
+      
     } catch (error) {
-      setScanError(error instanceof Error ? error.message : 'Failed to scan fingerprint');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to scan fingerprint';
+      setScanError(errorMessage);
       toast({
         title: "Scan Failed",
-        description: "Failed to complete fingerprint scan",
+        description: errorMessage,
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsScanning(false);
       setScanProgress(0);
