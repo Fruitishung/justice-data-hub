@@ -57,6 +57,7 @@ export const useJurisdiction = () => {
                 state: data.address.state || "",
                 county: data.address.county || "",
                 city: data.address.city || data.address.town || data.address.village || "",
+                policeDistrict: null, // We'll add police district logic later if needed
                 isLoading: false,
                 error: null,
               });

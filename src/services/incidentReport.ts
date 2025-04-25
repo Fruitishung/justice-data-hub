@@ -1,121 +1,16 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ReportFormData } from "@/components/police-report/types";
 
-export const createIncidentReport = async (data: ReportFormData) => {
-  // Create the incident report
-  const { data: report, error: reportError } = await supabase
+export const createIncidentReport = async (reportData: ReportFormData) => {
+  const { data, error } = await supabase
     .from('incident_reports')
-    .insert([
-      {
-        incident_date: data.incidentDate,
-        incident_description: data.incidentDescription,
-        vehicle_make: data.vehicleMake,
-        vehicle_model: data.vehicleModel,
-        location_address: data.locationAddress,
-        location_details: data.locationDetails,
-        jurisdiction: data.jurisdiction, // Add jurisdiction field
-        evidence_description: data.evidenceDescription,
-        evidence_location: data.evidenceLocation,
-        evidence_photos: data.evidencePhotos,
-        evidence_property: {
-          serial_number: data.evidenceSerialNumber,
-          model: data.evidenceModel,
-          make: data.evidenceMake,
-          color: data.evidenceColor,
-          property_type: data.evidencePropertyType,
-          additional_details: data.evidenceAdditionalDetails
-        },
-        emergency_response: data.emergencyResponse,
-        emergency_units: data.emergencyUnits,
-        victim_details: {
-          first_name: data.victimFirstName,
-          last_name: data.victimLastName,
-          dob: data.victimDOB,
-          address: data.victimAddress,
-          gender: data.victimGender,
-          height: data.victimHeight,
-          weight: data.victimWeight,
-          hair: data.victimHair,
-          eyes: data.victimEyes,
-          clothing: data.victimClothing,
-          identifying_marks: data.victimIdentifyingMarks,
-          injuries: data.victimInjuries,
-          cell_phone: data.victimCellPhone,
-          home_phone: data.victimHomePhone,
-          work_phone: data.victimWorkPhone
-        },
-        suspect_details: {
-          first_name: data.suspectFirstName,
-          last_name: data.suspectLastName,
-          aka: data.suspectAKA,
-          dob: data.suspectDOB,
-          address: data.suspectAddress,
-          gender: data.suspectGender,
-          height: data.suspectHeight,
-          weight: data.suspectWeight,
-          hair: data.suspectHair,
-          eyes: data.suspectEyes,
-          clothing: data.suspectClothing,
-          identifying_marks: data.suspectIdentifyingMarks,
-          direction: data.suspectDirection,
-          arrest_history: data.suspectArrestHistory,
-          charges: data.suspectCharges,
-          in_custody: data.suspectInCustody,
-          cell_phone: data.suspectCellPhone,
-          home_phone: data.suspectHomePhone,
-          work_phone: data.suspectWorkPhone,
-          weapon: data.suspectWeapon,
-          strong_hand: data.suspectStrongHand,
-          parole_officer: data.suspectParoleOfficer,
-          fingerprints: data.suspectFingerprints || []
-        }
-      }
-    ])
-    .select()
-    .single();
+    .insert({
+      location_jurisdiction: reportData.locationJurisdiction,
+    });
 
-  if (reportError) {
-    console.error('Report insertion error:', reportError);
-    throw reportError;
+  if (error) {
+    throw error;
   }
 
-  // Insert fingerprint scans if they exist
-  if (data.suspectFingerprints?.length) {
-    const { error: fingerprintError } = await supabase
-      .from('fingerprint_scans')
-      .insert(
-        data.suspectFingerprints.map(scan => ({
-          incident_report_id: report.id,
-          scan_data: scan.scanData,
-          finger_position: scan.position,
-          scan_quality: scan.quality,
-          scan_date: scan.timestamp
-        }))
-      );
-
-    if (fingerprintError) {
-      console.error('Fingerprint scan insertion error:', fingerprintError);
-      throw fingerprintError;
-    }
-  }
-
-  return report;
-};
-
-export const createNarrativeReport = async (reportId: string) => {
-  const { error: narrativeError } = await supabase
-    .from('narrative_reports')
-    .insert([
-      {
-        incident_report_id: reportId,
-        narrative_text: '',
-        status: 'pending'
-      }
-    ]);
-
-  if (narrativeError) {
-    console.error('Narrative creation error:', narrativeError);
-    throw narrativeError;
-  }
+  return data;
 };

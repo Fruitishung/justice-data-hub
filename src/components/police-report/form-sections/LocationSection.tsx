@@ -20,16 +20,16 @@ const LocationSection = ({ form }: LocationSectionProps) => {
   useEffect(() => {
     if (!isLoading && state) {
       // Only auto-fill jurisdiction if the field is empty
-      const currentJurisdiction = form.getValues("jurisdiction");
+      const currentJurisdiction = form.getValues("locationJurisdiction");
       if (!currentJurisdiction) {
-        form.setValue("jurisdiction", `${city ? `${city}, ` : ''}${county ? `${county}, ` : ''}${state}`);
+        form.setValue("locationJurisdiction", `${city ? `${city}, ` : ''}${county ? `${county}, ` : ''}${state}`);
       }
     }
   }, [isLoading, state, county, city, form]);
 
   const applyJurisdiction = () => {
     if (state) {
-      form.setValue("jurisdiction", `${city ? `${city}, ` : ''}${county ? `${county}, ` : ''}${state}`);
+      form.setValue("locationJurisdiction", `${city ? `${city}, ` : ''}${county ? `${county}, ` : ''}${state}`);
     }
   };
 
@@ -58,7 +58,7 @@ const LocationSection = ({ form }: LocationSectionProps) => {
           </div>
           <Input
             placeholder="Jurisdiction (State, County, City)"
-            {...form.register("jurisdiction")}
+            {...form.register("locationJurisdiction")}
           />
         </div>
         
