@@ -1,3 +1,4 @@
+
 // Types for fingerprint scanner interactions
 export interface ScannerDevice {
   isConnected: boolean;
@@ -10,6 +11,7 @@ export interface FingerprintData {
   data: ArrayBuffer;
   quality: number;
   biometrics?: BiometricData;
+  imageUrl?: string; // Added for direct image URL access
 }
 
 export interface BiometricData {

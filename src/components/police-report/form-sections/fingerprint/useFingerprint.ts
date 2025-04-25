@@ -53,11 +53,17 @@ export const useFingerprint = () => {
       clearInterval(progressInterval);
       setScanProgress(100);
       
-      // Convert the ArrayBuffer to base64 for display/storage
-      const base64Data = arrayBufferToBase64(fingerprintData.data);
-      const dataUrl = `data:image/png;base64,${base64Data}`;
+      // Use the imageUrl if available, or generate one from the buffer
+      let dataUrl;
+      if (fingerprintData.imageUrl) {
+        dataUrl = fingerprintData.imageUrl;
+      } else {
+        // Convert the ArrayBuffer to base64 for display/storage
+        const base64Data = arrayBufferToBase64(fingerprintData.data);
+        dataUrl = `data:image/png;base64,${base64Data}`;
+      }
       
-      console.log(`Fingerprint converted to data URL (first 30 chars): ${dataUrl.substring(0, 30)}...`);
+      console.log(`Fingerprint image URL (first 30 chars): ${dataUrl.substring(0, 30)}...`);
       
       // Set the current print to immediately show in the UI
       setCurrentPrint(dataUrl);
