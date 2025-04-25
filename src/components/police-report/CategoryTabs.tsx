@@ -1,13 +1,13 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Database, AlertCircle, Car, FileText, Link, MapPin, UserX, Users } from "lucide-react";
+import { Database, Siren, Car, FileText, Link, MapPin, UserX, Users } from "lucide-react";
 
 const CategoryTabs = ({ children }: { children: React.ReactNode }) => {
   return (
     <Tabs defaultValue="emergency" className="w-full">
       <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-12">
         <TabsTrigger value="emergency" className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4" />
+          <Siren className="h-4 w-4" />
           Emergency
         </TabsTrigger>
         <TabsTrigger value="incident" className="flex items-center gap-2">
