@@ -23,20 +23,25 @@ export const usePhotoGeneration = () => {
         }
       );
 
-      if (error) throw error;
-
-      if (data?.mugshot_url) {
-        setPhotos(prev => [...prev, data.mugshot_url]);
-        toast({
-          title: "Success",
-          description: "Booking photo generated successfully",
-        });
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error("Failed to generate photo: " + error.message);
       }
+
+      if (!data || !data.mugshot_url) {
+        throw new Error("No photo URL returned from generation");
+      }
+
+      setPhotos(prev => [...prev, data.mugshot_url]);
+      toast({
+        title: "Success",
+        description: "Booking photo generated successfully",
+      });
     } catch (error) {
       console.error("Error generating photo:", error);
       toast({
         title: "Error",
-        description: "Failed to generate booking photo",
+        description: "Failed to generate booking photo. Please try again.",
         variant: "destructive",
       });
     } finally {

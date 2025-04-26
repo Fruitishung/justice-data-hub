@@ -4,9 +4,21 @@ import { Card } from "@/components/ui/card";
 import { Camera, TrashIcon } from "lucide-react";
 import { PhotoGrid } from "./PhotoGrid";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
+import { useState } from "react";
 
 export const BookingPhotoGenerator = () => {
   const { photos, isGenerating, generatePhoto, clearPhotos } = usePhotoGeneration();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGeneratePhoto = async () => {
+    setError(null);
+    try {
+      await generatePhoto();
+    } catch (err) {
+      setError("Failed to generate photo. Please try again.");
+      console.error("Error in photo generation:", err);
+    }
+  };
 
   return (
     <Card className="p-6">
@@ -25,7 +37,7 @@ export const BookingPhotoGenerator = () => {
               </Button>
             )}
             <Button 
-              onClick={generatePhoto} 
+              onClick={handleGeneratePhoto} 
               disabled={isGenerating}
               className="gap-2"
             >
@@ -34,6 +46,12 @@ export const BookingPhotoGenerator = () => {
             </Button>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
 
         <PhotoGrid photos={photos} />
       </div>

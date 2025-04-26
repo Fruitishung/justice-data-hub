@@ -17,6 +17,10 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({ photos }) => {
             src={url} 
             alt={`Generated booking photo ${index + 1}`}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error("Failed to load image:", url);
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
         </div>
       ))}
