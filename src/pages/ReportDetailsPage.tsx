@@ -1,8 +1,13 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer, Camera } from 'lucide-react';
+import { Printer, Camera, Wand2 } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import ReportForm from '@/components/police-report/ReportForm';
 import { useReportData } from '@/hooks/useReportData';
 import ReportLoadingSkeleton from '@/components/report/ReportLoadingSkeleton';
@@ -30,7 +35,6 @@ const ReportDetailsPage = () => {
   const validateReport = () => {
     if (!report) return false;
 
-    // Required fields to check
     const requiredFields = [
       { field: report.case_number, name: 'Case Number' },
       { field: report.incident_date, name: 'Incident Date' },
@@ -40,10 +44,8 @@ const ReportDetailsPage = () => {
       { field: report.location_address, name: 'Location' }
     ];
 
-    // Check required fields
     const missingFields = requiredFields.filter(({ field }) => !field);
 
-    // Check photos
     const hasPhotos = report.evidence_photos?.length > 0;
 
     if (missingFields.length > 0 || !hasPhotos) {
@@ -64,7 +66,7 @@ const ReportDetailsPage = () => {
     }
   };
 
-  const generateCrimeScenePhoto = async () => {
+  const generateCrimeScenePhoto = async (type: 'manual' | 'ai') => {
     if (!report?.id) {
       toast({
         title: "Error",
@@ -77,7 +79,10 @@ const ReportDetailsPage = () => {
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-crime-scene', {
-        body: { incident_report_id: report.id }
+        body: { 
+          incident_report_id: report.id,
+          photo_type: type
+        }
       });
 
       if (error) throw error;
@@ -85,7 +90,7 @@ const ReportDetailsPage = () => {
       if (data?.image_url) {
         toast({
           title: "Success",
-          description: "Crime scene photo generated successfully"
+          description: `${type === 'ai' ? 'AI-generated' : 'Manual'} crime scene photo generated successfully`
         });
       }
     } catch (error) {
@@ -100,12 +105,10 @@ const ReportDetailsPage = () => {
     }
   };
 
-  // If we're still loading, show an improved loading state
   if (isLoading) {
     return <ReportLoadingSkeleton />;
   }
 
-  // If no report and not a new report, show error
   if (!report && id && id !== 'new') {
     return <ReportNotFound />;
   }
@@ -119,14 +122,25 @@ const ReportDetailsPage = () => {
         <div className="flex gap-2 print:hidden">
           {report && (
             <>
-              <Button
-                onClick={generateCrimeScenePhoto}
-                disabled={isGenerating}
-                variant="outline"
-              >
-                <Camera className="mr-2 h-4 w-4" />
-                {isGenerating ? "Generating..." : "Generate Scene Photo"}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    disabled={isGenerating}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Add Crime Scene Photo
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onSelect={() => generateCrimeScenePhoto('manual')}>
+                    <Camera className="mr-2 h-4 w-4" /> Manual Photo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => generateCrimeScenePhoto('ai')}>
+                    <Wand2 className="mr-2 h-4 w-4" /> AI-Generated Photo
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handlePrint}
                 variant="outline"

@@ -14,8 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { incident_report_id } = await req.json()
-    console.log('Starting crime scene photo generation for report:', incident_report_id)
+    const { incident_report_id, photo_type = 'manual' } = await req.json()
+    console.log('Starting crime scene photo generation for report:', incident_report_id, 'Type:', photo_type)
 
     if (!incident_report_id) {
       throw new Error('Missing required field: incident_report_id')
@@ -23,13 +23,9 @@ serve(async (req) => {
 
     // Initialize OpenAI
     const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openaiKey) {
+    if (!openaiKey && photo_type === 'ai') {
       throw new Error('OpenAI API key not configured')
     }
-
-    const openai = new OpenAI({
-      apiKey: openaiKey.trim()
-    })
 
     // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -41,7 +37,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get the incident report to determine the type of crime scene
+    // Get the incident report
     const { data: report, error: reportError } = await supabase
       .from('incident_reports')
       .select('incident_type, incident_description, penal_code')
@@ -52,45 +48,48 @@ serve(async (req) => {
       throw new Error(`Failed to fetch incident report: ${reportError?.message || 'Report not found'}`)
     }
 
-    // Generate an appropriate prompt based on the incident type
-    let prompt = "A professional crime scene photograph taken by law enforcement. "
-    
-    if (report.incident_type === 'burglary') {
-      prompt += "Interior of a residence showing signs of forced entry, with evidence markers visible. Forensic lighting illuminates the scene. Wide-angle shot showing the point of entry."
-    } else if (report.incident_type === 'assault') {
-      prompt += "Urban setting showing an area where an altercation occurred. Yellow evidence markers on the ground. Police tape visible in the background. Documentary-style photography."
-    } else if (report.incident_type === 'vandalism') {
-      prompt += "Close-up of property damage with evidence markers. Clear documentation of the vandalized area. Professional police photography style."
+    let imageUrl = null;
+
+    // Different logic for manual and AI photo generation
+    if (photo_type === 'ai') {
+      const openai = new OpenAI({ apiKey: openaiKey.trim() })
+
+      // Generate an appropriate prompt based on the incident type
+      let prompt = "A professional crime scene photograph taken by law enforcement. "
+      
+      if (report.incident_type === 'burglary') {
+        prompt += "Interior of a residence showing signs of forced entry, with evidence markers visible. Forensic lighting illuminates the scene. Wide-angle shot showing the point of entry."
+      } else if (report.incident_type === 'assault') {
+        prompt += "Urban setting showing an area where an altercation occurred. Yellow evidence markers on the ground. Police tape visible in the background. Documentary-style photography."
+      } else if (report.incident_type === 'vandalism') {
+        prompt += "Close-up of property damage with evidence markers. Clear documentation of the vandalized area. Professional police photography style."
+      } else {
+        prompt += "A general crime scene with police tape and evidence markers. Professional law enforcement photography perspective. Clear documentation of the area."
+      }
+
+      const imageResponse = await openai.images.generate({
+        model: "dall-e-3",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "hd",
+        style: "natural"
+      })
+
+      imageUrl = imageResponse.data?.[0]?.url
     } else {
-      prompt += "A general crime scene with police tape and evidence markers. Professional law enforcement photography perspective. Clear documentation of the area."
+      // For manual photos, we'll return null and expect the user to upload a photo manually
+      imageUrl = null
     }
 
-    prompt += " The image should be clear, well-lit, and documentary in style, following standard police photography protocols. No people or graphic content should be visible."
-
-    console.log('Generating image with prompt:', prompt)
-    const imageResponse = await openai.images.generate({
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "hd",
-      style: "natural"
-    })
-
-    if (!imageResponse.data?.[0]?.url) {
-      throw new Error('Failed to generate image')
-    }
-
-    const imageUrl = imageResponse.data[0].url
-    console.log('Successfully generated image URL:', imageUrl)
-
-    // Store the generated photo in the database
+    // Store the generated or manual photo in the database
     const { error: insertError } = await supabase
       .from('ai_crime_scene_photos')
       .insert({
         incident_report_id,
         image_path: imageUrl,
-        prompt_used: prompt
+        photo_type,
+        prompt_used: photo_type === 'ai' ? prompt : null
       })
 
     if (insertError) {
@@ -100,7 +99,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Crime scene photo generated and saved successfully',
+        message: 'Crime scene photo processed successfully',
         image_url: imageUrl
       }),
       {
