@@ -99,3 +99,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  /* Hide non-printable elements */
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  /* Remove background colors and shadows */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure text is black for better printing */
+  body {
+    color: black;
+  }
+
+  /* Break pages appropriately */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Ensure full width content */
+  .container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Remove card shadows */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}
