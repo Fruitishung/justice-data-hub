@@ -8,10 +8,14 @@ import { useReportData } from '@/hooks/useReportData';
 import ReportLoadingSkeleton from '@/components/report/ReportLoadingSkeleton';
 import ReportNotFound from '@/components/report/ReportNotFound';
 import { FaceSheet } from '@/components/report-details/FaceSheet';
+import { useToast } from '@/components/ui/use-toast';
+import { PhotosSection } from '@/components/report-details/PhotosSection';
+import { EvidenceSection } from '@/components/report-details/EvidenceSection';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   React.useEffect(() => {
     if (!id) {
@@ -21,8 +25,41 @@ const ReportDetailsPage = () => {
 
   const { data: report, isLoading, error } = useReportData(id);
 
+  const validateReport = () => {
+    if (!report) return false;
+
+    // Required fields to check
+    const requiredFields = [
+      { field: report.case_number, name: 'Case Number' },
+      { field: report.incident_date, name: 'Incident Date' },
+      { field: report.incident_description, name: 'Incident Description' },
+      { field: report.officer_name, name: 'Officer Name' },
+      { field: report.officer_badge_number, name: 'Badge Number' },
+      { field: report.location_address, name: 'Location' }
+    ];
+
+    // Check required fields
+    const missingFields = requiredFields.filter(({ field }) => !field);
+
+    // Check photos
+    const hasPhotos = report.evidence_photos?.length > 0;
+
+    if (missingFields.length > 0 || !hasPhotos) {
+      toast({
+        variant: "destructive",
+        title: "Cannot print incomplete report",
+        description: `Please complete the following: ${missingFields.map(f => f.name).join(', ')}${!hasPhotos ? ', Evidence Photos' : ''}`
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handlePrint = () => {
-    window.print();
+    if (validateReport()) {
+      window.print();
+    }
   };
 
   // If we're still loading, show an improved loading state
@@ -54,7 +91,13 @@ const ReportDetailsPage = () => {
       </div>
       
       <div className="space-y-8">
-        {report && <FaceSheet report={report} />}
+        {report && (
+          <>
+            <FaceSheet report={report} />
+            <EvidenceSection report={report} />
+            <PhotosSection report={report} />
+          </>
+        )}
         <div className="print:hidden">
           <ReportForm data={report} />
         </div>
