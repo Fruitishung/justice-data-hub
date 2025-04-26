@@ -1,3 +1,4 @@
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -8,6 +9,7 @@ import ReportDetailsPage from "./pages/ReportDetailsPage";
 import MockDataPage from "./pages/MockDataPage";
 import TrainingPhotosPage from "./pages/TrainingPhotosPage";
 import AITestingPage from "./pages/AITestingPage";
+import BookingPhotosPage from "./pages/BookingPhotosPage";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: "/ai-testing",
     element: <AITestingPage />,
+  },
+  {
+    path: "/booking-photos",
+    element: <BookingPhotosPage />,
   },
 ]);
 
