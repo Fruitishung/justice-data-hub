@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Camera } from 'lucide-react';
 import ReportForm from '@/components/police-report/ReportForm';
 import { useReportData } from '@/hooks/useReportData';
 import ReportLoadingSkeleton from '@/components/report/ReportLoadingSkeleton';
@@ -11,11 +11,13 @@ import { FaceSheet } from '@/components/report-details/FaceSheet';
 import { useToast } from '@/components/ui/use-toast';
 import { PhotosSection } from '@/components/report-details/PhotosSection';
 import { EvidenceSection } from '@/components/report-details/EvidenceSection';
+import { supabase } from '@/integrations/supabase/client';
 
 const ReportDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = React.useState(false);
 
   React.useEffect(() => {
     if (!id) {
@@ -62,6 +64,42 @@ const ReportDetailsPage = () => {
     }
   };
 
+  const generateCrimeScenePhoto = async () => {
+    if (!report?.id) {
+      toast({
+        title: "Error",
+        description: "Cannot generate photo without a report ID",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-crime-scene', {
+        body: { incident_report_id: report.id }
+      });
+
+      if (error) throw error;
+
+      if (data?.image_url) {
+        toast({
+          title: "Success",
+          description: "Crime scene photo generated successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating photo:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate photo. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // If we're still loading, show an improved loading state
   if (isLoading) {
     return <ReportLoadingSkeleton />;
@@ -78,16 +116,27 @@ const ReportDetailsPage = () => {
         <h1 className="text-3xl font-bold">
           {id === 'new' ? 'Create New Report' : `Edit Report - ${report?.case_number}`}
         </h1>
-        {report && (
-          <Button
-            onClick={handlePrint}
-            className="print:hidden"
-            variant="outline"
-          >
-            <Printer className="mr-2 h-4 w-4" />
-            Print Report
-          </Button>
-        )}
+        <div className="flex gap-2 print:hidden">
+          {report && (
+            <>
+              <Button
+                onClick={generateCrimeScenePhoto}
+                disabled={isGenerating}
+                variant="outline"
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                {isGenerating ? "Generating..." : "Generate Scene Photo"}
+              </Button>
+              <Button
+                onClick={handlePrint}
+                variant="outline"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print Report
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       
       <div className="space-y-8">
