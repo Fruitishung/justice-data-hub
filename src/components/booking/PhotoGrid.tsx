@@ -3,9 +3,18 @@ import React from "react";
 
 interface PhotoGridProps {
   photos: string[];
+  onImageError?: (url: string) => void;
 }
 
-export const PhotoGrid: React.FC<PhotoGridProps> = ({ photos }) => {
+export const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, onImageError }) => {
+  const handleImageError = (url: string, e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error("Failed to load image:", url);
+    e.currentTarget.src = '/placeholder.svg';
+    if (onImageError) {
+      onImageError(url);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {photos.map((url, index) => (
@@ -17,10 +26,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({ photos }) => {
             src={url} 
             alt={`Generated booking photo ${index + 1}`}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              console.error("Failed to load image:", url);
-              e.currentTarget.src = '/placeholder.svg';
-            }}
+            onError={(e) => handleImageError(url, e)}
           />
         </div>
       ))}

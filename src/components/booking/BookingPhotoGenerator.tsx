@@ -7,7 +7,7 @@ import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { useState } from "react";
 
 export const BookingPhotoGenerator = () => {
-  const { photos, isGenerating, generatePhoto, clearPhotos } = usePhotoGeneration();
+  const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored } = usePhotoGeneration();
   const [error, setError] = useState<string | null>(null);
 
   const handleGeneratePhoto = async () => {
@@ -19,6 +19,10 @@ export const BookingPhotoGenerator = () => {
       console.error("Error in photo generation:", err);
     }
   };
+  
+  const handleImageError = (url: string) => {
+    markPhotoAsErrored(url);
+  };
 
   return (
     <Card className="p-6">
@@ -26,7 +30,7 @@ export const BookingPhotoGenerator = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">AI Booking Photos Generator</h2>
           <div className="flex gap-2">
-            {photos.length > 0 && (
+            {allPhotos.length > 0 && (
               <Button 
                 onClick={clearPhotos} 
                 variant="outline" 
@@ -53,7 +57,7 @@ export const BookingPhotoGenerator = () => {
           </div>
         )}
 
-        <PhotoGrid photos={photos} />
+        <PhotoGrid photos={photos} onImageError={handleImageError} />
       </div>
     </Card>
   );
