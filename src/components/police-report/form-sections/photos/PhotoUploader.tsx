@@ -1,10 +1,10 @@
 
-import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../../types";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
+import { usePhotoUpload } from "@/hooks/usePhotoUpload";
+import { PhotoErrorBoundary } from "./PhotoErrorBoundary";
 
 interface PhotoUploaderProps {
   form: UseFormReturn<ReportFormData>;
@@ -13,84 +13,50 @@ interface PhotoUploaderProps {
 }
 
 export const PhotoUploader = ({ form, onPhotoUploaded, disabled }: PhotoUploaderProps) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
+  const { uploadPhoto, isUploading, uploadProgress, uploadError } = usePhotoUpload();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 104857600) {
-      toast({
-        title: "File too large",
-        description: "Please select a file smaller than 100MB",
-        variant: "destructive",
-      });
-      return;
-    }
+    const objectUrl = URL.createObjectURL(file);
+    onPhotoUploaded(objectUrl);
 
-    setIsUploading(true);
-    try {
-      const objectUrl = URL.createObjectURL(file);
-      onPhotoUploaded(objectUrl);
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${crypto.randomUUID()}`;
-      const filePath = `${fileName}.${fileExt}`;
-      
-      const { data, error: uploadError } = await supabase.storage
-        .from('evidence_photos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('evidence_photos')
-        .getPublicUrl(filePath);
-
+    const uploadedPhoto = await uploadPhoto(file);
+    
+    if (uploadedPhoto) {
       const currentPhotos = form.getValues('evidencePhotos') || [];
-      form.setValue('evidencePhotos', [...currentPhotos, {
-        path: filePath,
-        uploaded_at: new Date().toISOString()
-      }]);
-
-      toast({
-        title: "Success",
-        description: "Photo uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload photo. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
+      form.setValue('evidencePhotos', [...currentPhotos, uploadedPhoto]);
     }
   };
 
   return (
-    <>
-      {isUploading ? (
-        <div className="flex items-center space-x-4">
-          <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span>Uploading photo...</span>
-        </div>
-      ) : (
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          className="cursor-pointer"
-          disabled={disabled || isUploading}
-        />
-      )}
-    </>
+    <PhotoErrorBoundary>
+      <div className="space-y-4">
+        {isUploading ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Uploading photo...</span>
+              <span>{Math.round(uploadProgress)}%</span>
+            </div>
+            <Progress value={uploadProgress} />
+          </div>
+        ) : (
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="cursor-pointer"
+            disabled={disabled || isUploading}
+          />
+        )}
+        
+        {uploadError && (
+          <p className="text-sm text-destructive">
+            Error uploading photo: {uploadError}
+          </p>
+        )}
+      </div>
+    </PhotoErrorBoundary>
   );
 };
