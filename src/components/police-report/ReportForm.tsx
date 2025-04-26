@@ -27,7 +27,11 @@ interface ReportFormProps {
 }
 
 const ReportForm = ({ data }: ReportFormProps) => {
-  const form = useForm<ReportFormData>();
+  const form = useForm<ReportFormData>({
+    defaultValues: {
+      evidencePhotos: []
+    }
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -53,6 +57,24 @@ const ReportForm = ({ data }: ReportFormProps) => {
 
       if (!report) {
         throw new Error('Failed to create incident report');
+      }
+
+      // Link evidence photos to the incident report
+      if (formData.evidencePhotos && formData.evidencePhotos.length > 0) {
+        const photoRecords = formData.evidencePhotos.map(photo => ({
+          incident_report_id: report.id,
+          file_path: photo.path,
+          uploaded_at: new Date().toISOString()
+        }));
+
+        const { error: photoError } = await supabase
+          .from('evidence_photos')
+          .insert(photoRecords);
+
+        if (photoError) {
+          console.error('Error linking photos:', photoError);
+          // Continue despite photo linking error
+        }
       }
 
       // Create arrest tag if suspect is in custody
