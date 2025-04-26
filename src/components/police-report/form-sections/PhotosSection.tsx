@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Camera, Wand2 } from "lucide-react";
+import { Camera, Wand2, Image } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
 import ReportSection from "../ReportSection";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -22,7 +23,7 @@ interface PhotosSectionProps {
 const PhotosSection = ({ form }: PhotosSectionProps) => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isGeneratingAIPhoto, setIsGeneratingAIPhoto] = useState(false);
+  const { isGenerating, generatePhoto } = usePhotoGeneration();
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,28 +94,20 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
   };
 
   const generateAIPhoto = async () => {
-    setIsGeneratingAIPhoto(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-mugshot', {
-        body: {
-          arrest_tag_id: crypto.randomUUID(),
-          photo_type: 'ai'
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.mugshot_url) {
-        // Create a preview URL for the AI generated photo
-        setPreviewUrls(prev => [...prev, data.mugshot_url]);
-
-        // Update form with the AI generated photo
+      const imageUrl = await generatePhoto();
+      
+      if (imageUrl) {
+        // Add the generated photo to preview
+        setPreviewUrls(prev => [...prev, imageUrl]);
+        
+        // Update the form with the AI generated photo
         const currentPhotos = form.getValues('evidencePhotos') || [];
         form.setValue('evidencePhotos', [...currentPhotos, {
-          path: data.mugshot_url,
+          path: imageUrl,
           uploaded_at: new Date().toISOString()
         }]);
-
+        
         toast({
           title: "AI Photo Generated",
           description: "An AI-generated photo has been added to your evidence photos."
@@ -124,11 +117,9 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
       console.error('Error generating AI photo:', error);
       toast({
         title: "Error",
-        description: "Failed to generate AI photo. Please try again.",
+        description: "Failed to generate AI photo. Please try again later.",
         variant: "destructive"
       });
-    } finally {
-      setIsGeneratingAIPhoto(false);
     }
   };
 
@@ -148,7 +139,7 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={isUploading || isGeneratingAIPhoto}
+                disabled={isUploading || isGenerating}
                 className="gap-2"
               >
                 <Wand2 className="h-4 w-4" />
@@ -156,7 +147,7 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onSelect={() => generateAIPhoto()}>
+              <DropdownMenuItem onSelect={generateAIPhoto}>
                 <Wand2 className="mr-2 h-4 w-4" /> AI-Generated Photo
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -174,8 +165,15 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
             accept="image/*"
             onChange={handleFileUpload}
             className="cursor-pointer"
-            disabled={isUploading}
+            disabled={isUploading || isGenerating}
           />
+        )}
+
+        {isGenerating && (
+          <div className="flex items-center space-x-4 p-2 bg-muted/50 rounded-md">
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>Generating AI photo...</span>
+          </div>
         )}
         
         {previewUrls.length > 0 && (
@@ -188,6 +186,13 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
                     src={url} 
                     alt={`Evidence photo ${index + 1}`} 
                     className="w-full h-full object-cover"
+                    onError={() => {
+                      toast({
+                        title: "Image Error",
+                        description: "Failed to load image. Please try again.",
+                        variant: "destructive"
+                      });
+                    }}
                   />
                 </div>
               ))}

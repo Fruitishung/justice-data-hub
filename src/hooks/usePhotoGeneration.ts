@@ -14,6 +14,7 @@ export const usePhotoGeneration = () => {
     try {
       const testId = crypto.randomUUID();
       
+      console.log("Calling generate-mugshot with id:", testId);
       const { data, error } = await supabase.functions.invoke(
         'generate-mugshot',
         {
@@ -30,15 +31,14 @@ export const usePhotoGeneration = () => {
       }
 
       if (!data || !data.mugshot_url) {
+        console.error("No photo URL returned:", data);
         throw new Error("No photo URL returned from generation");
       }
 
+      console.log("Photo generated successfully:", data.mugshot_url);
       setPhotos(prev => [...prev, data.mugshot_url]);
-      toast({
-        title: "Success",
-        description: "Booking photo generated successfully",
-      });
-
+      
+      // Return the URL for use in components
       return data.mugshot_url;
     } catch (error) {
       console.error("Error generating photo:", error);
