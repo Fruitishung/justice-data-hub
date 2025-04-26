@@ -22,6 +22,16 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check file size (100MB limit)
+    if (file.size > 104857600) {
+      toast({
+        title: "File too large",
+        description: "Please select a file smaller than 100MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
     try {
       // Create a preview URL
@@ -32,18 +42,6 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${crypto.randomUUID()}`;
       const filePath = `${fileName}.${fileExt}`;
-      
-      // Ensure the 'evidence_photos' bucket exists before uploading
-      const { data: bucketData, error: bucketError } = await supabase.storage
-        .getBucket('evidence_photos');
-
-      if (bucketError && bucketError.message.includes('does not exist')) {
-        // Create the bucket if it doesn't exist
-        await supabase.storage.createBucket('evidence_photos', {
-          public: true,
-          fileSizeLimit: 5242880 // 5MB
-        });
-      }
       
       const { data, error: uploadError } = await supabase.storage
         .from('evidence_photos')
@@ -90,6 +88,15 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
   return (
     <ReportSection icon={Camera} title="Evidence Photos">
       <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Supported formats: JPEG, PNG, GIF, WebP, TIFF, BMP, HEIC/HEIF
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Maximum file size: 100MB
+          </p>
+        </div>
+
         {isUploading ? (
           <div className="flex items-center space-x-4">
             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
