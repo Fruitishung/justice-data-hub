@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Camera } from "lucide-react";
+import { Camera, Wand2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../types";
 import ReportSection from "../ReportSection";
@@ -8,6 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface PhotosSectionProps {
   form: UseFormReturn<ReportFormData>;
@@ -16,6 +22,7 @@ interface PhotosSectionProps {
 const PhotosSection = ({ form }: PhotosSectionProps) => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingAIPhoto, setIsGeneratingAIPhoto] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,16 +92,75 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
     }
   };
 
+  const generateAIPhoto = async () => {
+    setIsGeneratingAIPhoto(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-mugshot', {
+        body: {
+          arrest_tag_id: crypto.randomUUID(),
+          photo_type: 'ai'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.mugshot_url) {
+        // Create a preview URL for the AI generated photo
+        setPreviewUrls(prev => [...prev, data.mugshot_url]);
+
+        // Update form with the AI generated photo
+        const currentPhotos = form.getValues('evidencePhotos') || [];
+        form.setValue('evidencePhotos', [...currentPhotos, {
+          path: data.mugshot_url,
+          uploaded_at: new Date().toISOString()
+        }]);
+
+        toast({
+          title: "AI Photo Generated",
+          description: "An AI-generated photo has been added to your evidence photos."
+        });
+      }
+    } catch (error) {
+      console.error('Error generating AI photo:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate AI photo. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingAIPhoto(false);
+    }
+  };
+
   return (
     <ReportSection icon={Camera} title="Evidence Photos">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Supported formats: JPEG, PNG, GIF, WebP, TIFF, BMP, HEIC/HEIF
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Maximum file size: 100MB
-          </p>
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Supported formats: JPEG, PNG, GIF, WebP, TIFF, BMP, HEIC/HEIF
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Maximum file size: 100MB
+            </p>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={isUploading || isGeneratingAIPhoto}
+                className="gap-2"
+              >
+                <Wand2 className="h-4 w-4" />
+                Generate Photo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onSelect={() => generateAIPhoto()}>
+                <Wand2 className="mr-2 h-4 w-4" /> AI-Generated Photo
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {isUploading ? (
