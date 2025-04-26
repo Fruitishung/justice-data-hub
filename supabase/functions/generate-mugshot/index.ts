@@ -70,26 +70,31 @@ serve(async (req) => {
   }
 
   try {
-    const { arrest_tag_id } = await req.json()
+    const { arrest_tag_id, photo_type } = await req.json()
     if (!arrest_tag_id) throw new Error('Missing arrest_tag_id')
 
     console.log('Starting mugshot generation process for:', arrest_tag_id)
     
     const { openai, supabase } = initializeClients()
     
-    // Step 1: Verify arrest tag exists
-    await verifyArrestTag(supabase, arrest_tag_id)
-    console.log('Arrest tag verified')
+    // For AI-generated photos, we can skip verification if it's not from a real arrest tag
+    if (photo_type !== 'ai') {
+      // Step 1: Verify arrest tag exists
+      await verifyArrestTag(supabase, arrest_tag_id)
+      console.log('Arrest tag verified')
+    }
 
     // Step 2: Generate mugshot
     console.log('Generating mugshot...')
     const imageUrl = await generateMugshot(openai)
     console.log('Mugshot generated successfully')
 
-    // Step 3: Update arrest tag with new mugshot
-    console.log('Updating arrest tag...')
-    await updateArrestTag(supabase, arrest_tag_id, imageUrl)
-    console.log('Arrest tag updated successfully')
+    // Step 3: Update arrest tag with new mugshot (only for real arrest tags)
+    if (photo_type !== 'ai') {
+      console.log('Updating arrest tag...')
+      await updateArrestTag(supabase, arrest_tag_id, imageUrl)
+      console.log('Arrest tag updated successfully')
+    }
 
     return new Response(
       JSON.stringify({

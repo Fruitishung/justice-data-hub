@@ -10,6 +10,7 @@ import MockDataPage from "./pages/MockDataPage";
 import TrainingPhotosPage from "./pages/TrainingPhotosPage";
 import AITestingPage from "./pages/AITestingPage";
 import BookingPhotosPage from "./pages/BookingPhotosPage";
+import { Toaster } from "@/components/ui/toaster";
 
 const router = createBrowserRouter([
   {
@@ -44,7 +45,10 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <RouterProvider router={router} />
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
   )
 }
 
