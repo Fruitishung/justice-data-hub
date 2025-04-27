@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import OpenAI from "https://esm.sh/openai@4.28.0"
@@ -55,23 +56,26 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   try {
     console.log("Starting OpenAI image generation with bio markers:", bioMarkers);
     
-    // Create a more specific prompt that matches standard booking photo format
-    const prompt = `A professional police booking photograph (mugshot) of an ADULT person against a height measurement background with lines from 5'0" to 6'6". 
-    Subject is holding a black booking information placard and standing in front of a light gray background with height measurement lines.
-    The person should match these exact characteristics:
-    - Age: Between 25-60 years old (MUST BE AN ADULT)
+    // Create a much more specific and detailed prompt for police booking photos
+    const prompt = `Create a hyper-realistic police booking photograph (mugshot) with the following STRICT requirements:
+    
+    1. Subject MUST be an ADULT person (30-50 years old) - NEVER a child or minor
+    2. Subject MUST be shown from shoulders up, front-facing view
+    3. Subject MUST have a neutral facial expression with no smiling
+    4. Background MUST be a plain light blue or gray wall with visible height measurement lines (5'0" to 6'6")
+    5. Subject MUST be holding a black booking information placard/board with white text at chest level
+    6. Lighting MUST be harsh, direct, and unflattering as typical in police stations
+    7. Image style MUST be documentary/photojournalistic, NOT artistic or glamorized
+    8. NO props, accessories, or decorative elements except the required booking placard
+    
+    Physical characteristics:
     - Gender: ${bioMarkers?.gender || 'male'}
     - Height: ${bioMarkers?.height || '5\'10"'}
     - Build: ${bioMarkers?.weight || 'average'} build
     - Hair: ${bioMarkers?.hair || 'dark'} hair
     - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
-    - Facial Expression: Neutral, serious expression
-    - Lighting: Even, front-facing lighting
-    - Image Style: Realistic police booking photo, documentary style
-    - View: Front-facing head and shoulders view
-    - Background: Standard police height measurement background with clear measurement lines
-    - Must Include: Subject holding black booking information placard with white text
-    IMPORTANT: Generate ONLY adults in standard police booking photo format. NO CHILDREN. NO CREATIVE INTERPRETATIONS.`;
+    
+    This MUST look like an official police booking photograph taken in a police station. DO NOT show the person in casual settings, using phones, smiling, or in any setting other than a police booking room.`;
 
     const response = await openai.images.generate({
       model: "dall-e-3",
