@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,13 +12,16 @@ export const usePhotoGeneration = () => {
   const generatePhoto = useCallback(async (arrestTagId: string, photoType: 'ai' | 'training' = 'ai', bioMarkers?: any) => {
     setIsGenerating(true);
     try {
+      // Log the bioMarkers to help with debugging
+      console.log("Generating photo with bioMarkers:", bioMarkers);
+      
       const { data, error } = await supabase.functions.invoke(
         'generate-mugshot',
         {
           body: {
             arrest_tag_id: arrestTagId,
             photo_type: photoType,
-            bio_markers: bioMarkers
+            bio_markers: bioMarkers || {}  // Ensure we always send at least an empty object
           }
         }
       );
@@ -71,6 +75,18 @@ export const usePhotoGeneration = () => {
   const getFilteredPhotos = useCallback(() => {
     return photos.filter(url => !loadingErrors[url]);
   }, [photos, loadingErrors]);
+  
+  // Delete a specific photo by URL
+  const deletePhoto = useCallback((url: string) => {
+    console.log("Deleting photo:", url);
+    setPhotos(prev => prev.filter(photoUrl => photoUrl !== url));
+    // Also clean up the error state if it exists
+    if (loadingErrors[url]) {
+      const newErrors = {...loadingErrors};
+      delete newErrors[url];
+      setLoadingErrors(newErrors);
+    }
+  }, [loadingErrors]);
 
   return {
     photos: getFilteredPhotos(),
@@ -78,6 +94,7 @@ export const usePhotoGeneration = () => {
     isGenerating,
     generatePhoto,
     clearPhotos,
-    markPhotoAsErrored
+    markPhotoAsErrored,
+    deletePhoto
   };
 };

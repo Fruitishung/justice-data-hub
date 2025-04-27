@@ -6,7 +6,6 @@ import { PhotoGrid } from "./PhotoGrid";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type BioMarkers = {
@@ -18,7 +17,7 @@ type BioMarkers = {
 };
 
 export const BookingPhotoGenerator = () => {
-  const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored } = usePhotoGeneration();
+  const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored, deletePhoto } = usePhotoGeneration();
   const [error, setError] = useState<string | null>(null);
   const { register, watch } = useForm<BioMarkers>();
 
@@ -37,6 +36,10 @@ export const BookingPhotoGenerator = () => {
 
   const handleImageError = (url: string) => {
     markPhotoAsErrored(url);
+  };
+
+  const handleDeletePhoto = (url: string) => {
+    deletePhoto(url);
   };
 
   return (
@@ -157,7 +160,11 @@ export const BookingPhotoGenerator = () => {
           </div>
         )}
 
-        <PhotoGrid photos={photos} onImageError={handleImageError} />
+        <PhotoGrid 
+          photos={photos} 
+          onImageError={handleImageError}
+          onDeletePhoto={handleDeletePhoto}
+        />
       </div>
     </Card>
   );

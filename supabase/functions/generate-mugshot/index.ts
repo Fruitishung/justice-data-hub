@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import OpenAI from "https://esm.sh/openai@4.28.0"
@@ -55,17 +56,20 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   try {
     console.log("Starting OpenAI image generation with bio markers:", bioMarkers)
     
-    const prompt = `A professional police booking photograph (mugshot). Front view only, subject centered and looking directly at camera. 
-    Subject characteristics: 
+    // Improved prompt that clearly specifies an adult and avoids filtered content
+    const prompt = `A professional-looking ID photograph of an ADULT person (25-60 years old) with a neutral expression. 
+    This is for a law enforcement database visualization tool.
+    The person should be:
+    - Age: Between 25-60 years old (IMPORTANT: MUST BE AN ADULT, NOT A CHILD OR TEENAGER)
     - Gender: ${bioMarkers?.gender || 'unspecified'}
     - Height: ${bioMarkers?.height || 'average height'}
     - Weight: ${bioMarkers?.weight || 'average build'}
     - Hair: ${bioMarkers?.hair || 'dark'} hair
     - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
-    Neutral gray background with height measurement lines. Subject from shoulders up, wearing civilian clothing. 
-    Bright, even lighting on face. No accessories or hand gestures visible. 
-    Composition following standard law enforcement ID photo guidelines - neutral expression, eyes open, facing forward. 
-    Style should be photorealistic, clear, and official looking like a genuine police booking photo. No text overlays or timestamps.`
+    
+    The person should have a neutral expression facing forward with even lighting and a plain background.
+    The image should be a neutral head and shoulders portrait photograph, like an ID card or passport photo.
+    The image should be realistic and high quality, showing only the head and shoulders of an adult.`;
 
     const response = await openai.images.generate({
       model: "dall-e-3",
