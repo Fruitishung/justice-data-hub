@@ -1,4 +1,5 @@
 
+import React, { useState, useEffect } from "react";
 import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,7 +12,6 @@ import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../../types";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 interface GeneratePhotoButtonProps {
   form: UseFormReturn<ReportFormData>;
@@ -31,7 +31,7 @@ export const GeneratePhotoButton = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   // Update parent component with generation state
-  React.useEffect(() => {
+  useEffect(() => {
     if (onGeneratingStateChange) {
       onGeneratingStateChange(isGenerating);
     }
@@ -103,3 +103,4 @@ export const GeneratePhotoButton = ({
     </DropdownMenu>
   );
 };
+
