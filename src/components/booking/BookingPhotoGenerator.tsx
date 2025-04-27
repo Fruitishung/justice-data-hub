@@ -1,10 +1,10 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, TrashIcon } from "lucide-react";
 import { PhotoGrid } from "./PhotoGrid";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { useState } from "react";
+import { crypto } from "crypto";
 
 export const BookingPhotoGenerator = () => {
   const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored } = usePhotoGeneration();
@@ -13,13 +13,14 @@ export const BookingPhotoGenerator = () => {
   const handleGeneratePhoto = async () => {
     setError(null);
     try {
-      await generatePhoto();
+      const testId = crypto.randomUUID();
+      await generatePhoto(testId, "ai");
     } catch (err) {
       setError("Failed to generate photo. Please try again.");
       console.error("Error in photo generation:", err);
     }
   };
-  
+
   const handleImageError = (url: string) => {
     markPhotoAsErrored(url);
   };

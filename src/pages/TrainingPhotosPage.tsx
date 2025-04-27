@@ -16,7 +16,8 @@ const TrainingPhotosPage = () => {
     try {
       const { data, error } = await supabase.functions.invoke("generate-mugshot", {
         body: {
-          purpose: "training",
+          arrest_tag_id: crypto.randomUUID(),
+          photo_type: "training"
         },
       });
 

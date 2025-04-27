@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,43 +8,24 @@ export const usePhotoGeneration = () => {
   const [loadingErrors, setLoadingErrors] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
-  const generatePhoto = useCallback(async () => {
+  const generatePhoto = useCallback(async (arrestTagId: string, photoType: 'ai' | 'training' = 'ai') => {
     setIsGenerating(true);
     try {
-      const testId = crypto.randomUUID();
-      
-      console.log("Calling generate-mugshot with id:", testId);
-      
-      toast({
-        title: "Generating Photo",
-        description: "Please wait while we generate your photo..."
-      });
-      
       const { data, error } = await supabase.functions.invoke(
         'generate-mugshot',
         {
           body: {
-            arrest_tag_id: testId,
-            photo_type: 'ai'
+            arrest_tag_id: arrestTagId,
+            photo_type: photoType
           }
         }
       );
 
-      if (error) {
-        console.error("Supabase function error:", error);
-        throw new Error("Failed to generate photo: " + error.message);
-      }
+      if (error) throw error;
 
-      console.log("Full response from generate-mugshot:", data);
+      const imageUrl = data?.mugshot_url;
+      if (!imageUrl) throw new Error("No photo URL returned");
 
-      if (!data || !data.mugshot_url) {
-        console.error("No photo URL returned:", data);
-        throw new Error("No photo URL returned from generation");
-      }
-
-      const imageUrl = data.mugshot_url;
-      console.log("Photo generated successfully:", imageUrl);
-      
       // Pre-load the image to check if it's valid
       return new Promise<string>((resolve, reject) => {
         const imgTest = new Image();
@@ -62,10 +42,8 @@ export const usePhotoGeneration = () => {
           reject(new Error("Failed to load generated image"));
         };
         
-        // Set the source to start loading
         imgTest.src = imageUrl;
       });
-      
     } catch (error) {
       console.error("Error generating photo:", error);
       toast({
