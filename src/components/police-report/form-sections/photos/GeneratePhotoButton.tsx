@@ -44,7 +44,8 @@ export const GeneratePhotoButton = ({
         description: "Please wait while your AI photo is being generated..."
       });
       
-      const imageUrl = await generatePhoto();
+      const testId = crypto.randomUUID();
+      const imageUrl = await generatePhoto(testId, 'ai');
       
       if (imageUrl) {
         console.log("AI photo generated, URL:", imageUrl);
@@ -103,4 +104,3 @@ export const GeneratePhotoButton = ({
     </DropdownMenu>
   );
 };
-

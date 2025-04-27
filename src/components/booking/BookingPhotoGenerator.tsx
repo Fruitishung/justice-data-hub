@@ -1,10 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Camera, TrashIcon } from "lucide-react";
 import { PhotoGrid } from "./PhotoGrid";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { useState } from "react";
-import { crypto } from "crypto";
 
 export const BookingPhotoGenerator = () => {
   const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored } = usePhotoGeneration();
