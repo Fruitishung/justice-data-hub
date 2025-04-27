@@ -36,15 +36,16 @@ export const usePhotoUpload = () => {
       const fileName = `${Date.now()}_${crypto.randomUUID()}`;
       const filePath = `${fileName}.${fileExt}`;
       
+      // Using the correct approach for Supabase upload without onUploadProgress
       const { data, error: uploadError } = await supabase.storage
         .from('evidence_photos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            setUploadProgress((progress.loaded / progress.total) * 100);
-          },
         });
+
+      // Simulate upload progress since we can't use onUploadProgress directly
+      setUploadProgress(100);
 
       if (uploadError) {
         throw uploadError;
