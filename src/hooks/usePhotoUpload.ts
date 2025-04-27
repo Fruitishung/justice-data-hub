@@ -31,6 +31,8 @@ export const usePhotoUpload = () => {
     setUploadProgress(0);
 
     try {
+      // Create object URL for preview before upload starts
+      const objectUrl = URL.createObjectURL(file);
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${crypto.randomUUID()}`;
       const filePath = `${fileName}.${fileExt}`;
@@ -58,6 +60,9 @@ export const usePhotoUpload = () => {
       const { data: { publicUrl } } = supabase.storage
         .from('evidence_photos')
         .getPublicUrl(filePath);
+
+      // Clean up object URL after successful upload
+      URL.revokeObjectURL(objectUrl);
 
       toast({
         title: "Success",
