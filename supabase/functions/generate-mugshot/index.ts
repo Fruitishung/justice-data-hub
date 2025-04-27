@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import OpenAI from "https://esm.sh/openai@4.28.0"
@@ -54,22 +53,25 @@ const verifyArrestTag = async (supabase: any, arrestTagId: string) => {
 
 const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   try {
-    console.log("Starting OpenAI image generation with bio markers:", bioMarkers)
+    console.log("Starting OpenAI image generation with bio markers:", bioMarkers);
     
-    // Improved prompt that clearly specifies an adult and avoids filtered content
-    const prompt = `A professional-looking ID photograph of an ADULT person (25-60 years old) with a neutral expression. 
-    This is for a law enforcement database visualization tool.
-    The person should be:
-    - Age: Between 25-60 years old (IMPORTANT: MUST BE AN ADULT, NOT A CHILD OR TEENAGER)
-    - Gender: ${bioMarkers?.gender || 'unspecified'}
-    - Height: ${bioMarkers?.height || 'average height'}
-    - Weight: ${bioMarkers?.weight || 'average build'}
+    // Create a more specific prompt that matches standard booking photo format
+    const prompt = `A professional police booking photograph (mugshot) of an ADULT person against a height measurement background with lines from 5'0" to 6'6". 
+    Subject is holding a black booking information placard and standing in front of a light gray background with height measurement lines.
+    The person should match these exact characteristics:
+    - Age: Between 25-60 years old (MUST BE AN ADULT)
+    - Gender: ${bioMarkers?.gender || 'male'}
+    - Height: ${bioMarkers?.height || '5\'10"'}
+    - Build: ${bioMarkers?.weight || 'average'} build
     - Hair: ${bioMarkers?.hair || 'dark'} hair
     - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
-    
-    The person should have a neutral expression facing forward with even lighting and a plain background.
-    The image should be a neutral head and shoulders portrait photograph, like an ID card or passport photo.
-    The image should be realistic and high quality, showing only the head and shoulders of an adult.`;
+    - Facial Expression: Neutral, serious expression
+    - Lighting: Even, front-facing lighting
+    - Image Style: Realistic police booking photo, documentary style
+    - View: Front-facing head and shoulders view
+    - Background: Standard police height measurement background with clear measurement lines
+    - Must Include: Subject holding black booking information placard with white text
+    IMPORTANT: Generate ONLY adults in standard police booking photo format. NO CHILDREN. NO CREATIVE INTERPRETATIONS.`;
 
     const response = await openai.images.generate({
       model: "dall-e-3",
@@ -80,18 +82,18 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
       style: "natural"
     });
 
-    console.log("OpenAI response received:", response)
+    console.log("OpenAI response received:", response);
 
     if (!response.data?.[0]?.url) {
-      throw new Error('Failed to generate image - no URL in response')
+      throw new Error('Failed to generate image - no URL in response');
     }
 
-    return response.data[0].url
+    return response.data[0].url;
   } catch (error) {
-    console.error('OpenAI API error:', error)
+    console.error('OpenAI API error:', error);
     
     // Get a random fallback image
-    return FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)]
+    return FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
   }
 }
 
