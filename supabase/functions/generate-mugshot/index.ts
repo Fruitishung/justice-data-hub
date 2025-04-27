@@ -8,11 +8,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Fallback images for when OpenAI fails
+// Fallback images for when OpenAI fails - updated to real mugshot-style photos
 const FALLBACK_MUGSHOTS = [
-  "https://images.unsplash.com/photo-1586038693164-cb7ee3fb8e2c?q=80&w=1024&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?q=80&w=1024&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1506018589526-7470107d6680?q=80&w=1024&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1589279715734-6631a314dfa2?q=80&w=1024&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1584650589355-e219e23d9775?q=80&w=1024&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1551129923-db84575e0c30?q=80&w=1024&auto=format&fit=crop"
 ];
 
 const initializeClients = () => {
@@ -36,6 +36,11 @@ const initializeClients = () => {
 
 const verifyArrestTag = async (supabase: any, arrestTagId: string) => {
   try {
+    // For AI-generated test photos, we'll skip verification
+    if (arrestTagId.startsWith('test-') || arrestTagId.includes('test')) {
+      return { id: arrestTagId, suspect_name: "Test Subject" };
+    }
+
     const { data, error } = await supabase
       .from('arrest_tags')
       .select('id, suspect_name')
@@ -56,17 +61,17 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   try {
     console.log("Starting OpenAI image generation with bio markers:", bioMarkers);
     
-    // Create a much more specific and detailed prompt for police booking photos
-    const prompt = `Create a hyper-realistic police booking photograph (mugshot) with the following STRICT requirements:
+    // Create an extremely detailed and specific mugshot prompt
+    const prompt = `Generate a realistic police booking photograph (mugshot) with these EXACT specifications:
     
-    1. Subject MUST be an ADULT person (30-50 years old) - NEVER a child or minor
-    2. Subject MUST be shown from shoulders up, front-facing view
-    3. Subject MUST have a neutral facial expression with no smiling
-    4. Background MUST be a plain light blue or gray wall with visible height measurement lines (5'0" to 6'6")
-    5. Subject MUST be holding a black booking information placard/board with white text at chest level
-    6. Lighting MUST be harsh, direct, and unflattering as typical in police stations
-    7. Image style MUST be documentary/photojournalistic, NOT artistic or glamorized
-    8. NO props, accessories, or decorative elements except the required booking placard
+    MANDATORY REQUIREMENTS:
+    1. Subject MUST be an ADULT (30-50 years old) - ABSOLUTELY NO CHILDREN OR MINORS
+    2. Subject MUST have a neutral facial expression with NO SMILING
+    3. Background MUST be a light blue or gray wall with visible height measurement lines
+    4. Subject MUST be shown from shoulders up in a front-facing view
+    5. Subject MUST be holding a black booking information placard with white text
+    6. Lighting MUST be harsh and unflattering as typical in police stations
+    7. Image MUST be documentary/photojournalistic style - NOT glamorized
     
     Physical characteristics:
     - Gender: ${bioMarkers?.gender || 'male'}
@@ -75,17 +80,25 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
     - Hair: ${bioMarkers?.hair || 'dark'} hair
     - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
     
-    This MUST look like an official police booking photograph taken in a police station. DO NOT show the person in casual settings, using phones, smiling, or in any setting other than a police booking room.`;
+    This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling.`;
 
-    const response = await openai.images.generate({
+    // Set a timeout for the OpenAI request
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('OpenAI request timed out')), 15000);
+    });
+
+    // Create the image generation promise
+    const imagePromise = openai.images.generate({
       model: "dall-e-3",
       prompt: prompt,
       n: 1,
       size: "1024x1024",
-      quality: "hd",
+      quality: "standard",
       style: "natural"
     });
 
+    // Race the timeout against the actual request
+    const response = await Promise.race([imagePromise, timeoutPromise]) as any;
     console.log("OpenAI response received:", response);
 
     if (!response.data?.[0]?.url) {
@@ -96,13 +109,19 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   } catch (error) {
     console.error('OpenAI API error:', error);
     
-    // Get a random fallback image
+    // Get a random fallback image that's more realistic as a mugshot
     return FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
   }
 }
 
 const updateArrestTag = async (supabase: any, arrestTagId: string, imageUrl: string) => {
   try {
+    // Skip database update for test arrest tags
+    if (arrestTagId.startsWith('test-') || arrestTagId.includes('test')) {
+      console.log("Test arrest tag - skipping database update");
+      return;
+    }
+
     const { error } = await supabase
       .from('arrest_tags')
       .update({
@@ -148,7 +167,7 @@ serve(async (req) => {
     console.log('Mugshot generated successfully:', imageUrl)
 
     // Update arrest tag with new mugshot (only for real arrest tags)
-    if (photo_type !== 'ai' && imageUrl) {
+    if (photo_type !== 'ai' && imageUrl && !arrest_tag_id.includes('test')) {
       await updateArrestTag(supabase, arrest_tag_id, imageUrl)
     }
 
