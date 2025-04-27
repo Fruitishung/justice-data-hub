@@ -8,7 +8,7 @@ export const usePhotoGeneration = () => {
   const [loadingErrors, setLoadingErrors] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
-  const generatePhoto = useCallback(async (arrestTagId: string, photoType: 'ai' | 'training' = 'ai') => {
+  const generatePhoto = useCallback(async (arrestTagId: string, photoType: 'ai' | 'training' = 'ai', bioMarkers?: any) => {
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke(
@@ -16,7 +16,8 @@ export const usePhotoGeneration = () => {
         {
           body: {
             arrest_tag_id: arrestTagId,
-            photo_type: photoType
+            photo_type: photoType,
+            bio_markers: bioMarkers
           }
         }
       );

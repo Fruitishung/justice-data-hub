@@ -51,13 +51,25 @@ const verifyArrestTag = async (supabase: any, arrestTagId: string) => {
   }
 }
 
-const generateMugshot = async (openai: OpenAI) => {
+const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
   try {
-    console.log("Starting OpenAI image generation...")
+    console.log("Starting OpenAI image generation with bio markers:", bioMarkers)
     
+    const prompt = `A professional police booking photograph (mugshot). Front view only, subject centered and looking directly at camera. 
+    Subject characteristics: 
+    - Gender: ${bioMarkers?.gender || 'unspecified'}
+    - Height: ${bioMarkers?.height || 'average height'}
+    - Weight: ${bioMarkers?.weight || 'average build'}
+    - Hair: ${bioMarkers?.hair || 'dark'} hair
+    - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
+    Neutral gray background with height measurement lines. Subject from shoulders up, wearing civilian clothing. 
+    Bright, even lighting on face. No accessories or hand gestures visible. 
+    Composition following standard law enforcement ID photo guidelines - neutral expression, eyes open, facing forward. 
+    Style should be photorealistic, clear, and official looking like a genuine police booking photo. No text overlays or timestamps.`
+
     const response = await openai.images.generate({
       model: "dall-e-3",
-      prompt: `A professional police booking photograph (mugshot). Front view only, subject centered and looking directly at camera. Neutral gray background with height measurement lines. Subject from shoulders up, wearing civilian clothing. Bright, even lighting on face. No accessories or hand gestures visible. Composition following standard law enforcement ID photo guidelines - neutral expression, eyes open, facing forward. Style should be photorealistic, clear, and official looking like a genuine police booking photo. No text overlays or timestamps.`,
+      prompt: prompt,
       n: 1,
       size: "1024x1024",
       quality: "hd",
@@ -103,7 +115,7 @@ serve(async (req) => {
   }
 
   try {
-    const { arrest_tag_id, photo_type } = await req.json()
+    const { arrest_tag_id, photo_type, bio_markers } = await req.json()
     
     if (!arrest_tag_id) {
       throw new Error('Missing arrest_tag_id')
@@ -111,6 +123,7 @@ serve(async (req) => {
 
     console.log('Starting mugshot generation process for:', arrest_tag_id)
     console.log('Photo type:', photo_type)
+    console.log('Bio markers:', bio_markers)
     
     // Initialize clients
     const { openai, supabase } = initializeClients()
@@ -121,7 +134,7 @@ serve(async (req) => {
     }
 
     // Generate mugshot
-    const imageUrl = await generateMugshot(openai)
+    const imageUrl = await generateMugshot(openai, bio_markers)
     console.log('Mugshot generated successfully:', imageUrl)
 
     // Update arrest tag with new mugshot (only for real arrest tags)
