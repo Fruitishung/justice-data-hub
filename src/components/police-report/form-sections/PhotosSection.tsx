@@ -16,9 +16,14 @@ interface PhotosSectionProps {
 const PhotosSection = ({ form }: PhotosSectionProps) => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handlePhotoAdded = (url: string) => {
     setPreviewUrls(prev => [...prev, url]);
+  };
+
+  const handleGeneratingChange = (generating: boolean) => {
+    setIsGenerating(generating);
   };
 
   return (
@@ -37,6 +42,7 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
             <GeneratePhotoButton 
               form={form}
               onPhotoGenerated={handlePhotoAdded}
+              onGeneratingStateChange={handleGeneratingChange}
               disabled={isUploading}
             />
           </div>
@@ -44,10 +50,13 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
           <PhotoUploader
             form={form}
             onPhotoUploaded={handlePhotoAdded}
-            disabled={isUploading}
+            disabled={isGenerating}
           />
 
-          <PhotoPreview urls={previewUrls} />
+          <PhotoPreview 
+            urls={previewUrls} 
+            isLoading={isGenerating} 
+          />
         </div>
       </ReportSection>
     </PhotoErrorBoundary>

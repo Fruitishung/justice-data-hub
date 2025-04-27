@@ -15,6 +15,12 @@ export const usePhotoGeneration = () => {
       const testId = crypto.randomUUID();
       
       console.log("Calling generate-mugshot with id:", testId);
+      
+      toast({
+        title: "Generating Photo",
+        description: "Please wait while we generate your photo..."
+      });
+      
       const { data, error } = await supabase.functions.invoke(
         'generate-mugshot',
         {
@@ -37,26 +43,29 @@ export const usePhotoGeneration = () => {
         throw new Error("No photo URL returned from generation");
       }
 
-      console.log("Photo generated successfully:", data.mugshot_url);
       const imageUrl = data.mugshot_url;
+      console.log("Photo generated successfully:", imageUrl);
       
-      // Test if the image URL is valid
-      const imgTest = new Image();
-      imgTest.onerror = () => {
-        console.error("Generated image URL failed to load:", imageUrl);
-        toast({
-          title: "Image Error",
-          description: "The generated image URL is invalid. Please try again.",
-          variant: "destructive",
-        });
-        markPhotoAsErrored(imageUrl);
-      };
-      imgTest.src = imageUrl;
+      // Pre-load the image to check if it's valid
+      return new Promise<string>((resolve, reject) => {
+        const imgTest = new Image();
+        
+        imgTest.onload = () => {
+          console.log("Image loaded successfully:", imageUrl);
+          setPhotos(prev => [...prev, imageUrl]);
+          resolve(imageUrl);
+        };
+        
+        imgTest.onerror = () => {
+          console.error("Generated image URL failed to load:", imageUrl);
+          markPhotoAsErrored(imageUrl);
+          reject(new Error("Failed to load generated image"));
+        };
+        
+        // Set the source to start loading
+        imgTest.src = imageUrl;
+      });
       
-      setPhotos(prev => [...prev, imageUrl]);
-      
-      // Return the URL for use in components
-      return imageUrl;
     } catch (error) {
       console.error("Error generating photo:", error);
       toast({

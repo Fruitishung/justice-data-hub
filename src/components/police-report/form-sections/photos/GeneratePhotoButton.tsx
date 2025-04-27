@@ -16,13 +16,26 @@ import { useState } from "react";
 interface GeneratePhotoButtonProps {
   form: UseFormReturn<ReportFormData>;
   onPhotoGenerated: (url: string) => void;
+  onGeneratingStateChange?: (isGenerating: boolean) => void;
   disabled?: boolean;
 }
 
-export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: GeneratePhotoButtonProps) => {
+export const GeneratePhotoButton = ({ 
+  form, 
+  onPhotoGenerated, 
+  onGeneratingStateChange,
+  disabled 
+}: GeneratePhotoButtonProps) => {
   const { isGenerating, generatePhoto } = usePhotoGeneration();
   const { toast } = useToast();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  // Update parent component with generation state
+  React.useEffect(() => {
+    if (onGeneratingStateChange) {
+      onGeneratingStateChange(isGenerating);
+    }
+  }, [isGenerating, onGeneratingStateChange]);
 
   const generateAIPhoto = async () => {
     try {
