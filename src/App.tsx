@@ -10,6 +10,7 @@ import MockDataPage from "./pages/MockDataPage";
 import TrainingPhotosPage from "./pages/TrainingPhotosPage";
 import AITestingPage from "./pages/AITestingPage";
 import BookingPhotosPage from "./pages/BookingPhotosPage";
+import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 
 const router = createBrowserRouter([
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
   {
     path: "/booking-photos",
     element: <BookingPhotosPage />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
