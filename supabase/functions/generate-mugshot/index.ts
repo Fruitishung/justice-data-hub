@@ -16,9 +16,14 @@ const initializeClients = () => {
   if (!openaiKey) throw new Error('OpenAI API key not configured')
   if (!supabaseUrl || !supabaseServiceKey) throw new Error('Missing Supabase configuration')
 
-  return {
-    openai: new OpenAI({ apiKey: openaiKey }),
-    supabase: createClient(supabaseUrl, supabaseServiceKey)
+  try {
+    return {
+      openai: new OpenAI({ apiKey: openaiKey }),
+      supabase: createClient(supabaseUrl, supabaseServiceKey)
+    }
+  } catch (error) {
+    console.error("Error initializing clients:", error)
+    throw new Error(`Failed to initialize clients: ${error.message}`)
   }
 }
 
@@ -37,6 +42,7 @@ const verifyArrestTag = async (supabase: any, arrestTagId: string) => {
 
 const generateMugshot = async (openai: OpenAI) => {
   try {
+    console.log("Starting OpenAI image generation...")
     const response = await openai.images.generate({
       model: "dall-e-3",
       prompt: `A realistic police booking photograph (mugshot). Front-facing portrait of a person with a neutral expression against a light gray background. Standard police height measurement lines are visible on the wall behind. The subject is well-lit with professional police photography lighting, wearing casual civilian clothing. Image should be clear, centered, and follow standard police booking photo protocols. The photo should be framed from just below the shoulders to above the head. No text overlays or timestamps.`,
@@ -46,13 +52,28 @@ const generateMugshot = async (openai: OpenAI) => {
       style: "natural"
     })
 
+    console.log("OpenAI response received:", response)
+
     if (!response.data?.[0]?.url) {
-      throw new Error('Failed to generate image')
+      throw new Error('Failed to generate image - no URL in response')
     }
 
     return response.data[0].url
   } catch (error) {
     console.error('OpenAI API error:', error)
+    
+    // For debugging purposes, log more information about the error
+    if (error.response) {
+      console.error('Error response:', error.response.data)
+    }
+    
+    // Use a placeholder image URL for testing when OpenAI fails
+    // Comment this out in production
+    if (Deno.env.get('ENVIRONMENT') === 'development') {
+      console.log("Using fallback placeholder image for development")
+      return "https://placehold.co/1024x1024/3E3E3E/FFFFFF?text=Mugshot+Placeholder"
+    }
+    
     throw new Error(`Image generation failed: ${error.message}`)
   }
 }
@@ -104,7 +125,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Mugshot generated and saved successfully',
+        message: 'Mugshot generated successfully',
         mugshot_url: imageUrl
       }),
       {

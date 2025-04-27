@@ -11,6 +11,7 @@ import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { UseFormReturn } from "react-hook-form";
 import { ReportFormData } from "../../types";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface GeneratePhotoButtonProps {
   form: UseFormReturn<ReportFormData>;
@@ -21,12 +22,20 @@ interface GeneratePhotoButtonProps {
 export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: GeneratePhotoButtonProps) => {
   const { isGenerating, generatePhoto } = usePhotoGeneration();
   const { toast } = useToast();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const generateAIPhoto = async () => {
     try {
+      toast({
+        title: "Generating Photo",
+        description: "Please wait while your AI photo is being generated..."
+      });
+      
       const imageUrl = await generatePhoto();
       
       if (imageUrl) {
+        console.log("AI photo generated, URL:", imageUrl);
+        
         // Add the generated URL to the preview
         onPhotoGenerated(imageUrl);
         
@@ -49,11 +58,13 @@ export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: Genera
         description: "Failed to generate AI photo. Please try again later.",
         variant: "destructive"
       });
+    } finally {
+      setIsDropdownOpen(false);
     }
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
@@ -65,8 +76,15 @@ export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: Genera
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onSelect={generateAIPhoto}>
-          <Wand2 className="mr-2 h-4 w-4" /> AI-Generated Photo
+        <DropdownMenuItem 
+          onSelect={(e) => {
+            e.preventDefault();
+            generateAIPhoto();
+          }}
+          disabled={isGenerating}
+        >
+          <Wand2 className="mr-2 h-4 w-4" /> 
+          AI-Generated Photo
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

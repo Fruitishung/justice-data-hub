@@ -30,6 +30,8 @@ export const usePhotoGeneration = () => {
         throw new Error("Failed to generate photo: " + error.message);
       }
 
+      console.log("Full response from generate-mugshot:", data);
+
       if (!data || !data.mugshot_url) {
         console.error("No photo URL returned:", data);
         throw new Error("No photo URL returned from generation");
@@ -37,6 +39,20 @@ export const usePhotoGeneration = () => {
 
       console.log("Photo generated successfully:", data.mugshot_url);
       const imageUrl = data.mugshot_url;
+      
+      // Test if the image URL is valid
+      const imgTest = new Image();
+      imgTest.onerror = () => {
+        console.error("Generated image URL failed to load:", imageUrl);
+        toast({
+          title: "Image Error",
+          description: "The generated image URL is invalid. Please try again.",
+          variant: "destructive",
+        });
+        markPhotoAsErrored(imageUrl);
+      };
+      imgTest.src = imageUrl;
+      
       setPhotos(prev => [...prev, imageUrl]);
       
       // Return the URL for use in components
@@ -60,6 +76,7 @@ export const usePhotoGeneration = () => {
   }, []);
 
   const markPhotoAsErrored = useCallback((url: string) => {
+    console.log("Marking photo as errored:", url);
     setLoadingErrors(prev => ({...prev, [url]: true}));
   }, []);
 
