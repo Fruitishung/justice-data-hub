@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import OpenAI from "https://esm.sh/openai@4.28.0"
@@ -56,15 +55,14 @@ const generateMugshot = async (openai: OpenAI) => {
   try {
     console.log("Starting OpenAI image generation...")
     
-    // Fix: Configure proper headers for OpenAI API
     const response = await openai.images.generate({
       model: "dall-e-3",
-      prompt: `A realistic police booking photograph (mugshot). Front-facing portrait of a person with a neutral expression against a light gray background. Standard police height measurement lines are visible on the wall behind. The subject is well-lit with professional police photography lighting, wearing casual civilian clothing. Image should be clear, centered, and follow standard police booking photo protocols. The photo should be framed from just below the shoulders to above the head. No text overlays or timestamps.`,
+      prompt: `A professional police booking photograph (mugshot). Front view only, subject centered and looking directly at camera. Neutral gray background with height measurement lines. Subject from shoulders up, wearing civilian clothing. Bright, even lighting on face. No accessories or hand gestures visible. Composition following standard law enforcement ID photo guidelines - neutral expression, eyes open, facing forward. Style should be photorealistic, clear, and official looking like a genuine police booking photo. No text overlays or timestamps.`,
       n: 1,
       size: "1024x1024",
       quality: "hd",
       style: "natural"
-    })
+    });
 
     console.log("OpenAI response received:", response)
 
