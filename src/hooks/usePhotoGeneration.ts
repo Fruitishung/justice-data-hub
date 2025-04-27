@@ -36,10 +36,11 @@ export const usePhotoGeneration = () => {
       }
 
       console.log("Photo generated successfully:", data.mugshot_url);
-      setPhotos(prev => [...prev, data.mugshot_url]);
+      const imageUrl = data.mugshot_url;
+      setPhotos(prev => [...prev, imageUrl]);
       
       // Return the URL for use in components
-      return data.mugshot_url;
+      return imageUrl;
     } catch (error) {
       console.error("Error generating photo:", error);
       toast({

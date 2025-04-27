@@ -17,7 +17,7 @@ const initializeClients = () => {
   if (!supabaseUrl || !supabaseServiceKey) throw new Error('Missing Supabase configuration')
 
   return {
-    openai: new OpenAI({ apiKey: openaiKey.trim() }),
+    openai: new OpenAI({ apiKey: openaiKey }),
     supabase: createClient(supabaseUrl, supabaseServiceKey)
   }
 }
@@ -36,20 +36,25 @@ const verifyArrestTag = async (supabase: any, arrestTagId: string) => {
 }
 
 const generateMugshot = async (openai: OpenAI) => {
-  const response = await openai.images.generate({
-    model: "dall-e-3",
-    prompt: `A realistic police booking photograph (mugshot). Front-facing portrait of a person with a neutral expression against a light gray background. Standard police height measurement lines are visible on the wall behind. The subject is well-lit with professional police photography lighting, wearing casual civilian clothing. Image should be clear, centered, and follow standard police booking photo protocols. The photo should be framed from just below the shoulders to above the head. No text overlays or timestamps.`,
-    n: 1,
-    size: "1024x1024",
-    quality: "hd",
-    style: "natural"
-  })
+  try {
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: `A realistic police booking photograph (mugshot). Front-facing portrait of a person with a neutral expression against a light gray background. Standard police height measurement lines are visible on the wall behind. The subject is well-lit with professional police photography lighting, wearing casual civilian clothing. Image should be clear, centered, and follow standard police booking photo protocols. The photo should be framed from just below the shoulders to above the head. No text overlays or timestamps.`,
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+      style: "natural"
+    })
 
-  if (!response.data?.[0]?.url) {
-    throw new Error('Failed to generate image')
+    if (!response.data?.[0]?.url) {
+      throw new Error('Failed to generate image')
+    }
+
+    return response.data[0].url
+  } catch (error) {
+    console.error('OpenAI API error:', error)
+    throw new Error(`Image generation failed: ${error.message}`)
   }
-
-  return response.data[0].url
 }
 
 const updateArrestTag = async (supabase: any, arrestTagId: string, imageUrl: string) => {
@@ -87,7 +92,7 @@ serve(async (req) => {
     // Step 2: Generate mugshot
     console.log('Generating mugshot...')
     const imageUrl = await generateMugshot(openai)
-    console.log('Mugshot generated successfully')
+    console.log('Mugshot generated successfully:', imageUrl)
 
     // Step 3: Update arrest tag with new mugshot (only for real arrest tags)
     if (photo_type !== 'ai') {

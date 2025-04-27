@@ -27,8 +27,10 @@ export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: Genera
       const imageUrl = await generatePhoto();
       
       if (imageUrl) {
+        // Add the generated URL to the preview
         onPhotoGenerated(imageUrl);
         
+        // Save to form data for submission
         const currentPhotos = form.getValues('evidencePhotos') || [];
         form.setValue('evidencePhotos', [...currentPhotos, {
           path: imageUrl,
@@ -59,7 +61,7 @@ export const GeneratePhotoButton = ({ form, onPhotoGenerated, disabled }: Genera
           className="gap-2"
         >
           <Wand2 className="h-4 w-4" />
-          Generate Photo
+          {isGenerating ? "Generating..." : "Generate Photo"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
