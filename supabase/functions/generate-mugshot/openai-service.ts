@@ -1,13 +1,6 @@
 
 import OpenAI from "https://esm.sh/openai@4.28.0"
-
-interface BioMarkers {
-  gender?: string;
-  height?: string;
-  weight?: string;
-  hair?: string;
-  eyes?: string;
-}
+import { BioMarkers } from "./types.ts";
 
 export class OpenAIService {
   private openai: OpenAI;

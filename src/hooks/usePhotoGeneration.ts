@@ -26,8 +26,12 @@ export const usePhotoGeneration = () => {
         }
       );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw error;
+      }
 
+      console.log("Supabase function response:", data);
       const imageUrl = data?.mugshot_url;
       if (!imageUrl) throw new Error("No photo URL returned");
 

@@ -45,7 +45,15 @@ export const GeneratePhotoButton = ({
       });
       
       const testId = crypto.randomUUID();
-      const imageUrl = await generatePhoto(testId, 'ai');
+      console.log("Generating AI photo with test ID:", testId);
+      
+      const imageUrl = await generatePhoto(testId, 'ai', {
+        gender: form.getValues('suspectGender') || undefined,
+        height: form.getValues('suspectHeight') || undefined,
+        weight: form.getValues('suspectWeight') || undefined,
+        hair: form.getValues('suspectHair') || undefined,
+        eyes: form.getValues('suspectEyes') || undefined
+      });
       
       if (imageUrl) {
         console.log("AI photo generated, URL:", imageUrl);
