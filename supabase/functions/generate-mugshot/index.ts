@@ -82,35 +82,32 @@ const generateMugshot = async (openai: OpenAI, bioMarkers: any) => {
     
     This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling.`;
 
-    // Set a timeout for the OpenAI request
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('OpenAI request timed out')), 15000);
-    });
+    console.log("Using prompt:", prompt);
 
-    // Create the image generation promise
-    const imagePromise = openai.images.generate({
+    // Make the API call with proper error handling
+    const response = await openai.images.generate({
       model: "dall-e-3",
       prompt: prompt,
       n: 1,
       size: "1024x1024",
       quality: "standard",
-      style: "natural"
+      style: "natural",
+      response_format: "url"
     });
 
-    // Race the timeout against the actual request
-    const response = await Promise.race([imagePromise, timeoutPromise]) as any;
-    console.log("OpenAI response received:", response);
-
-    if (!response.data?.[0]?.url) {
-      throw new Error('Failed to generate image - no URL in response');
+    if (!response.data || response.data.length === 0 || !response.data[0].url) {
+      throw new Error('Invalid response from OpenAI API');
     }
 
+    console.log("OpenAI image generation successful");
     return response.data[0].url;
   } catch (error) {
     console.error('OpenAI API error:', error);
     
     // Get a random fallback image that's more realistic as a mugshot
-    return FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
+    const fallbackUrl = FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
+    console.log("Using fallback image:", fallbackUrl);
+    return fallbackUrl;
   }
 }
 
@@ -144,54 +141,66 @@ serve(async (req) => {
   }
 
   try {
-    const { arrest_tag_id, photo_type, bio_markers } = await req.json()
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error("Error parsing request body:", e);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    const { arrest_tag_id, photo_type, bio_markers } = body;
     
     if (!arrest_tag_id) {
       throw new Error('Missing arrest_tag_id')
     }
 
-    console.log('Starting mugshot generation process for:', arrest_tag_id)
-    console.log('Photo type:', photo_type)
-    console.log('Bio markers:', bio_markers)
+    console.log('Starting mugshot generation process for:', arrest_tag_id);
+    console.log('Photo type:', photo_type);
+    console.log('Bio markers:', bio_markers);
     
     // Initialize clients
-    const { openai, supabase } = initializeClients()
+    const { openai, supabase } = initializeClients();
     
     // For AI-generated photos, we can skip verification for test/dev photos
     if (photo_type !== 'ai') {
-      await verifyArrestTag(supabase, arrest_tag_id)
+      await verifyArrestTag(supabase, arrest_tag_id);
     }
 
     // Generate mugshot
-    const imageUrl = await generateMugshot(openai, bio_markers)
-    console.log('Mugshot generated successfully:', imageUrl)
+    const imageUrl = await generateMugshot(openai, bio_markers);
+    console.log('Mugshot generated successfully:', imageUrl);
 
     // Update arrest tag with new mugshot (only for real arrest tags)
     if (photo_type !== 'ai' && imageUrl && !arrest_tag_id.includes('test')) {
-      await updateArrestTag(supabase, arrest_tag_id, imageUrl)
+      await updateArrestTag(supabase, arrest_tag_id, imageUrl);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Mugshot generated successfully',
-        mugshot_url: imageUrl
+        mugshot_url: imageUrl,
+        timestamp: new Date().toISOString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       }
-    )
+    );
 
   } catch (error) {
-    console.error('Error in generate-mugshot function:', error)
+    console.error('Error in generate-mugshot function:', error);
     
     // Use fallback image in case of error
-    const fallbackUrl = FALLBACK_MUGSHOTS[0]
+    const fallbackUrl = FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
     
     return new Response(
       JSON.stringify({
-        success: true, // Return success even with fallback
+        success: false,
         error: error.message,
         message: 'Using fallback image due to error',
         mugshot_url: fallbackUrl,
@@ -201,6 +210,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 // Return 200 with fallback image instead of error
       }
-    )
+    );
   }
-})
+});
