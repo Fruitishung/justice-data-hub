@@ -8,9 +8,19 @@ export class OpenAIService {
   constructor(apiKey: string) {
     if (!apiKey) throw new Error('OpenAI API key not configured');
     this.openai = new OpenAI({ apiKey });
+    console.log("OpenAI client initialized");
   }
 
   private generatePhotoPrompt(bioMarkers: BioMarkers = {}): string {
+    // Ensure we have default values for all bioMarkers
+    const gender = bioMarkers?.gender || 'male';
+    const height = bioMarkers?.height || '5\'10"';
+    const weight = bioMarkers?.weight || 'average';
+    const hair = bioMarkers?.hair || 'dark';
+    const eyes = bioMarkers?.eyes || 'brown';
+    
+    console.log(`Generating prompt with bioMarkers: gender=${gender}, height=${height}, weight=${weight}, hair=${hair}, eyes=${eyes}`);
+    
     return `Generate a realistic police booking photograph (mugshot) with these EXACT specifications:
     
     MANDATORY REQUIREMENTS:
@@ -23,11 +33,11 @@ export class OpenAIService {
     7. Image MUST be documentary/photojournalistic style - NOT glamorized
     
     Physical characteristics:
-    - Gender: ${bioMarkers?.gender || 'male'}
-    - Height: ${bioMarkers?.height || '5\'10"'}
-    - Build: ${bioMarkers?.weight || 'average'} build
-    - Hair: ${bioMarkers?.hair || 'dark'} hair
-    - Eyes: ${bioMarkers?.eyes || 'brown'} eyes
+    - Gender: ${gender}
+    - Height: ${height}
+    - Build: ${weight} build
+    - Hair: ${hair} hair
+    - Eyes: ${eyes} eyes
     
     This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling.`;
   }
@@ -35,8 +45,10 @@ export class OpenAIService {
   async generateMugshot(bioMarkers?: BioMarkers): Promise<string> {
     try {
       const prompt = this.generatePhotoPrompt(bioMarkers);
-      console.log("Generating image with prompt:", prompt);
+      console.log("Generating image with prompt length:", prompt.length);
+      console.log("First 100 chars of prompt:", prompt.substring(0, 100));
 
+      console.log("Making OpenAI API request");
       const response = await this.openai.images.generate({
         model: "dall-e-3",
         prompt: prompt,
@@ -47,10 +59,14 @@ export class OpenAIService {
         response_format: "url"
       });
 
+      console.log("OpenAI API response received");
+      
       if (!response.data?.[0]?.url) {
+        console.error('Invalid response from OpenAI API:', response);
         throw new Error('Invalid response from OpenAI API');
       }
 
+      console.log("Image URL received from OpenAI");
       return response.data[0].url;
     } catch (error) {
       console.error('OpenAI API error:', error);

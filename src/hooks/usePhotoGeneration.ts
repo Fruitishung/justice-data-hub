@@ -15,25 +15,38 @@ export const usePhotoGeneration = () => {
       // Log the bioMarkers to help with debugging
       console.log("Generating photo with bioMarkers:", bioMarkers);
       
+      // Add a timestamp to help diagnose caching issues
+      const timestamp = new Date().getTime();
+      console.log(`Starting photo generation at ${timestamp}`);
+      
       const { data, error } = await supabase.functions.invoke(
         'generate-mugshot',
         {
           body: {
             arrest_tag_id: arrestTagId,
             photo_type: photoType,
-            bio_markers: bioMarkers || {}  // Ensure we always send at least an empty object
+            bio_markers: bioMarkers || {},  // Ensure we always send at least an empty object
+            timestamp: timestamp  // Add timestamp to avoid any potential caching issues
           }
         }
       );
 
       if (error) {
-        console.error("Supabase function error:", error);
-        throw error;
+        console.error("Supabase function invocation error:", error);
+        throw new Error(`Function invoke error: ${error.message}`);
       }
 
       console.log("Supabase function response:", data);
+      
+      if (!data) {
+        throw new Error("No data returned from function");
+      }
+      
       const imageUrl = data?.mugshot_url;
-      if (!imageUrl) throw new Error("No photo URL returned");
+      if (!imageUrl) {
+        console.error("No mugshot URL in response:", data);
+        throw new Error("No photo URL returned");
+      }
 
       // Pre-load the image to check if it's valid
       return new Promise<string>((resolve, reject) => {
@@ -57,7 +70,7 @@ export const usePhotoGeneration = () => {
       console.error("Error generating photo:", error);
       toast({
         title: "Error",
-        description: "Failed to generate booking photo. Please try again.",
+        description: `Failed to generate booking photo: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
       throw error;

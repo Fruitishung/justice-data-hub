@@ -44,16 +44,22 @@ export const GeneratePhotoButton = ({
         description: "Please wait while your AI photo is being generated..."
       });
       
+      // Create a random test ID for this specific generation request
       const testId = crypto.randomUUID();
       console.log("Generating AI photo with test ID:", testId);
       
-      const imageUrl = await generatePhoto(testId, 'ai', {
-        gender: form.getValues('suspectGender') || undefined,
-        height: form.getValues('suspectHeight') || undefined,
-        weight: form.getValues('suspectWeight') || undefined,
-        hair: form.getValues('suspectHair') || undefined,
-        eyes: form.getValues('suspectEyes') || undefined
-      });
+      // Extract biomarkers from form data with fallbacks for each value
+      const bioMarkers = {
+        gender: form.getValues('suspectGender') || "male",
+        height: form.getValues('suspectHeight') || "5'10\"", 
+        weight: form.getValues('suspectWeight') || "average",
+        hair: form.getValues('suspectHair') || "dark",
+        eyes: form.getValues('suspectEyes') || "brown"
+      };
+      
+      console.log("Using biomarkers for generation:", bioMarkers);
+      
+      const imageUrl = await generatePhoto(testId, 'ai', bioMarkers);
       
       if (imageUrl) {
         console.log("AI photo generated, URL:", imageUrl);
@@ -77,7 +83,7 @@ export const GeneratePhotoButton = ({
       console.error('Error generating AI photo:', error);
       toast({
         title: "Error",
-        description: "Failed to generate AI photo. Please try again later.",
+        description: `Failed to generate AI photo: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive"
       });
     } finally {
