@@ -69,10 +69,7 @@ export const GeneratePhotoButton = ({
         
         // Save to form data for submission
         const currentPhotos = form.getValues('evidencePhotos') || [];
-        form.setValue('evidencePhotos', [...currentPhotos, {
-          path: imageUrl,
-          uploaded_at: new Date().toISOString()
-        }]);
+        form.setValue('evidencePhotos', [...currentPhotos, imageUrl]);
         
         toast({
           title: "AI Photo Generated",

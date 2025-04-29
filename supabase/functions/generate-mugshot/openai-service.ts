@@ -44,6 +44,7 @@ export class OpenAIService {
 
   async generateMugshot(bioMarkers?: BioMarkers): Promise<string> {
     try {
+      console.log("bioMarkers received in generateMugshot:", JSON.stringify(bioMarkers));
       const prompt = this.generatePhotoPrompt(bioMarkers);
       console.log("Generating image with prompt length:", prompt.length);
       console.log("First 100 chars of prompt:", prompt.substring(0, 100));

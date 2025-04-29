@@ -26,7 +26,7 @@ serve(async (req: Request) => {
   try {
     console.log("Parsing request body");
     const { arrest_tag_id, photo_type, bio_markers } = await parseRequestBody(req);
-    console.log('Processing request:', { arrest_tag_id, photo_type, bio_markers });
+    console.log('Processing request:', { arrest_tag_id, photo_type, bio_markers: JSON.stringify(bio_markers) });
 
     console.log("Initializing clients");
     const { openaiService, supabase } = initializeClients();

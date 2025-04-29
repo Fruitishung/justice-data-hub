@@ -6,7 +6,7 @@ import { corsHeaders } from './config.ts';
 export const parseRequestBody = async (req: Request): Promise<RequestBody> => {
   try {
     const body = await req.json();
-    console.log("Raw request body:", body);
+    console.log("Raw request body:", JSON.stringify(body));
     
     if (!body.arrest_tag_id) {
       console.error("Missing arrest_tag_id in request body");
@@ -15,7 +15,10 @@ export const parseRequestBody = async (req: Request): Promise<RequestBody> => {
     
     // Validate bio_markers if present
     if (body.bio_markers) {
-      console.log("Bio markers included in request:", body.bio_markers);
+      console.log("Bio markers included in request:", JSON.stringify(body.bio_markers));
+    } else {
+      console.log("No bio_markers included in request, using defaults");
+      body.bio_markers = {}; // Ensure we always have an object, even if empty
     }
     
     return body as RequestBody;
@@ -56,6 +59,6 @@ export const createErrorResponse = (error: Error, fallbackUrl: string): Response
 
   return new Response(
     JSON.stringify(responseData),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
   );
 };
