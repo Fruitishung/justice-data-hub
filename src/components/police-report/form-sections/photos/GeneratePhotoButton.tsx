@@ -54,7 +54,9 @@ export const GeneratePhotoButton = ({
         height: form.getValues('suspectHeight') || "5'10\"", 
         weight: form.getValues('suspectWeight') || "average",
         hair: form.getValues('suspectHair') || "dark",
-        eyes: form.getValues('suspectEyes') || "brown"
+        eyes: form.getValues('suspectEyes') || "brown",
+        name: `${form.getValues('suspectFirstName') || 'John'} ${form.getValues('suspectLastName') || 'Doe'}`,
+        charges: form.getValues('suspectCharges') || "PC 459 - Burglary"
       };
       
       console.log("Using biomarkers for generation:", bioMarkers);
@@ -69,7 +71,10 @@ export const GeneratePhotoButton = ({
         
         // Save to form data for submission
         const currentPhotos = form.getValues('evidencePhotos') || [];
-        form.setValue('evidencePhotos', [...currentPhotos, imageUrl]);
+        form.setValue('evidencePhotos', [...currentPhotos, {
+          path: imageUrl,
+          uploaded_at: new Date().toISOString()
+        }]);
         
         toast({
           title: "AI Photo Generated",

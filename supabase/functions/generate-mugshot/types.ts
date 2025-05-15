@@ -7,6 +7,8 @@ export interface BioMarkers {
   weight?: string;
   hair?: string;
   eyes?: string;
+  name?: string;
+  charges?: string;
 }
 
 export interface Clients {
