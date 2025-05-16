@@ -10,6 +10,7 @@ import MockDataPage from "./pages/MockDataPage";
 import TrainingPhotosPage from "./pages/TrainingPhotosPage";
 import AITestingPage from "./pages/AITestingPage";
 import BookingPhotosPage from "./pages/BookingPhotosPage";
+import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -41,6 +42,14 @@ const router = createBrowserRouter([
   {
     path: "/booking-photos",
     element: <BookingPhotosPage />,
+  },
+  {
+    path: "/arrest-tag",
+    element: <ArrestTagPage />,
+  },
+  {
+    path: "/arrest-tag/:id",
+    element: <ArrestTagPage />,
   },
   {
     path: "*",
