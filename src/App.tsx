@@ -14,6 +14,7 @@ import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
 import MCTETTSPage from "./pages/MCTETTSPage";
 import { Toaster } from "@/components/ui/toaster";
+import RedirectToMCTETTS from "./components/redirects/RedirectToMCTETTS";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/report/new",
-    element: <ReportDetailsPage />,
+    element: <RedirectToMCTETTS />,
   },
   {
     path: "/report/:id",
