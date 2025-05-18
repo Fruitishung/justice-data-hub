@@ -5,7 +5,7 @@ import { AlertTriangle } from "lucide-react";
 
 export const SecurityWarning = () => {
   return (
-    <Alert variant="destructive" className="bg-red-900 border-red-700 text-white mb-6">
+    <Alert variant="destructive" className="bg-red-700 border-red-600 text-white mb-6">
       <AlertTriangle className="h-5 w-5" />
       <AlertTitle className="text-white font-bold">SECURITY WARNING - CONFIDENTIAL</AlertTitle>
       <AlertDescription className="text-white/90">
