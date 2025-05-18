@@ -4,11 +4,31 @@ import { OpenAIService } from './openai-service.ts';
 import { ArrestTag, BioMarkers, Clients } from './types.ts';
 import { FALLBACK_MUGSHOTS } from './config.ts';
 
-// Get a random fallback image
+// Track which fallback images have been used recently
+const recentlyUsedImages = new Set<string>();
+
+// Get a random fallback image that hasn't been used recently
 export const getFallbackImage = (): string => {
-  const randomIndex = Math.floor(Math.random() * FALLBACK_MUGSHOTS.length);
-  const fallbackUrl = FALLBACK_MUGSHOTS[randomIndex];
-  console.log("Using fallback image:", fallbackUrl);
+  // If all images have been used recently, clear the tracking
+  if (recentlyUsedImages.size >= FALLBACK_MUGSHOTS.length - 1) {
+    recentlyUsedImages.clear();
+  }
+  
+  // Find an image that hasn't been used recently
+  let availableImages = FALLBACK_MUGSHOTS.filter(img => !recentlyUsedImages.has(img));
+  if (availableImages.length === 0) {
+    availableImages = [...FALLBACK_MUGSHOTS];
+    recentlyUsedImages.clear();
+  }
+  
+  // Select a random image from available ones
+  const randomIndex = Math.floor(Math.random() * availableImages.length);
+  const fallbackUrl = availableImages[randomIndex];
+  
+  // Mark this image as recently used
+  recentlyUsedImages.add(fallbackUrl);
+  
+  console.log(`Using fallback image: ${fallbackUrl} (${recentlyUsedImages.size}/${FALLBACK_MUGSHOTS.length} recent images tracked)`);
   return fallbackUrl;
 };
 
@@ -93,6 +113,13 @@ export const updateArrestTag = async (supabase: any, arrestTagId: string, imageU
 export const generateMugshot = async (openaiService: any, bioMarkers?: BioMarkers): Promise<string> => {
   try {
     console.log("Generating mugshot with bioMarkers:", bioMarkers);
+    // Add random seed to ensure uniqueness on each call
+    const randomSeed = Math.random().toString(36).substring(2, 15);
+    if (bioMarkers) {
+      bioMarkers.seed = randomSeed;
+    } else {
+      bioMarkers = { seed: randomSeed };
+    }
     return await openaiService.generateMugshot(bioMarkers);
   } catch (error) {
     console.error('Error generating mugshot:', error);
