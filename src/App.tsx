@@ -12,6 +12,7 @@ import AITestingPage from "./pages/AITestingPage";
 import BookingPhotosPage from "./pages/BookingPhotosPage";
 import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
+import MCTETTSPage from "./pages/MCTETTSPage";
 import { Toaster } from "@/components/ui/toaster";
 
 const router = createBrowserRouter([
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
   {
     path: "/arrest-tag/:id",
     element: <ArrestTagPage />,
+  },
+  {
+    path: "/mctetts",
+    element: <MCTETTSPage />,
   },
   {
     path: "*",
