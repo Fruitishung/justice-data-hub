@@ -9,8 +9,8 @@ export const SecurityWarning = () => {
       <AlertTriangle className="h-5 w-5" />
       <AlertTitle className="text-white font-bold">SECURITY WARNING - CONFIDENTIAL</AlertTitle>
       <AlertDescription className="text-white/90">
-        You are accessing a classified law enforcement database. Unauthorized use or sharing of this 
-        information without proper clearance is a violation of your Peace Officer's Oath of Office 
+        You are accessing a classified database. Unauthorized use or sharing of this 
+        information without proper clearance is a violation of your Oath of Office 
         and may result in criminal prosecution and disciplinary action.
       </AlertDescription>
     </Alert>
