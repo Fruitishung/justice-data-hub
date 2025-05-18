@@ -44,15 +44,15 @@ const PhysicalAttributesSection = () => {
               <SelectValue placeholder="Select height" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="5'0\"">5'0"</SelectItem>
-              <SelectItem value="5'2\"">5'2"</SelectItem>
-              <SelectItem value="5'4\"">5'4"</SelectItem>
-              <SelectItem value="5'6\"">5'6"</SelectItem>
-              <SelectItem value="5'8\"">5'8"</SelectItem>
-              <SelectItem value="5'10\"">5'10"</SelectItem>
-              <SelectItem value="6'0\"">6'0"</SelectItem>
-              <SelectItem value="6'2\"">6'2"</SelectItem>
-              <SelectItem value="6'4\"">6'4"</SelectItem>
+              <SelectItem value="5'0&quot;">5&apos;0&quot;</SelectItem>
+              <SelectItem value="5'2&quot;">5&apos;2&quot;</SelectItem>
+              <SelectItem value="5'4&quot;">5&apos;4&quot;</SelectItem>
+              <SelectItem value="5'6&quot;">5&apos;6&quot;</SelectItem>
+              <SelectItem value="5'8&quot;">5&apos;8&quot;</SelectItem>
+              <SelectItem value="5'10&quot;">5&apos;10&quot;</SelectItem>
+              <SelectItem value="6'0&quot;">6&apos;0&quot;</SelectItem>
+              <SelectItem value="6'2&quot;">6&apos;2&quot;</SelectItem>
+              <SelectItem value="6'4&quot;">6&apos;4&quot;</SelectItem>
             </SelectContent>
           </Select>
         </div>
