@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import MugshotForm from "./MugshotForm";
+import MugshotForm from "./mugshot/MugshotForm";
 import MugshotDisplay from "./MugshotDisplay";
 
 const ArrestTag = () => {

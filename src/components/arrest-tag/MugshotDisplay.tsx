@@ -4,7 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
 import { Camera } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { BioMarkers } from "./MugshotForm";
+import { BioMarkers } from "./mugshot/BioMarkerTypes";
 
 const MugshotDisplay = () => {
   const { photos } = usePhotoGeneration();
