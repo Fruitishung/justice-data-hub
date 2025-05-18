@@ -11,5 +11,7 @@ export const corsHeaders = {
 export const FALLBACK_MUGSHOTS = [
   "https://images.unsplash.com/photo-1589279715734-6631a314dfa2?q=80&w=1024&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1584650589355-e219e23d9775?q=80&w=1024&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1551129923-db84575e0c30?q=80&w=1024&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1551129923-db84575e0c30?q=80&w=1024&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1593114970899-95c26e8d8841?q=80&w=1024&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1558877385-81a1c7e67d72?q=80&w=1024&auto=format&fit=crop"
 ];

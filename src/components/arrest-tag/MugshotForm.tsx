@@ -48,7 +48,9 @@ const MugshotForm = () => {
         description: "Please wait while your mugshot is being generated..."
       });
 
+      // Generate a unique ID each time to avoid caching issues
       const testId = crypto.randomUUID();
+      console.log("Generating with unique ID:", testId);
       await generatePhoto(testId, "ai", bioMarkers);
     } catch (err) {
       setError("Failed to generate mugshot. Please try again.");

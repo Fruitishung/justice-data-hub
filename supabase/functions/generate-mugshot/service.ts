@@ -6,7 +6,8 @@ import { FALLBACK_MUGSHOTS } from './config.ts';
 
 // Get a random fallback image
 export const getFallbackImage = (): string => {
-  const fallbackUrl = FALLBACK_MUGSHOTS[Math.floor(Math.random() * FALLBACK_MUGSHOTS.length)];
+  const randomIndex = Math.floor(Math.random() * FALLBACK_MUGSHOTS.length);
+  const fallbackUrl = FALLBACK_MUGSHOTS[randomIndex];
   console.log("Using fallback image:", fallbackUrl);
   return fallbackUrl;
 };

@@ -48,23 +48,27 @@ export const usePhotoGeneration = () => {
         throw new Error("No photo URL returned");
       }
 
+      // Add a cache-busting query parameter to the URL
+      const cacheBustUrl = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}cachebust=${timestamp}`;
+      console.log("Using cache-busted URL:", cacheBustUrl);
+
       // Pre-load the image to check if it's valid
       return new Promise<string>((resolve, reject) => {
         const imgTest = new Image();
         
         imgTest.onload = () => {
-          console.log("Image loaded successfully:", imageUrl);
-          setPhotos(prev => [...prev, imageUrl]);
-          resolve(imageUrl);
+          console.log("Image loaded successfully:", cacheBustUrl);
+          setPhotos(prev => [...prev, cacheBustUrl]);
+          resolve(cacheBustUrl);
         };
         
         imgTest.onerror = () => {
-          console.error("Generated image URL failed to load:", imageUrl);
-          markPhotoAsErrored(imageUrl);
+          console.error("Generated image URL failed to load:", cacheBustUrl);
+          markPhotoAsErrored(cacheBustUrl);
           reject(new Error("Failed to load generated image"));
         };
         
-        imgTest.src = imageUrl;
+        imgTest.src = cacheBustUrl;
       });
     } catch (error) {
       console.error("Error generating photo:", error);
