@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,6 @@ import { VehicleResults } from "@/components/mctetts/VehicleResults";
 import { PropertyResults } from "@/components/mctetts/PropertyResults";
 import { MissingPersonsResults } from "@/components/mctetts/MissingPersonsResults";
 import { PremisesResults } from "@/components/mctetts/PremisesResults";
-import { SecurityWarning } from "@/components/mctetts/SecurityWarning";
 import type { Warrant, Vehicle, PropertyRecord } from "@/types/reports";
 import { FileSearch, Database, AlertTriangle, BadgeAlert } from "lucide-react";
 
@@ -85,8 +83,6 @@ const MCTETTSPage = () => {
         <div className="bg-red-600 text-white py-1 px-4 text-center font-bold tracking-wider mb-6 animate-pulse rounded">
           RESTRICTED ACCESS - LAW ENFORCEMENT USE ONLY
         </div>
-
-        <SecurityWarning />
 
         <div className="flex items-center justify-center mb-8">
           <BadgeAlert className="h-8 w-8 mr-3 text-yellow-400" />
