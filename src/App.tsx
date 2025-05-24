@@ -12,10 +12,8 @@ import AITestingPage from "./pages/AITestingPage";
 import BookingPhotosPage from "./pages/BookingPhotosPage";
 import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
-import MCTETTSPage from "./pages/MCTETTSPage";
 import AuthPage from "./pages/AuthPage";
 import { Toaster } from "@/components/ui/toaster";
-import RedirectToMCTETTS from "./components/redirects/RedirectToMCTETTS";
 
 const router = createBrowserRouter([
   {
@@ -24,7 +22,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/report/new",
-    element: <RedirectToMCTETTS />,
+    element: <ReportDetailsPage />,
   },
   {
     path: "/report/:id",
@@ -53,10 +51,6 @@ const router = createBrowserRouter([
   {
     path: "/arrest-tag/:id",
     element: <ArrestTagPage />,
-  },
-  {
-    path: "/mctetts",
-    element: <MCTETTSPage />,
   },
   {
     path: "/auth/*",
