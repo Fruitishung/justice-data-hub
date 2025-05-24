@@ -13,6 +13,7 @@ import BookingPhotosPage from "./pages/BookingPhotosPage";
 import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
 import MCTETTSPage from "./pages/MCTETTSPage";
+import AuthPage from "./pages/AuthPage";
 import { Toaster } from "@/components/ui/toaster";
 import RedirectToMCTETTS from "./components/redirects/RedirectToMCTETTS";
 
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
   {
     path: "/mctetts",
     element: <MCTETTSPage />,
+  },
+  {
+    path: "/auth/*",
+    element: <AuthPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <AuthPage />,
   },
   {
     path: "*",
