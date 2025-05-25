@@ -19,16 +19,26 @@ const MugshotFormActions = ({ onError }: MugshotFormActionsProps) => {
   const handleGeneratePhoto = async () => {
     onError(null);
     try {
+      console.log("Starting photo generation with bioMarkers:", bioMarkers);
+      
       toast({
         title: "Generating Mugshot",
         description: "Please wait while your mugshot is being generated..."
       });
 
-      const testId = crypto.randomUUID();
-      await generatePhoto(testId, "ai", bioMarkers);
+      const testId = `test-${Date.now()}`;
+      console.log("Generated test ID:", testId);
+      
+      const result = await generatePhoto(testId, "ai", bioMarkers);
+      console.log("Photo generation completed with result:", result);
+      
+      toast({
+        title: "Success", 
+        description: "Mugshot generated successfully!",
+      });
     } catch (err) {
-      onError("Failed to generate mugshot. Please try again.");
       console.error("Error in mugshot generation:", err);
+      onError("Failed to generate mugshot. Please try again.");
       
       toast({
         title: "Error",
