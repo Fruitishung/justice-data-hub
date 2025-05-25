@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer, Camera, Wand2, BarChart3 } from 'lucide-react';
+import { Printer, Camera, Wand2, BarChart3, TrendingUp } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -128,6 +129,13 @@ const ReportDetailsPage = () => {
               >
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Timeline Analysis
+              </Button>
+              <Button
+                onClick={() => navigate('/pattern-recognition')}
+                variant="outline"
+              >
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Pattern Recognition
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

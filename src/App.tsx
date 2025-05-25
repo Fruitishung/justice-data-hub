@@ -14,6 +14,7 @@ import ArrestTagPage from "./pages/ArrestTagPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import TimelineAnalysisPage from "./components/analysis/TimelineAnalysisPage";
+import PatternRecognitionPage from "./pages/PatternRecognitionPage";
 import { Toaster } from "@/components/ui/toaster";
 
 const router = createBrowserRouter([
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: "/report/:id/timeline",
     element: <TimelineAnalysisPage />,
+  },
+  {
+    path: "/pattern-recognition",
+    element: <PatternRecognitionPage />,
   },
   {
     path: "/mock-data",
