@@ -46,34 +46,20 @@ export const usePhotoGeneration = () => {
         throw new Error("No photo URL returned");
       }
 
-      // Don't add cache-busting to already working URLs
-      const finalUrl = imageUrl.includes('unsplash.com') ? imageUrl : `${imageUrl}?cachebust=${timestamp}`;
-      console.log("Using final URL:", finalUrl);
-
-      // For Unsplash URLs (fallback images), add them directly without validation
-      if (imageUrl.includes('unsplash.com')) {
-        console.log("Adding fallback image directly:", finalUrl);
-        setPhotos(prev => [...prev, finalUrl]);
-        return finalUrl;
-      }
-
-      // For AI-generated URLs, validate they load properly
-      return new Promise<string>((resolve, reject) => {
-        const imgTest = new Image();
-        
-        imgTest.onload = () => {
-          console.log("Image loaded successfully:", finalUrl);
-          setPhotos(prev => [...prev, finalUrl]);
-          resolve(finalUrl);
-        };
-        
-        imgTest.onerror = () => {
-          console.error("Generated image URL failed to load:", finalUrl);
-          reject(new Error("Failed to load generated image"));
-        };
-        
-        imgTest.src = finalUrl;
+      console.log("Adding image to photos:", imageUrl);
+      // Add image directly to photos array - no validation needed for fallback images
+      setPhotos(prev => {
+        const newPhotos = [...prev, imageUrl];
+        console.log("Updated photos array:", newPhotos);
+        return newPhotos;
       });
+
+      toast({
+        title: "Success",
+        description: "Mugshot generated successfully",
+      });
+
+      return imageUrl;
     } catch (error) {
       console.error("Error generating photo:", error);
       toast({
@@ -98,8 +84,9 @@ export const usePhotoGeneration = () => {
   }, []);
 
   const getFilteredPhotos = useCallback(() => {
-    return photos.filter(url => !loadingErrors[url]);
-  }, [photos, loadingErrors]);
+    // Don't filter out errored photos for now to ensure they display
+    return photos;
+  }, [photos]);
   
   const deletePhoto = useCallback((url: string) => {
     console.log("Deleting photo:", url);

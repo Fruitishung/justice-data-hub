@@ -13,6 +13,8 @@ const MugshotDisplay = () => {
     markPhotoAsErrored(url);
   };
 
+  console.log("MugshotDisplay rendering with photos:", photos);
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Generated Arrest Tags</h2>
@@ -36,7 +38,7 @@ const MugshotDisplay = () => {
                   alt={`Mugshot ${index + 1}`} 
                   className="w-full h-full object-cover"
                   onError={() => handleImageError(photo)}
-                  crossOrigin="anonymous"
+                  onLoad={() => console.log("Image loaded successfully:", photo)}
                 />
               </AspectRatio>
               
