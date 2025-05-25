@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { OpenAIService } from './openai-service.ts';
 import { ArrestTag, BioMarkers, Clients } from './types.ts';
@@ -29,6 +30,46 @@ export const getFallbackImage = (): string => {
   
   console.log(`Using fallback image: ${fallbackUrl} (${recentlyUsedImages.size}/${FALLBACK_MUGSHOTS.length} recent images tracked)`);
   return fallbackUrl;
+};
+
+// Download image from URL and upload to Supabase Storage
+const downloadAndStoreImage = async (supabase: any, imageUrl: string, fileName: string): Promise<string> => {
+  try {
+    console.log(`Downloading image from: ${imageUrl.substring(0, 50)}...`);
+    
+    // Download the image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+    }
+    
+    const imageBlob = await response.blob();
+    console.log(`Downloaded image blob, size: ${imageBlob.size} bytes`);
+    
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('mugshots')
+      .upload(fileName, imageBlob, {
+        contentType: imageBlob.type || 'image/png',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('Storage upload error:', error);
+      throw new Error(`Failed to upload to storage: ${error.message}`);
+    }
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('mugshots')
+      .getPublicUrl(fileName);
+
+    console.log(`Image stored successfully at: ${publicUrl.substring(0, 50)}...`);
+    return publicUrl;
+  } catch (error) {
+    console.error('Error downloading and storing image:', error);
+    throw error;
+  }
 };
 
 // Client initialization
@@ -119,8 +160,8 @@ export const updateArrestTag = async (supabase: any, arrestTagId: string, imageU
   }
 };
 
-// Generate mugshot using OpenAI service or fallback
-export const generateMugshot = async (openaiService: any, bioMarkers?: BioMarkers): Promise<string> => {
+// Generate mugshot using OpenAI service or fallback and store it
+export const generateMugshot = async (openaiService: any, supabase: any, bioMarkers?: BioMarkers): Promise<string> => {
   try {
     console.log("Attempting to generate mugshot with bioMarkers:", bioMarkers);
     
@@ -139,23 +180,49 @@ export const generateMugshot = async (openaiService: any, bioMarkers?: BioMarker
     
     console.log("Using validated bioMarkers:", validatedBioMarkers);
     
-    const imageUrl = await openaiService.generateMugshot(validatedBioMarkers);
-    console.log("Successfully generated mugshot from OpenAI");
-    return imageUrl;
-  } catch (error) {
-    console.error('Error generating mugshot with OpenAI:', error);
+    let tempImageUrl: string;
+    let isOpenAIGenerated = false;
     
-    // Log specific error details for debugging
-    if (error.message.includes('API key')) {
-      console.error('OpenAI API key issue detected');
-    } else if (error.message.includes('quota')) {
-      console.error('OpenAI quota/billing issue detected');
-    } else {
-      console.error('General OpenAI API error:', error.message);
+    try {
+      tempImageUrl = await openaiService.generateMugshot(validatedBioMarkers);
+      isOpenAIGenerated = true;
+      console.log("Successfully generated mugshot from OpenAI");
+    } catch (error) {
+      console.error('Error generating mugshot with OpenAI:', error);
+      
+      // Log specific error details for debugging
+      if (error.message.includes('API key')) {
+        console.error('OpenAI API key issue detected');
+      } else if (error.message.includes('quota')) {
+        console.error('OpenAI quota/billing issue detected');
+      } else {
+        console.error('General OpenAI API error:', error.message);
+      }
+      
+      // Use fallback image
+      console.log('Falling back to placeholder image due to OpenAI error');
+      tempImageUrl = getFallbackImage();
+      isOpenAIGenerated = false;
     }
     
-    // Only use fallback if OpenAI fails
-    console.log('Falling back to placeholder image due to OpenAI error');
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const source = isOpenAIGenerated ? 'openai' : 'fallback';
+    const fileName = `mugshot_${source}_${timestamp}_${randomId}.png`;
+    
+    // Download and store the image in Supabase Storage
+    console.log("Storing image in Supabase Storage...");
+    const storedImageUrl = await downloadAndStoreImage(supabase, tempImageUrl, fileName);
+    
+    console.log("Image successfully stored and accessible at:", storedImageUrl.substring(0, 50) + "...");
+    return storedImageUrl;
+    
+  } catch (storageError) {
+    console.error('Error storing image:', storageError);
+    
+    // If storage fails, return the original temporary URL as fallback
+    console.log('Storage failed, returning temporary URL as fallback');
     return getFallbackImage();
   }
 };

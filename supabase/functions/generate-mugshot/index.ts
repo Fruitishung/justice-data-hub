@@ -37,9 +37,9 @@ serve(async (req: Request) => {
       await verifyArrestTag(supabase, arrest_tag_id);
     }
 
-    console.log("Generating mugshot");
-    const imageUrl = await generateMugshot(openaiService, bio_markers);
-    console.log(`Generated mugshot URL: ${imageUrl.substring(0, 50)}...`);
+    console.log("Generating and storing mugshot");
+    const imageUrl = await generateMugshot(openaiService, supabase, bio_markers);
+    console.log(`Generated and stored mugshot URL: ${imageUrl.substring(0, 50)}...`);
 
     // Only update database for actual arrest records
     if (!arrest_tag_id.includes('test') && photo_type !== 'ai' && photo_type !== 'training') {
