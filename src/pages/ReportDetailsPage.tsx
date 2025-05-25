@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer, Camera, Wand2, BarChart3, TrendingUp } from 'lucide-react';
+import { Printer, Camera, Wand2, BarChart3, TrendingUp, GitCompare } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -123,6 +123,13 @@ const ReportDetailsPage = () => {
         <div className="flex gap-2 print:hidden">
           {report && (
             <>
+              <Button
+                onClick={() => navigate('/case-similarity')}
+                variant="outline"
+              >
+                <GitCompare className="mr-2 h-4 w-4" />
+                Case Similarity
+              </Button>
               <Button
                 onClick={() => navigate(`/report/${id}/timeline`)}
                 variant="outline"
