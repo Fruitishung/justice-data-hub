@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { OpenAIService } from './openai-service.ts';
 import { ArrestTag, BioMarkers, Clients } from './types.ts';
@@ -38,21 +37,26 @@ export const initializeClients = (): Clients => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-  if (!openaiKey) {
-    console.error('OpenAI API key not found in environment');
-    throw new Error('OpenAI API key not configured');
-  }
-  
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing Supabase configuration');
   }
 
+  if (!openaiKey) {
+    console.error('OpenAI API key not found in environment variables');
+    throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your Supabase secrets.');
+  }
+
   console.log(`Initializing clients. Supabase URL exists: ${!!supabaseUrl}, OpenAI key exists: ${!!openaiKey}, Key length: ${openaiKey.length}`);
   
-  return {
-    openaiService: new OpenAIService(openaiKey),
-    supabase: createClient(supabaseUrl, supabaseServiceKey)
-  };
+  try {
+    const openaiService = new OpenAIService(openaiKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    return { openaiService, supabase };
+  } catch (error) {
+    console.error('Error initializing OpenAI service:', error);
+    throw new Error(`Failed to initialize OpenAI service: ${error.message}`);
+  }
 };
 
 // Verify arrest tag exists
@@ -140,6 +144,15 @@ export const generateMugshot = async (openaiService: any, bioMarkers?: BioMarker
     return imageUrl;
   } catch (error) {
     console.error('Error generating mugshot with OpenAI:', error);
+    
+    // Log specific error details for debugging
+    if (error.message.includes('API key')) {
+      console.error('OpenAI API key issue detected');
+    } else if (error.message.includes('quota')) {
+      console.error('OpenAI quota/billing issue detected');
+    } else {
+      console.error('General OpenAI API error:', error.message);
+    }
     
     // Only use fallback if OpenAI fails
     console.log('Falling back to placeholder image due to OpenAI error');

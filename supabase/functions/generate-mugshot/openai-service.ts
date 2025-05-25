@@ -8,15 +8,11 @@ export class OpenAIService {
   constructor(apiKey: string) {
     if (!apiKey) throw new Error('OpenAI API key not configured');
     
-    // Initialize with proper configuration for Deno environment
+    // Initialize without custom headers to avoid Deno compatibility issues
     this.openai = new OpenAI({ 
-      apiKey: apiKey,
-      // Ensure headers are properly formatted for Deno
-      defaultHeaders: {
-        'User-Agent': 'Supabase-Edge-Function/1.0'
-      }
+      apiKey: apiKey
     });
-    console.log("OpenAI client initialized");
+    console.log("OpenAI client initialized for Deno environment");
   }
 
   private generatePhotoPrompt(bioMarkers: BioMarkers = {}): string {
@@ -66,15 +62,14 @@ export class OpenAIService {
 
       console.log("Making OpenAI API request");
       
-      // Use a more compatible request format for Deno
+      // Use the simplified API call format for better Deno compatibility
       const response = await this.openai.images.generate({
         model: "dall-e-3",
         prompt: prompt,
         n: 1,
         size: "1024x1024",
         quality: "standard",
-        style: "natural",
-        response_format: "url"
+        style: "natural"
       });
 
       console.log("OpenAI API response received");
@@ -88,10 +83,15 @@ export class OpenAIService {
       return response.data[0].url;
     } catch (error) {
       console.error('OpenAI API error:', error);
-      // Check if this is a configuration error vs API error
+      // Provide more specific error information
+      if (error.message.includes('API key')) {
+        throw new Error('OpenAI API key is invalid or not configured properly');
+      }
+      if (error.message.includes('quota') || error.message.includes('billing')) {
+        throw new Error('OpenAI API quota exceeded or billing issue');
+      }
       if (error.message.includes('ByteString') || error.message.includes('headers')) {
-        console.error('Header configuration error detected');
-        throw new Error('OpenAI API configuration error - please check API key format');
+        throw new Error('OpenAI API configuration error - Deno compatibility issue');
       }
       throw error;
     }
