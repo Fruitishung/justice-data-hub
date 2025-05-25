@@ -49,9 +49,10 @@ const PatternRecognitionDashboard = () => {
       const crimeTypeMap = new Map();
 
       reports?.forEach(report => {
-        // Suspect analysis
-        if (report.suspect_details) {
-          const suspectName = `${report.suspect_details.first_name || ''} ${report.suspect_details.last_name || ''}`.trim();
+        // Suspect analysis - properly handle the JSON type
+        if (report.suspect_details && typeof report.suspect_details === 'object') {
+          const suspectDetails = report.suspect_details as any;
+          const suspectName = `${suspectDetails.first_name || ''} ${suspectDetails.last_name || ''}`.trim();
           if (suspectName) {
             if (!suspectMap.has(suspectName)) {
               suspectMap.set(suspectName, { count: 0, cases: [] });
@@ -67,17 +68,18 @@ const PatternRecognitionDashboard = () => {
             locationMap.set(report.location_address, { count: 0, crimeTypes: new Set() });
           }
           locationMap.get(report.location_address).count++;
-          if (report.report_category) {
-            locationMap.get(report.location_address).crimeTypes.add(report.report_category);
+          // Use incident_description as crime type since report_category doesn't exist
+          if (report.incident_description) {
+            locationMap.get(report.location_address).crimeTypes.add(report.incident_description);
           }
         }
 
-        // Crime type analysis
-        if (report.report_category) {
-          if (!crimeTypeMap.has(report.report_category)) {
-            crimeTypeMap.set(report.report_category, 0);
+        // Crime type analysis using incident_description
+        if (report.incident_description) {
+          if (!crimeTypeMap.has(report.incident_description)) {
+            crimeTypeMap.set(report.incident_description, 0);
           }
-          crimeTypeMap.set(report.report_category, crimeTypeMap.get(report.report_category) + 1);
+          crimeTypeMap.set(report.incident_description, crimeTypeMap.get(report.incident_description) + 1);
         }
       });
 
@@ -85,14 +87,14 @@ const PatternRecognitionDashboard = () => {
         name,
         count: data.count,
         cases: data.cases,
-        riskLevel: data.count >= 3 ? 'high' : data.count >= 2 ? 'medium' : 'low' as const
+        riskLevel: (data.count >= 3 ? 'high' : data.count >= 2 ? 'medium' : 'low') as 'low' | 'medium' | 'high'
       })).sort((a, b) => b.count - a.count);
 
       const locations = Array.from(locationMap.entries()).map(([address, data]) => ({
         address,
         count: data.count,
-        crimeTypes: Array.from(data.crimeTypes),
-        hotspotLevel: data.count >= 3 ? 'high' : data.count >= 2 ? 'medium' : 'low' as const
+        crimeTypes: Array.from(data.crimeTypes) as string[],
+        hotspotLevel: (data.count >= 3 ? 'high' : data.count >= 2 ? 'medium' : 'low') as 'low' | 'medium' | 'high'
       })).sort((a, b) => b.count - a.count);
 
       const crimeTypes = Array.from(crimeTypeMap.entries()).map(([type, count]) => ({
