@@ -7,7 +7,15 @@ export class OpenAIService {
 
   constructor(apiKey: string) {
     if (!apiKey) throw new Error('OpenAI API key not configured');
-    this.openai = new OpenAI({ apiKey });
+    
+    // Initialize with proper configuration for Deno environment
+    this.openai = new OpenAI({ 
+      apiKey: apiKey,
+      // Ensure headers are properly formatted for Deno
+      defaultHeaders: {
+        'User-Agent': 'Supabase-Edge-Function/1.0'
+      }
+    });
     console.log("OpenAI client initialized");
   }
 
@@ -30,23 +38,23 @@ export class OpenAIService {
     2. Subject MUST have a neutral facial expression with NO SMILING
     3. Background MUST be a light blue or gray wall with visible height measurement lines
     4. Subject MUST be shown from shoulders up in a front-facing view
-    5. Subject MUST be holding a black booking information placard with white text showing their name and date
+    5. Subject MUST be holding a black booking information placard with white text
     6. Lighting MUST be harsh and unflattering as typical in police stations
     7. Image MUST be documentary/photojournalistic style - NOT glamorized
     
-    Physical characteristics:
+    SPECIFIC PHYSICAL CHARACTERISTICS TO MATCH EXACTLY:
     - Gender: ${gender}
     - Height: ${height}
     - Build: ${weight} build
-    - Hair: ${hair} hair
+    - Hair: ${hair} hair color
     - Eyes: ${eyes} eyes
     
-    Booking information:
+    BOOKING INFORMATION TO DISPLAY:
     - Name: ${name}
     - Charges: ${charges}
     - Date: ${new Date().toLocaleDateString()}
     
-    This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling.`;
+    The subject must clearly match these physical characteristics: ${gender} person with ${hair} hair, ${eyes} eyes, ${height} tall with ${weight} build. This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling. Professional mugshot style only.`;
   }
 
   async generateMugshot(bioMarkers?: BioMarkers): Promise<string> {
@@ -57,6 +65,8 @@ export class OpenAIService {
       console.log("First 100 chars of prompt:", prompt.substring(0, 100));
 
       console.log("Making OpenAI API request");
+      
+      // Use a more compatible request format for Deno
       const response = await this.openai.images.generate({
         model: "dall-e-3",
         prompt: prompt,
@@ -78,6 +88,11 @@ export class OpenAIService {
       return response.data[0].url;
     } catch (error) {
       console.error('OpenAI API error:', error);
+      // Check if this is a configuration error vs API error
+      if (error.message.includes('ByteString') || error.message.includes('headers')) {
+        console.error('Header configuration error detected');
+        throw new Error('OpenAI API configuration error - please check API key format');
+      }
       throw error;
     }
   }

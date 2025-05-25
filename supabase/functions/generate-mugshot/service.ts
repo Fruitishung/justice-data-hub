@@ -38,10 +38,16 @@ export const initializeClients = (): Clients => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-  if (!openaiKey) throw new Error('OpenAI API key not configured');
-  if (!supabaseUrl || !supabaseServiceKey) throw new Error('Missing Supabase configuration');
+  if (!openaiKey) {
+    console.error('OpenAI API key not found in environment');
+    throw new Error('OpenAI API key not configured');
+  }
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase configuration');
+  }
 
-  console.log(`Initializing clients. Supabase URL exists: ${!!supabaseUrl}, OpenAI key exists: ${!!openaiKey}`);
+  console.log(`Initializing clients. Supabase URL exists: ${!!supabaseUrl}, OpenAI key exists: ${!!openaiKey}, Key length: ${openaiKey.length}`);
   
   return {
     openaiService: new OpenAIService(openaiKey),
@@ -112,18 +118,31 @@ export const updateArrestTag = async (supabase: any, arrestTagId: string, imageU
 // Generate mugshot using OpenAI service or fallback
 export const generateMugshot = async (openaiService: any, bioMarkers?: BioMarkers): Promise<string> => {
   try {
-    console.log("Generating mugshot with bioMarkers:", bioMarkers);
-    // Add random seed to ensure uniqueness on each call
-    const randomSeed = Math.random().toString(36).substring(2, 15);
-    if (bioMarkers) {
-      bioMarkers.seed = randomSeed;
-    } else {
-      bioMarkers = { seed: randomSeed };
-    }
-    return await openaiService.generateMugshot(bioMarkers);
+    console.log("Attempting to generate mugshot with bioMarkers:", bioMarkers);
+    
+    // Validate bioMarkers and ensure they're properly formatted
+    const validatedBioMarkers = {
+      gender: bioMarkers?.gender || 'male',
+      height: bioMarkers?.height || '5\'10"',
+      weight: bioMarkers?.weight || 'average',
+      hair: bioMarkers?.hair || 'dark',
+      eyes: bioMarkers?.eyes || 'brown',
+      name: bioMarkers?.name || 'John Doe',
+      charges: bioMarkers?.charges || 'PC 459 - Burglary',
+      // Add random seed to ensure uniqueness on each call
+      seed: Math.random().toString(36).substring(2, 15)
+    };
+    
+    console.log("Using validated bioMarkers:", validatedBioMarkers);
+    
+    const imageUrl = await openaiService.generateMugshot(validatedBioMarkers);
+    console.log("Successfully generated mugshot from OpenAI");
+    return imageUrl;
   } catch (error) {
-    console.error('Error generating mugshot:', error);
-    console.log('Using fallback image due to error');
+    console.error('Error generating mugshot with OpenAI:', error);
+    
+    // Only use fallback if OpenAI fails
+    console.log('Falling back to placeholder image due to OpenAI error');
     return getFallbackImage();
   }
 };
