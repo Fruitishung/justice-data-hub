@@ -2,25 +2,16 @@
 import React from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { usePhotoGeneration } from "@/hooks/usePhotoGeneration";
-import { Camera } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { BioMarkers } from "./mugshot/BioMarkerTypes";
+import { Camera, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MugshotDisplay = () => {
-  const { photos } = usePhotoGeneration();
-  const { watch } = useForm<BioMarkers>({
-    defaultValues: {
-      gender: "male",
-      height: "5'10\"",
-      weight: "average",
-      hair: "dark",
-      eyes: "brown",
-      name: "John Doe",
-      charges: "PC 459 - Burglary"
-    }
-  });
+  const { photos, deletePhoto, markPhotoAsErrored } = usePhotoGeneration();
 
-  const bioMarkers = watch();
+  const handleImageError = (url: string) => {
+    console.error("Image failed to load:", url);
+    markPhotoAsErrored(url);
+  };
 
   return (
     <div>
@@ -28,24 +19,35 @@ const MugshotDisplay = () => {
       
       <div className="grid grid-cols-1 gap-8">
         {photos.map((photo, index) => (
-          <div key={index} className="border rounded-md overflow-hidden">
+          <div key={`${photo}-${index}`} className="border rounded-md overflow-hidden relative">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2 z-10"
+              onClick={() => deletePhoto(photo)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            
             <div className="relative">
               <AspectRatio ratio={3/4} className="bg-muted">
                 <img 
                   src={photo} 
                   alt={`Mugshot ${index + 1}`} 
                   className="w-full h-full object-cover"
+                  onError={() => handleImageError(photo)}
+                  crossOrigin="anonymous"
                 />
               </AspectRatio>
               
               <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white p-3">
                 <div className="flex justify-between text-sm">
                   <div>
-                    <p className="font-bold">{bioMarkers.name}</p>
-                    <p>{bioMarkers.gender}, {bioMarkers.height}, {bioMarkers.hair} hair, {bioMarkers.eyes} eyes</p>
+                    <p className="font-bold">John Doe</p>
+                    <p>male, 5'10", dark hair, brown eyes</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">{bioMarkers.charges}</p>
+                    <p className="font-bold">PC 459 - Burglary</p>
                     <p>{new Date().toLocaleDateString()}</p>
                   </div>
                 </div>

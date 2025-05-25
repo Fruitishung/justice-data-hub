@@ -12,10 +12,8 @@ export const usePhotoGeneration = () => {
   const generatePhoto = useCallback(async (arrestTagId: string, photoType: 'ai' | 'training' = 'ai', bioMarkers?: any) => {
     setIsGenerating(true);
     try {
-      // Log the bioMarkers to help with debugging
       console.log("Generating photo with bioMarkers:", bioMarkers);
       
-      // Add a timestamp to help diagnose caching issues
       const timestamp = new Date().getTime();
       console.log(`Starting photo generation at ${timestamp}`);
       
@@ -25,8 +23,8 @@ export const usePhotoGeneration = () => {
           body: {
             arrest_tag_id: arrestTagId,
             photo_type: photoType,
-            bio_markers: bioMarkers || {},  // Ensure we always send at least an empty object
-            timestamp: timestamp  // Add timestamp to avoid any potential caching issues
+            bio_markers: bioMarkers || {},
+            timestamp: timestamp
           }
         }
       );
@@ -48,27 +46,33 @@ export const usePhotoGeneration = () => {
         throw new Error("No photo URL returned");
       }
 
-      // Add a cache-busting query parameter to the URL
-      const cacheBustUrl = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}cachebust=${timestamp}`;
-      console.log("Using cache-busted URL:", cacheBustUrl);
+      // Don't add cache-busting to already working URLs
+      const finalUrl = imageUrl.includes('unsplash.com') ? imageUrl : `${imageUrl}?cachebust=${timestamp}`;
+      console.log("Using final URL:", finalUrl);
 
-      // Pre-load the image to check if it's valid
+      // For Unsplash URLs (fallback images), add them directly without validation
+      if (imageUrl.includes('unsplash.com')) {
+        console.log("Adding fallback image directly:", finalUrl);
+        setPhotos(prev => [...prev, finalUrl]);
+        return finalUrl;
+      }
+
+      // For AI-generated URLs, validate they load properly
       return new Promise<string>((resolve, reject) => {
         const imgTest = new Image();
         
         imgTest.onload = () => {
-          console.log("Image loaded successfully:", cacheBustUrl);
-          setPhotos(prev => [...prev, cacheBustUrl]);
-          resolve(cacheBustUrl);
+          console.log("Image loaded successfully:", finalUrl);
+          setPhotos(prev => [...prev, finalUrl]);
+          resolve(finalUrl);
         };
         
         imgTest.onerror = () => {
-          console.error("Generated image URL failed to load:", cacheBustUrl);
-          markPhotoAsErrored(cacheBustUrl);
+          console.error("Generated image URL failed to load:", finalUrl);
           reject(new Error("Failed to load generated image"));
         };
         
-        imgTest.src = cacheBustUrl;
+        imgTest.src = finalUrl;
       });
     } catch (error) {
       console.error("Error generating photo:", error);
@@ -97,11 +101,9 @@ export const usePhotoGeneration = () => {
     return photos.filter(url => !loadingErrors[url]);
   }, [photos, loadingErrors]);
   
-  // Delete a specific photo by URL
   const deletePhoto = useCallback((url: string) => {
     console.log("Deleting photo:", url);
     setPhotos(prev => prev.filter(photoUrl => photoUrl !== url));
-    // Also clean up the error state if it exists
     if (loadingErrors[url]) {
       const newErrors = {...loadingErrors};
       delete newErrors[url];
