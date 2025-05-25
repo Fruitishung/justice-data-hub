@@ -31,8 +31,9 @@ serve(async (req: Request) => {
     console.log("Initializing clients");
     const { openaiService, supabase } = initializeClients();
 
-    if (photo_type !== 'ai') {
-      console.log("Verifying arrest tag for non-AI photo");
+    // Only verify arrest tag for actual arrest records, not for AI generation or training
+    if (photo_type !== 'ai' && photo_type !== 'training') {
+      console.log("Verifying arrest tag for database record");
       await verifyArrestTag(supabase, arrest_tag_id);
     }
 
@@ -40,7 +41,8 @@ serve(async (req: Request) => {
     const imageUrl = await generateMugshot(openaiService, bio_markers);
     console.log(`Generated mugshot URL: ${imageUrl.substring(0, 50)}...`);
 
-    if (!arrest_tag_id.includes('test') && photo_type !== 'ai') {
+    // Only update database for actual arrest records
+    if (!arrest_tag_id.includes('test') && photo_type !== 'ai' && photo_type !== 'training') {
       console.log("Updating arrest tag with new mugshot");
       await updateArrestTag(supabase, arrest_tag_id, imageUrl);
     }
