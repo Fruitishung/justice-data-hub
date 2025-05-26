@@ -76,28 +76,44 @@ export class OpenAIService {
         style: "natural"
       });
 
-      console.log("OpenAI API response received");
+      console.log("OpenAI API response received successfully");
       
       if (!response.data?.[0]?.url) {
         console.error('Invalid response from OpenAI API:', response);
         throw new Error('Invalid response from OpenAI API');
       }
 
-      console.log("Image URL received from OpenAI");
+      console.log("Image URL received from OpenAI:", response.data[0].url.substring(0, 50) + "...");
       return response.data[0].url;
     } catch (error) {
-      console.error('OpenAI API error:', error);
-      // Provide more specific error information
-      if (error.message?.includes('API key')) {
-        throw new Error('OpenAI API key is invalid or not configured properly');
+      console.error('OpenAI API error details:', {
+        message: error.message,
+        type: error.type,
+        code: error.code,
+        status: error.status
+      });
+      
+      // Provide more specific error information based on error type
+      if (error.code === 'insufficient_quota') {
+        throw new Error('OpenAI API quota exceeded. Please check your billing and usage limits at https://platform.openai.com/usage');
       }
-      if (error.message?.includes('quota') || error.message?.includes('billing')) {
-        throw new Error('OpenAI API quota exceeded or billing issue');
+      if (error.code === 'invalid_api_key') {
+        throw new Error('OpenAI API key is invalid. Please check your API key configuration.');
+      }
+      if (error.code === 'billing_not_active') {
+        throw new Error('OpenAI billing is not active. Please set up billing at https://platform.openai.com/billing');
       }
       if (error.message?.includes('content_policy')) {
-        throw new Error('Content policy violation - trying with modified prompt');
+        throw new Error('Content policy violation - the prompt was rejected by OpenAI safety filters');
       }
-      throw error;
+      if (error.status === 429) {
+        throw new Error('OpenAI API rate limit exceeded. Please wait and try again.');
+      }
+      if (error.status === 401) {
+        throw new Error('OpenAI API authentication failed. Please check your API key.');
+      }
+      
+      throw new Error(`OpenAI API error: ${error.message}`);
     }
   }
 }
