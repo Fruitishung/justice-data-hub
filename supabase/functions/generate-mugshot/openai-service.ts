@@ -8,11 +8,15 @@ export class OpenAIService {
   constructor(apiKey: string) {
     if (!apiKey) throw new Error('OpenAI API key not configured');
     
-    // Initialize without custom headers to avoid Deno compatibility issues
+    // Initialize with minimal configuration for better Deno compatibility
     this.openai = new OpenAI({ 
-      apiKey: apiKey
+      apiKey: apiKey,
+      // Remove custom headers that cause Deno issues
+      defaultHeaders: {},
+      maxRetries: 3,
+      timeout: 60000
     });
-    console.log("OpenAI client initialized for Deno environment");
+    console.log("OpenAI client initialized successfully");
   }
 
   private generatePhotoPrompt(bioMarkers: BioMarkers = {}): string {
@@ -31,11 +35,11 @@ export class OpenAIService {
     
     MANDATORY REQUIREMENTS:
     1. Subject MUST be an ADULT (30-50 years old) - ABSOLUTELY NO CHILDREN OR MINORS
-    2. Subject MUST have a neutral facial expression with NO SMILING
-    3. Background MUST be a light blue or gray wall with visible height measurement lines
+    2. Subject MUST have a neutral, serious facial expression with NO SMILING
+    3. Background MUST be a plain light blue or gray wall with visible height measurement lines
     4. Subject MUST be shown from shoulders up in a front-facing view
     5. Subject MUST be holding a black booking information placard with white text
-    6. Lighting MUST be harsh and unflattering as typical in police stations
+    6. Lighting MUST be harsh institutional lighting as typical in police stations
     7. Image MUST be documentary/photojournalistic style - NOT glamorized
     
     SPECIFIC PHYSICAL CHARACTERISTICS TO MATCH EXACTLY:
@@ -62,7 +66,7 @@ export class OpenAIService {
 
       console.log("Making OpenAI API request");
       
-      // Use the simplified API call format for better Deno compatibility
+      // Use the correct method call for the OpenAI library
       const response = await this.openai.images.generate({
         model: "dall-e-3",
         prompt: prompt,
@@ -84,14 +88,14 @@ export class OpenAIService {
     } catch (error) {
       console.error('OpenAI API error:', error);
       // Provide more specific error information
-      if (error.message.includes('API key')) {
+      if (error.message?.includes('API key')) {
         throw new Error('OpenAI API key is invalid or not configured properly');
       }
-      if (error.message.includes('quota') || error.message.includes('billing')) {
+      if (error.message?.includes('quota') || error.message?.includes('billing')) {
         throw new Error('OpenAI API quota exceeded or billing issue');
       }
-      if (error.message.includes('ByteString') || error.message.includes('headers')) {
-        throw new Error('OpenAI API configuration error - Deno compatibility issue');
+      if (error.message?.includes('content_policy')) {
+        throw new Error('Content policy violation - trying with modified prompt');
       }
       throw error;
     }

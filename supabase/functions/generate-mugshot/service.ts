@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { OpenAIService } from './openai-service.ts';
 import { ArrestTag, BioMarkers, Clients } from './types.ts';
@@ -191,9 +190,9 @@ export const generateMugshot = async (openaiService: any, supabase: any, bioMark
       console.error('Error generating mugshot with OpenAI:', error);
       
       // Log specific error details for debugging
-      if (error.message.includes('API key')) {
+      if (error.message?.includes('API key')) {
         console.error('OpenAI API key issue detected');
-      } else if (error.message.includes('quota')) {
+      } else if (error.message?.includes('quota')) {
         console.error('OpenAI quota/billing issue detected');
       } else {
         console.error('General OpenAI API error:', error.message);
