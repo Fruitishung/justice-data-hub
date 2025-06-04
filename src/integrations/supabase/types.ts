@@ -107,6 +107,121 @@ export type Database = {
         }
         Relationships: []
       }
+      club_administrators: {
+        Row: {
+          club_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_administrators_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_enrollments: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          club_id: string
+          enrolled_at: string
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          club_id: string
+          enrolled_at?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          club_id?: string
+          enrolled_at?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_enrollments_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clubs: {
+        Row: {
+          category: Database["public"]["Enums"]["club_category"]
+          club_code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enrollment_fee: number | null
+          enrollment_open: boolean | null
+          id: string
+          max_members: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["club_category"]
+          club_code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enrollment_fee?: number | null
+          enrollment_open?: boolean | null
+          id?: string
+          max_members?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["club_category"]
+          club_code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enrollment_fee?: number | null
+          enrollment_open?: boolean | null
+          id?: string
+          max_members?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_analysis_training: {
         Row: {
           analysis_metrics: Json | null
@@ -1099,6 +1214,22 @@ export type Database = {
           remaining_credits: number
         }[]
       }
+      enroll_in_club: {
+        Args: { enrollment_code: string }
+        Returns: Json
+      }
+      get_club_by_code: {
+        Args: { enrollment_code: string }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          category: Database["public"]["Enums"]["club_category"]
+          max_members: number
+          enrollment_fee: number
+          enrollment_open: boolean
+        }[]
+      }
       get_report_counts: {
         Args: { start_date?: string; end_date?: string }
         Returns: {
@@ -1208,6 +1339,16 @@ export type Database = {
       }
     }
     Enums: {
+      club_category:
+        | "academic"
+        | "sports"
+        | "arts"
+        | "technology"
+        | "service"
+        | "cultural"
+        | "professional"
+        | "hobby"
+      enrollment_status: "pending" | "approved" | "rejected" | "withdrawn"
       equipment_operation_state: "running" | "idle" | "off"
       equipment_status:
         | "available"
@@ -1361,6 +1502,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      club_category: [
+        "academic",
+        "sports",
+        "arts",
+        "technology",
+        "service",
+        "cultural",
+        "professional",
+        "hobby",
+      ],
+      enrollment_status: ["pending", "approved", "rejected", "withdrawn"],
       equipment_operation_state: ["running", "idle", "off"],
       equipment_status: [
         "available",
