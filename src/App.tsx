@@ -1,3 +1,4 @@
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -16,9 +17,6 @@ import TimelineAnalysisPage from "./components/analysis/TimelineAnalysisPage";
 import PatternRecognitionPage from "./pages/PatternRecognitionPage";
 import CaseSimilarityPage from "./pages/CaseSimilarityPage";
 import { Toaster } from "@/components/ui/toaster";
-import ClubEnrollmentPage from "@/pages/ClubEnrollmentPage";
-import ClubAdminPage from "@/pages/ClubAdminPage";
-import MyClubsPage from "@/pages/MyClubsPage";
 
 const router = createBrowserRouter([
   {
@@ -76,18 +74,6 @@ const router = createBrowserRouter([
   {
     path: "/reset-password",
     element: <AuthPage />,
-  },
-  {
-    path: "/clubs/enroll",
-    element: <ClubEnrollmentPage />,
-  },
-  {
-    path: "/clubs/admin",
-    element: <ClubAdminPage />,
-  },
-  {
-    path: "/clubs/my-enrollments",
-    element: <MyClubsPage />,
   },
   {
     path: "*",
