@@ -34,7 +34,7 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
   };
 
   // Get incident report ID if available (for crime scene photos)
-  const incidentReportId = form.watch('id');
+  const incidentReportId = form.getValues('caseNumber');
 
   return (
     <PhotoErrorBoundary>
@@ -66,7 +66,6 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
                 form={form}
                 onPhotoUploaded={handlePhotoAdded}
                 disabled={isGenerating}
-                onUploadingChange={handleUploadingChange}
               />
             </div>
             
@@ -84,13 +83,6 @@ const PhotosSection = ({ form }: PhotosSectionProps) => {
           <PhotoPreview 
             urls={previewUrls} 
             isLoading={isGenerating || isUploading}
-            onRemovePhoto={(url) => {
-              setPreviewUrls(prev => prev.filter(u => u !== url));
-              // Also remove from form data
-              const currentPhotos = form.getValues('evidencePhotos') || [];
-              const updatedPhotos = currentPhotos.filter(photo => photo.path !== url);
-              form.setValue('evidencePhotos', updatedPhotos);
-            }}
           />
         </div>
       </ReportSection>

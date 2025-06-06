@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,12 +8,12 @@ import { Users, Calendar, AlertCircle } from 'lucide-react';
 
 interface Enrollment {
   id: string;
-  status: string;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
   enrolled_at: string;
   club: {
     name: string;
     description: string;
-    category: string;
+    category: 'academic' | 'sports' | 'arts' | 'technology' | 'service' | 'cultural' | 'professional' | 'hobby';
   };
 }
 
@@ -45,7 +44,19 @@ const MyEnrollments = () => {
 
       if (error) throw error;
 
-      setEnrollments(data || []);
+      // Transform the data to match our interface
+      const transformedData = (data || []).map(item => ({
+        id: item.id,
+        status: item.status as 'pending' | 'approved' | 'rejected' | 'withdrawn',
+        enrolled_at: item.enrolled_at,
+        club: {
+          name: item.clubs.name,
+          description: item.clubs.description,
+          category: item.clubs.category as 'academic' | 'sports' | 'arts' | 'technology' | 'service' | 'cultural' | 'professional' | 'hobby'
+        }
+      }));
+
+      setEnrollments(transformedData);
     } catch (error) {
       console.error('Error fetching enrollments:', error);
       toast({

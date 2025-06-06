@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ interface Club {
   id: string;
   name: string;
   description: string;
-  category: string;
+  category: 'academic' | 'sports' | 'arts' | 'technology' | 'service' | 'cultural' | 'professional' | 'hobby';
   max_members: number;
   enrollment_fee: number;
   enrollment_open: boolean;
@@ -32,7 +31,7 @@ interface Club {
 
 interface Enrollment {
   id: string;
-  status: string;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
   enrolled_at: string;
   user_id: string;
   notes: string;
@@ -101,7 +100,7 @@ const ClubAdminDashboard = () => {
     }
   }, [selectedClub]);
 
-  const handleUpdateEnrollmentStatus = async (enrollmentId: string, status: string) => {
+  const handleUpdateEnrollmentStatus = async (enrollmentId: string, status: 'pending' | 'approved' | 'rejected' | 'withdrawn') => {
     try {
       const { error } = await supabase
         .from('club_enrollments')
@@ -132,7 +131,14 @@ const ClubAdminDashboard = () => {
     }
   };
 
-  const handleUpdateClub = async (updatedClub: Partial<Club>) => {
+  const handleUpdateClub = async (updatedClub: {
+    name?: string;
+    description?: string;
+    category?: 'academic' | 'sports' | 'arts' | 'technology' | 'service' | 'cultural' | 'professional' | 'hobby';
+    max_members?: number;
+    enrollment_fee?: number;
+    enrollment_open?: boolean;
+  }) => {
     if (!selectedClub) return;
 
     try {
