@@ -114,7 +114,7 @@ const ReportForm = ({ data }: ReportFormProps) => {
         description: "A new narrative report has been created and linked to this incident.",
       });
 
-      navigate(`/narrative/${report.id}`);
+      navigate(`/report/${report.id}`);
     } catch (error) {
       console.error('Error in form submission:', error);
       toast({

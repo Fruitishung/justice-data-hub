@@ -45,6 +45,7 @@ const SearchPage = () => {
   const [warrantResults, setWarrantResults] = useState<WarrantResult[]>([]);
   const [suspectResults, setSuspectResults] = useState<SuspectResult[]>([]);
   const { toast } = useToast();
+  const [searchTimeoutId, setSearchTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   // Focus search input on mount
   React.useEffect(() => {
@@ -54,13 +55,40 @@ const SearchPage = () => {
     }
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a search term",
-        variant: "destructive",
-      });
+  // Real-time search with debouncing
+  React.useEffect(() => {
+    // Clear previous timeout
+    if (searchTimeoutId) {
+      clearTimeout(searchTimeoutId);
+    }
+
+    // Set new timeout for debounced search
+    if (searchTerm.trim().length >= 2) {
+      const newTimeoutId = setTimeout(() => {
+        handleSearch(searchTerm);
+      }, 500); // 500ms delay
+      setSearchTimeoutId(newTimeoutId);
+    } else if (searchTerm.trim().length === 0) {
+      // Clear results immediately when search is empty
+      setVehicleResults([]);
+      setWarrantResults([]);
+      setSuspectResults([]);
+    }
+
+    // Cleanup
+    return () => {
+      if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId);
+      }
+    };
+  }, [searchTerm]);
+
+  const handleSearch = async (term: string = searchTerm) => {
+    if (!term.trim()) {
+      // Clear results if search is empty
+      setVehicleResults([]);
+      setWarrantResults([]);
+      setSuspectResults([]);
       return;
     }
 
@@ -70,7 +98,7 @@ const SearchPage = () => {
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('incident_reports')
         .select('id, vehicle_make, vehicle_model, vehicle_year, vehicle_vin, vehicle_plate, suspect_details')
-        .or(`vehicle_make.ilike.%${searchTerm}%,vehicle_model.ilike.%${searchTerm}%,vehicle_plate.ilike.%${searchTerm}%,vehicle_vin.ilike.%${searchTerm}%`)
+        .or(`vehicle_make.ilike.%${term}%,vehicle_model.ilike.%${term}%,vehicle_plate.ilike.%${term}%,vehicle_vin.ilike.%${term}%`)
         .not('vehicle_make', 'is', null)
         .order('created_at', { ascending: false });
       
@@ -96,7 +124,7 @@ const SearchPage = () => {
       const { data: warrantData, error: warrantError } = await supabase
         .from('arrest_tags')
         .select('*')
-        .or(`suspect_name.ilike.%${searchTerm}%,charges.ilike.%${searchTerm}%`)
+        .or(`suspect_name.ilike.%${term}%,charges.ilike.%${term}%`)
         .order('created_at', { ascending: false });
       
       if (warrantError) {
@@ -119,7 +147,7 @@ const SearchPage = () => {
       const { data: suspects, error: suspectError } = await supabase
         .from('arrest_tags')
         .select('*')
-        .or(`suspect_name.ilike.%${searchTerm}%,tag_number.ilike.%${searchTerm}%,charges.ilike.%${searchTerm}%`)
+        .or(`suspect_name.ilike.%${term}%,tag_number.ilike.%${term}%,charges.ilike.%${term}%`)
         .order('created_at', { ascending: false });
       
       if (suspectError) throw suspectError;
@@ -137,10 +165,14 @@ const SearchPage = () => {
       }
 
       const totalResults = vehicles.length + warrants.length + (suspects?.length || 0);
-      toast({
-        title: "Search Complete", 
-        description: `Found ${totalResults} results`,
-      });
+      
+      // Only show success toast for manual searches (not real-time)
+      if (term === searchTerm) {
+        toast({
+          title: "Search Complete", 
+          description: `Found ${totalResults} results`,
+        });
+      }
     } catch (error) {
       console.error("Search error:", error);
       toast({
@@ -155,7 +187,7 @@ const SearchPage = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearch(searchTerm);
     }
   };
 
@@ -175,22 +207,34 @@ const SearchPage = () => {
 
         <Card className="p-6">
           <div className="flex gap-4">
-            <Input
-              placeholder="Enter name, plate number, VIN, case number..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1"
-            />
+            <div className="flex-1 relative">
+              <Input
+                placeholder="Start typing to search... (name, plate, VIN, case number)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full"
+              />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              )}
+            </div>
             <Button
-              onClick={handleSearch}
-              disabled={isSearching}
+              onClick={() => handleSearch(searchTerm)}
+              disabled={isSearching || searchTerm.trim().length < 2}
               className="min-w-[120px]"
             >
               <Search className="mr-2 h-4 w-4" />
               {isSearching ? "Searching..." : "Search"}
             </Button>
           </div>
+          {searchTerm.trim().length >= 2 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Search updates automatically as you type
+            </p>
+          )}
         </Card>
 
         {getTotalResults() > 0 && (
