@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Printer, Camera, Wand2, BarChart3, TrendingUp, GitCompare } from 'lucide-react';
+import { Printer, Camera, Wand2, BarChart3, TrendingUp, GitCompare, Search } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -121,6 +121,13 @@ const ReportDetailsPage = () => {
           {id === 'new' ? 'Create New Report' : `Edit Report - ${report?.case_number}`}
         </h1>
         <div className="flex gap-2 print:hidden">
+          <Button
+            onClick={() => navigate('/search')}
+            variant="outline"
+          >
+            <Search className="mr-2 h-4 w-4" />
+            Search
+          </Button>
           {report && (
             <>
               <Button
