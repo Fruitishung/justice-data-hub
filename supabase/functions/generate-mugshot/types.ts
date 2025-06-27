@@ -1,8 +1,20 @@
 
 // Client types
 export interface Clients {
-  openaiService: any;
-  supabase: any;
+  openaiService: OpenAIService;
+  supabase: SupabaseClient;
+}
+
+// OpenAI Service interface
+export interface OpenAIService {
+  images: {
+    generate: (params: any) => Promise<any>;
+  };
+}
+
+// Supabase Client interface
+export interface SupabaseClient {
+  from: (table: string) => any;
 }
 
 // ArrestTag data structure
@@ -21,4 +33,20 @@ export interface BioMarkers {
   name?: string;
   charges?: string;
   seed?: string;  // Added for random seed to ensure unique generations
+}
+
+// Request body structure
+export interface RequestBody {
+  arrest_tag_id: string;
+  photo_type?: string;
+  bio_markers?: BioMarkers;
+}
+
+// Response data structure
+export interface ResponseData {
+  success: boolean;
+  message: string;
+  mugshot_url: string;
+  timestamp: string;
+  error?: string;
 }

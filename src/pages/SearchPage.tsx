@@ -66,19 +66,54 @@ const SearchPage = () => {
 
     setIsSearching(true);
     try {
-      // Search vehicles
-      const { data: vehicles, error: vehicleError } = await supabase
-        .rpc('search_vehicles', { search_term: searchTerm });
+      // Search vehicles directly from incident_reports (RPC functions have bugs)
+      const { data: vehicleData, error: vehicleError } = await supabase
+        .from('incident_reports')
+        .select('id, vehicle_make, vehicle_model, vehicle_year, vehicle_vin, vehicle_plate, suspect_details')
+        .or(`vehicle_make.ilike.%${searchTerm}%,vehicle_model.ilike.%${searchTerm}%,vehicle_plate.ilike.%${searchTerm}%,vehicle_vin.ilike.%${searchTerm}%`)
+        .not('vehicle_make', 'is', null)
+        .order('created_at', { ascending: false });
       
-      if (vehicleError) throw vehicleError;
-      setVehicleResults(vehicles || []);
+      if (vehicleError) {
+        console.error('Vehicle search error:', vehicleError);
+      }
+      
+      // Transform vehicle data to match expected format
+      const vehicles: VehicleResult[] = (vehicleData || []).map(item => ({
+        id: item.id,
+        make: item.vehicle_make || '',
+        model: item.vehicle_model || '',
+        year: item.vehicle_year || '',
+        vin: item.vehicle_vin || '',
+        plate: item.vehicle_plate || '',
+        owner: item.suspect_details ? 
+          `${item.suspect_details.first_name || ''} ${item.suspect_details.last_name || ''}`.trim() || 'Unknown' 
+          : 'Unknown'
+      }));
+      setVehicleResults(vehicles);
 
-      // Search warrants
-      const { data: warrants, error: warrantError } = await supabase
-        .rpc('search_warrants', { search_term: searchTerm });
+      // Search warrants (using arrest_tags as warrant source since RPC has bugs)
+      const { data: warrantData, error: warrantError } = await supabase
+        .from('arrest_tags')
+        .select('*')
+        .or(`suspect_name.ilike.%${searchTerm}%,charges.ilike.%${searchTerm}%`)
+        .order('created_at', { ascending: false });
       
-      if (warrantError) throw warrantError;
-      setWarrantResults(warrants || []);
+      if (warrantError) {
+        console.error('Warrant search error:', warrantError);
+      }
+
+      // Transform warrant data to match expected format
+      const warrants: WarrantResult[] = (warrantData || []).map(item => ({
+        id: item.id,
+        suspect_name: item.suspect_name || 'Unknown',
+        warrant_type: 'Arrest Warrant',
+        issue_date: item.booking_date ? format(new Date(item.booking_date), 'yyyy-MM-dd') : '',
+        status: item.processing_status || 'pending',
+        case_number: item.tag_number || '',
+        correlation_score: 1.0
+      }));
+      setWarrantResults(warrants);
 
       // Search suspects in arrest_tags
       const { data: suspects, error: suspectError } = await supabase
@@ -101,9 +136,10 @@ const SearchPage = () => {
         setActiveTab("all");
       }
 
+      const totalResults = vehicles.length + warrants.length + (suspects?.length || 0);
       toast({
-        title: "Search Complete",
-        description: `Found ${(vehicles?.length || 0) + (warrants?.length || 0) + (suspects?.length || 0)} results`,
+        title: "Search Complete", 
+        description: `Found ${totalResults} results`,
       });
     } catch (error) {
       console.error("Search error:", error);
