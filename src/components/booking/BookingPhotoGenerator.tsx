@@ -19,7 +19,15 @@ type BioMarkers = {
 export const BookingPhotoGenerator = () => {
   const { photos, allPhotos, isGenerating, generatePhoto, clearPhotos, markPhotoAsErrored, deletePhoto } = usePhotoGeneration();
   const [error, setError] = useState<string | null>(null);
-  const { register, watch } = useForm<BioMarkers>();
+  const { watch, setValue } = useForm<BioMarkers>({
+    defaultValues: {
+      gender: "male",
+      height: "5'8\" - 5'11\"",
+      weight: "161-180 lbs",
+      hair: "Brown",
+      eyes: "Brown"
+    }
+  });
 
   const bioMarkers = watch();
 
@@ -72,7 +80,10 @@ export const BookingPhotoGenerator = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Gender</label>
-            <Select {...register("gender")}>
+            <Select 
+              defaultValue={bioMarkers.gender}
+              onValueChange={(value) => setValue("gender", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -85,7 +96,10 @@ export const BookingPhotoGenerator = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Height</label>
-            <Select {...register("height")}>
+            <Select 
+              defaultValue={bioMarkers.height}
+              onValueChange={(value) => setValue("height", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select height" />
               </SelectTrigger>
@@ -103,7 +117,10 @@ export const BookingPhotoGenerator = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Hair Color</label>
-            <Select {...register("hair")}>
+            <Select 
+              defaultValue={bioMarkers.hair}
+              onValueChange={(value) => setValue("hair", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select hair color" />
               </SelectTrigger>
@@ -121,7 +138,10 @@ export const BookingPhotoGenerator = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Eye Color</label>
-            <Select {...register("eyes")}>
+            <Select 
+              defaultValue={bioMarkers.eyes}
+              onValueChange={(value) => setValue("eyes", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select eye color" />
               </SelectTrigger>
@@ -137,7 +157,10 @@ export const BookingPhotoGenerator = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Weight Range</label>
-            <Select {...register("weight")}>
+            <Select 
+              defaultValue={bioMarkers.weight}
+              onValueChange={(value) => setValue("weight", value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select weight range" />
               </SelectTrigger>

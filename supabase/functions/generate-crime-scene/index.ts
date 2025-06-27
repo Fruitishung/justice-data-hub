@@ -37,10 +37,8 @@ serve(async (req) => {
     const { data: report, error: reportError } = await supabase
       .from('incident_reports')
       .select(`
-        incident_type, 
         incident_description, 
         penal_code, 
-        report_category,
         location_address,
         location_details,
         evidence_description,
@@ -94,9 +92,7 @@ serve(async (req) => {
       .from('ai_crime_scene_photos')
       .insert({
         incident_report_id,
-        image_path: imageUrl,
-        photo_type,
-        prompt_used: promptUsed
+        image_path: imageUrl
       })
       .select()
       .single()
@@ -115,7 +111,7 @@ serve(async (req) => {
         photo_id: photoRecord.id,
         prompt_used: promptUsed,
         incident_details: {
-          case_type: report.incident_type,
+          penal_code: report.penal_code,
           location: report.location_address
         }
       }),
@@ -147,25 +143,37 @@ serve(async (req) => {
 })
 
 function generateEnhancedPrompt(report: any): string {
-  const basePrompt = "Generate a realistic crime scene photograph taken by law enforcement. Professional police photography style with proper evidence documentation. "
+  const basePrompt = "Generate a realistic crime scene photograph taken by law enforcement for official police documentation. This MUST be a professional law enforcement crime scene photograph. Professional police photography style with proper evidence documentation. "
   
   let specificPrompt = ""
   
-  // Enhanced prompts based on incident type and penal code
-  if (report.penal_code === '187' || report.incident_type === 'homicide') {
-    specificPrompt = "Serious crime scene with forensic investigators working methodically. Evidence markers placed throughout the area. Professional lighting reveals important details. Somber, documentary photography style."
-  } else if (report.penal_code === '211' || report.incident_type === 'robbery') {
-    specificPrompt = "Commercial robbery scene showing disrupted merchandise or cash register area. Security camera perspective. Evidence of forced entry or struggle. Police tape securing the perimeter."
-  } else if (report.incident_type === 'burglary' || report.penal_code === '459') {
-    specificPrompt = "Residential burglary scene showing signs of forced entry. Broken window or damaged door frame. Items scattered, evidence markers placed on key evidence. Interior lighting shows the disturbance."
-  } else if (report.incident_type === 'assault') {
+  // Enhanced prompts based on penal code and incident description
+  if (report.penal_code === '187') {
+    specificPrompt = "Serious homicide crime scene with forensic investigators working methodically. Evidence markers placed throughout the area. Professional lighting reveals important details. Somber, documentary photography style."
+  } else if (report.penal_code === '211') {
+    specificPrompt = "Armed robbery scene showing disrupted merchandise or cash register area. Security camera perspective. Evidence of forced entry or struggle. Police tape securing the perimeter."
+  } else if (report.penal_code === '459') {
+    specificPrompt = "Burglary scene showing signs of forced entry. Broken window or damaged door frame. Items scattered, evidence markers placed on key evidence. Interior lighting shows the disturbance."
+  } else if (report.penal_code === '240' || report.penal_code === '242') {
     specificPrompt = "Assault scene in urban setting. Evidence markers on ground indicating points of contact. Wide-angle documentation shot showing the immediate area. Professional police photography."
-  } else if (report.incident_type === 'vandalism') {
-    specificPrompt = "Property damage documentation showing graffiti, broken windows, or damaged surfaces. Close-up evidence photography with measurement scales. Clear documentation of the damage extent."
-  } else if (report.incident_type === 'vehicle_theft') {
-    specificPrompt = "Vehicle crime scene showing empty parking space or abandoned vehicle. Tire tracks, broken glass, or other evidence marked. Wide establishing shot of the location."
+  } else if (report.penal_code === '594') {
+    specificPrompt = "Vandalism scene showing property damage, graffiti, broken windows, or damaged surfaces. Close-up evidence photography with measurement scales. Clear documentation of the damage extent."
+  } else if (report.penal_code === '487') {
+    specificPrompt = "Grand theft scene showing empty parking space or location where property was stolen. Evidence markers, tire tracks, or other trace evidence marked. Wide establishing shot of the location."
   } else {
-    specificPrompt = "General crime scene with police investigators documenting evidence. Yellow police tape, evidence markers, and forensic equipment visible. Professional law enforcement photography."
+    // Try to infer from description
+    const description = (report.incident_description || '').toLowerCase();
+    if (description.includes('homicide') || description.includes('murder')) {
+      specificPrompt = "Serious homicide crime scene with forensic investigators working methodically. Evidence markers placed throughout the area. Professional lighting reveals important details."
+    } else if (description.includes('robbery') || description.includes('theft')) {
+      specificPrompt = "Crime scene showing evidence of theft or robbery. Disrupted areas, evidence markers, and police documentation equipment visible."
+    } else if (description.includes('burglary') || description.includes('break') || description.includes('enter')) {
+      specificPrompt = "Burglary scene showing signs of forced entry. Evidence markers placed on key evidence. Interior or exterior lighting shows the disturbance."
+    } else if (description.includes('assault') || description.includes('attack')) {
+      specificPrompt = "Assault scene with evidence markers on ground. Wide-angle documentation shot showing the immediate area. Professional police photography."
+    } else {
+      specificPrompt = "General crime scene with police investigators documenting evidence. Yellow police tape, evidence markers, and forensic equipment visible. Professional law enforcement photography."
+    }
   }
 
   // Add location context if available
@@ -178,9 +186,9 @@ function generateEnhancedPrompt(report: any): string {
     specificPrompt += ` Key evidence includes: ${report.evidence_description.toLowerCase()}.`
   }
 
-  const finalPrompt = basePrompt + specificPrompt + " High-quality, realistic police documentation photography. No people visible in the photo, focus on the scene and evidence."
+  const finalPrompt = basePrompt + specificPrompt + " High-quality, realistic police documentation photography. CRITICAL: No people visible in the photo, focus ONLY on the crime scene and evidence. This MUST be an authentic-looking law enforcement crime scene photograph - NOT a casual photo, NOT food, NOT random objects. Professional crime scene documentation only."
   
-  console.log('Generated enhanced prompt for incident type:', report.incident_type)
+  console.log('Generated enhanced prompt for penal code:', report.penal_code)
   return finalPrompt
 }
 

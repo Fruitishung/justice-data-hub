@@ -1,5 +1,5 @@
 
-import { ScannerDevice, FingerprintData } from './fingerprintScanner';
+import { ScannerDevice, FingerprintData, ScannerInfo, HardwareStatus } from './fingerprintScanner';
 
 // Digital Persona specific types
 interface DPDevice {
@@ -23,8 +23,39 @@ const FINGERPRINT_IMAGES = [
   "data:image/png;base64,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"
 ];
 
-// Mock SDK implementation (replace with actual Digital Persona SDK when available)
-const dpSdk: DPScannerSDK = {
+// Error codes for better diagnostics
+export enum DPErrorCode {
+  NO_SDK = 'DP_NO_SDK',
+  NO_DRIVER = 'DP_NO_DRIVER',
+  NO_DEVICE = 'DP_NO_DEVICE',
+  DEVICE_BUSY = 'DP_DEVICE_BUSY',
+  CAPTURE_FAILED = 'DP_CAPTURE_FAILED',
+  LOW_QUALITY = 'DP_LOW_QUALITY',
+  TIMEOUT = 'DP_TIMEOUT',
+  PERMISSION_DENIED = 'DP_PERMISSION_DENIED'
+}
+
+// Check if we're in mock mode
+const isMockMode = () => localStorage.getItem('fingerprintMockMode') === 'true';
+
+// Check for actual Digital Persona SDK
+const checkForRealSDK = (): DPScannerSDK | null => {
+  // Check various possible SDK locations
+  if (typeof window !== 'undefined') {
+    // @ts-ignore - SDK might be loaded globally
+    if (window.DigitalPersona?.SDK) {
+      return window.DigitalPersona.SDK;
+    }
+    // @ts-ignore - Alternative SDK location
+    if (window.DPScannerSDK) {
+      return window.DPScannerSDK;
+    }
+  }
+  return null;
+};
+
+// Mock SDK implementation (used when real SDK not available or in mock mode)
+const mockSdk: DPScannerSDK = {
   init: async () => true,
   enumerateDevices: async () => [{
     name: 'U.are.U 4500',
@@ -55,6 +86,10 @@ const dpSdk: DPScannerSDK = {
 };
 
 export class DigitalPersonaScanner implements ScannerDevice {
+  private sdk: DPScannerSDK;
+  private lastError: { code: string; message: string } | null = null;
+  private connectionRetries = 0;
+  private maxRetries = 3;
   private currentDevice: DPDevice | null = null;
   private _isConnected: boolean = false;
 
@@ -62,51 +97,131 @@ export class DigitalPersonaScanner implements ScannerDevice {
     return this._isConnected;
   }
 
+  constructor() {
+    // Determine which SDK to use
+    if (isMockMode()) {
+      console.log('Fingerprint scanner in MOCK MODE');
+      this.sdk = mockSdk;
+    } else {
+      const realSdk = checkForRealSDK();
+      if (realSdk) {
+        console.log('Using real Digital Persona SDK');
+        this.sdk = realSdk;
+      } else {
+        console.warn('Digital Persona SDK not found, falling back to mock');
+        this.sdk = mockSdk;
+      }
+    }
+  }
+
   async connect(): Promise<boolean> {
     try {
       console.log('Attempting to connect to Digital Persona scanner...');
+      this.lastError = null;
+      this.connectionRetries++;
+      
+      // Check if SDK is available
+      if (!this.sdk) {
+        this.lastError = {
+          code: DPErrorCode.NO_SDK,
+          message: 'Digital Persona SDK not loaded. Please install scanner drivers.'
+        };
+        throw new Error(this.lastError.message);
+      }
       
       // Initialize the SDK
-      const initialized = await dpSdk.init();
+      let initialized = false;
+      try {
+        initialized = await this.sdk.init();
+      } catch (initError) {
+        this.lastError = {
+          code: DPErrorCode.NO_DRIVER,
+          message: 'Failed to initialize SDK. Scanner drivers may not be installed.'
+        };
+        throw new Error(this.lastError.message);
+      }
+      
       if (!initialized) {
-        console.error('Failed to initialize Digital Persona SDK');
-        return false;
+        this.lastError = {
+          code: DPErrorCode.NO_DRIVER,
+          message: 'Failed to initialize Digital Persona SDK'
+        };
+        throw new Error(this.lastError.message);
       }
       
       // Find available devices
-      const devices = await dpSdk.enumerateDevices();
+      let devices: DPDevice[] = [];
+      try {
+        devices = await this.sdk.enumerateDevices();
+      } catch (enumError) {
+        this.lastError = {
+          code: DPErrorCode.PERMISSION_DENIED,
+          message: 'Permission denied accessing scanner. Please check USB permissions.'
+        };
+        throw new Error(this.lastError.message);
+      }
+      
       if (devices.length === 0) {
-        console.error('No Digital Persona devices found');
-        return false;
+        this.lastError = {
+          code: DPErrorCode.NO_DEVICE,
+          message: 'No Digital Persona scanner found. Please connect a scanner.'
+        };
+        throw new Error(this.lastError.message);
       }
 
       // Connect to the first available device
       this.currentDevice = devices[0];
-      const connected = await dpSdk.openDevice(this.currentDevice);
+      
+      let connected = false;
+      try {
+        connected = await this.sdk.openDevice(this.currentDevice);
+      } catch (openError) {
+        this.lastError = {
+          code: DPErrorCode.DEVICE_BUSY,
+          message: 'Scanner is busy or in use by another application.'
+        };
+        throw new Error(this.lastError.message);
+      }
       
       if (connected) {
         this._isConnected = true;
+        this.connectionRetries = 0; // Reset retries on success
         console.log(`Connected to ${this.currentDevice.name} (${this.currentDevice.serialNumber})`);
         return true;
       }
       
+      this.lastError = {
+        code: DPErrorCode.NO_DEVICE,
+        message: 'Failed to open connection to scanner.'
+      };
       return false;
     } catch (error) {
       console.error('Error connecting to Digital Persona scanner:', error);
       this._isConnected = false;
-      return false;
+      
+      // If no specific error was set, create a generic one
+      if (!this.lastError) {
+        this.lastError = {
+          code: 'UNKNOWN_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown connection error'
+        };
+      }
+      
+      // Throw the error to propagate it up
+      throw error;
     }
   }
 
   async disconnect(): Promise<void> {
     if (this._isConnected) {
       try {
-        await dpSdk.closeDevice();
+        await this.sdk.closeDevice();
       } catch (error) {
         console.error('Error disconnecting from scanner:', error);
       } finally {
         this._isConnected = false;
         this.currentDevice = null;
+        this.lastError = null;
       }
     }
   }
@@ -114,28 +229,130 @@ export class DigitalPersonaScanner implements ScannerDevice {
   async captureFingerprint(): Promise<FingerprintData | null> {
     if (!this._isConnected) {
       console.error('Digital Persona scanner not connected');
-      throw new Error('Scanner not connected. Please connect the scanner first.');
+      this.lastError = {
+        code: DPErrorCode.NO_DEVICE,
+        message: 'Scanner not connected. Please connect the scanner first.'
+      };
+      throw new Error(this.lastError.message);
     }
 
     try {
       console.log('Starting fingerprint capture...');
+      this.lastError = null;
       
-      // Capture the fingerprint image
-      const captureResult = await dpSdk.startCapture();
+      // Capture the fingerprint image with timeout
+      let captureResult;
+      const captureTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Capture timeout')), 10000)
+      );
+      
+      try {
+        captureResult = await Promise.race([
+          this.sdk.startCapture(),
+          captureTimeout
+        ]) as { buffer: ArrayBuffer; imageUrl: string };
+      } catch (timeoutError) {
+        this.lastError = {
+          code: DPErrorCode.TIMEOUT,
+          message: 'Fingerprint capture timed out. Please try again.'
+        };
+        throw new Error(this.lastError.message);
+      }
       
       // Get the image quality
-      const quality = await dpSdk.getImageQuality();
+      const quality = await this.sdk.getImageQuality();
       
-      console.log('Fingerprint captured successfully');
+      // Check quality threshold
+      if (quality < 60) {
+        this.lastError = {
+          code: DPErrorCode.LOW_QUALITY,
+          message: `Image quality too low (${quality}%). Please try again with better finger placement.`
+        };
+        console.warn(this.lastError.message);
+      }
+      
+      console.log(`Fingerprint captured successfully (Quality: ${quality}%)`);
       
       return {
         data: captureResult.buffer,
         quality: quality,
-        imageUrl: captureResult.imageUrl // Store the image URL
+        imageUrl: captureResult.imageUrl
       };
     } catch (error) {
       console.error('Error capturing fingerprint:', error);
-      throw new Error('Failed to capture fingerprint. Please try again.');
+      
+      if (!this.lastError) {
+        this.lastError = {
+          code: DPErrorCode.CAPTURE_FAILED,
+          message: error instanceof Error ? error.message : 'Failed to capture fingerprint.'
+        };
+      }
+      
+      throw new Error(this.lastError.message);
     }
+  }
+
+  async getScannerInfo(): Promise<ScannerInfo> {
+    if (!this.currentDevice) {
+      return {
+        name: isMockMode() ? 'Mock Scanner' : 'Not Connected',
+        serialNumber: 'N/A',
+        driverVersion: isMockMode() ? '1.0.0-mock' : 'Unknown'
+      };
+    }
+
+    return {
+      name: this.currentDevice.name,
+      serialNumber: this.currentDevice.serialNumber,
+      driverVersion: '4.5.0', // This would come from the real SDK
+      firmwareVersion: '2.1.0' // This would come from the real SDK
+    };
+  }
+
+  async checkHardware(): Promise<HardwareStatus> {
+    const realSdk = checkForRealSDK();
+    const status: HardwareStatus = {
+      isAvailable: false,
+      sdkLoaded: !!realSdk || isMockMode(),
+      driverInstalled: false,
+      deviceConnected: this._isConnected
+    };
+
+    if (isMockMode()) {
+      return {
+        ...status,
+        isAvailable: true,
+        driverInstalled: true,
+        errorMessage: 'Running in mock mode'
+      };
+    }
+
+    if (!realSdk) {
+      return {
+        ...status,
+        errorCode: DPErrorCode.NO_SDK,
+        errorMessage: 'Digital Persona SDK not found'
+      };
+    }
+
+    try {
+      // Try to initialize to check drivers
+      const initialized = await realSdk.init();
+      status.driverInstalled = initialized;
+      
+      if (initialized) {
+        const devices = await realSdk.enumerateDevices();
+        status.isAvailable = devices.length > 0;
+      }
+    } catch (error) {
+      status.errorCode = DPErrorCode.NO_DRIVER;
+      status.errorMessage = 'Failed to check hardware status';
+    }
+
+    return status;
+  }
+
+  getLastError(): { code: string; message: string } | null {
+    return this.lastError;
   }
 }

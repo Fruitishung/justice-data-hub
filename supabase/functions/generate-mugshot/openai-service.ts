@@ -31,16 +31,19 @@ export class OpenAIService {
     
     console.log(`Generating prompt with bioMarkers: gender=${gender}, height=${height}, weight=${weight}, hair=${hair}, eyes=${eyes}, name=${name}, charges=${charges}`);
     
-    return `Generate a realistic police booking photograph (mugshot) with these EXACT specifications:
+    return `Generate a realistic police booking photograph (mugshot) of a HUMAN PERSON with these EXACT specifications:
+    
+    CRITICAL: This MUST be a photograph of a HUMAN ADULT PERSON - NOT objects, food, animals, or anything else.
     
     MANDATORY REQUIREMENTS:
-    1. Subject MUST be an ADULT (30-50 years old) - ABSOLUTELY NO CHILDREN OR MINORS
+    1. Subject MUST be a HUMAN ADULT (30-50 years old) - ABSOLUTELY NO CHILDREN OR MINORS
     2. Subject MUST have a neutral, serious facial expression with NO SMILING
     3. Background MUST be a plain light blue or gray wall with visible height measurement lines
     4. Subject MUST be shown from shoulders up in a front-facing view
     5. Subject MUST be holding a black booking information placard with white text
     6. Lighting MUST be harsh institutional lighting as typical in police stations
     7. Image MUST be documentary/photojournalistic style - NOT glamorized
+    8. This is a PROFESSIONAL POLICE PHOTOGRAPH of a HUMAN PERSON
     
     SPECIFIC PHYSICAL CHARACTERISTICS TO MATCH EXACTLY:
     - Gender: ${gender}
@@ -54,7 +57,7 @@ export class OpenAIService {
     - Charges: ${charges}
     - Date: ${new Date().toLocaleDateString()}
     
-    The subject must clearly match these physical characteristics: ${gender} person with ${hair} hair, ${eyes} eyes, ${height} tall with ${weight} build. This MUST appear as an official police booking photograph - NOT a casual or social media photo. NO social settings, NO phones, NO smiling. Professional mugshot style only.`;
+    The subject must be a HUMAN PERSON who clearly matches these physical characteristics: ${gender} person with ${hair} hair, ${eyes} eyes, ${height} tall with ${weight} build. This MUST appear as an official police booking photograph of a HUMAN PERSON - NOT a casual photo, NOT objects, NOT food items, NOT animals. NO social settings, NO phones, NO smiling. Professional mugshot style only. Generate a HUMAN FACE AND SHOULDERS.`;
   }
 
   async generateMugshot(bioMarkers?: BioMarkers): Promise<string> {

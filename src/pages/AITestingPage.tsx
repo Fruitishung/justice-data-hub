@@ -25,13 +25,32 @@ const AITestingPage = () => {
         endpoint = 'generate-mugshot';
         requestBody = {
           arrest_tag_id: testId,
-          photo_type: 'ai'
+          photo_type: 'ai',
+          bio_markers: {
+            gender: 'male',
+            height: '5\'10"',
+            weight: 'average',
+            hair: 'brown',
+            eyes: 'brown',
+            name: 'Test Subject',
+            charges: 'PC 459 - Burglary'
+          }
         };
       } else if (type === 'crime-scene') {
         endpoint = 'generate-crime-scene';
+        
+        // First, get a real incident report ID to use
+        const { data: incidents } = await supabase
+          .from('incident_reports')
+          .select('id')
+          .limit(1);
+        
+        const incidentId = incidents?.[0]?.id || testId;
+        
         requestBody = {
-          incident_report_id: testId,
-          photo_type: 'ai'
+          incident_report_id: incidentId,
+          photo_type: 'ai',
+          custom_prompt: 'Police crime scene documentation with evidence markers and professional lighting'
         };
       } else if (type === 'fingerprint') {
         endpoint = 'generate-fingerprint';

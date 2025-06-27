@@ -16,12 +16,17 @@ import AuthPage from "./pages/AuthPage";
 import TimelineAnalysisPage from "./components/analysis/TimelineAnalysisPage";
 import PatternRecognitionPage from "./pages/PatternRecognitionPage";
 import CaseSimilarityPage from "./pages/CaseSimilarityPage";
+import SearchPage from "./pages/SearchPage";
 import { Toaster } from "@/components/ui/toaster";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <ReportDetailsPage />,
+  },
+  {
+    path: "/search",
+    element: <SearchPage />,
   },
   {
     path: "/report/new",
